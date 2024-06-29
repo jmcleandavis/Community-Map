@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script>
+        L_NO_TOUCH = false;
+        L_DISABLE_3D = false;
+    </script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        #map_3dd070a06de55853b72f0e183edb2609 {
+            position: relative;
+            width: 100.0%;
+            height: 100.0%;
+            left: 0.0%;
+            top: 0.0%;
+        }
+
+        .leaflet-container {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="folium-map" id="map_3dd070a06de55853b72f0e183edb2609"></div>
+</body>
+<script>
+    var map_3dd070a06de55853b72f0e183edb2609 = L.map("map_3dd070a06de55853b72f0e183edb2609", {
+        center: [43.81998409697083, -79.08435367061776],
+        crs: L.CRS.EPSG3857,
+        zoom: 14,
+        zoomControl: true,
+        preferCanvas: false,
+    });
+
+    var tile_layer_df9c8d1d4b3cc8e6d8fbb91da1f5d1e3 = L.tileLayer(
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors" }
+    );
+
+    tile_layer_df9c8d1d4b3cc8e6d8fbb91da1f5d1e3.addTo(map_3dd070a06de55853b72f0e183edb2609);
+
+    // Add markers from backend data using Axios
+    axios.get('/api/addresses')
+        .then(response => {
+            const data = response.data;
+            data.forEach(address => {
+                L.marker([address.latitude, address.longitude]).addTo(map_3dd070a06de55853b72f0e183edb2609);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching addresses:', error);
+        });
+
+    // Add current location marker
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            L.marker([position.coords.latitude, position.coords.longitude], {
+                icon: L.icon({
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/images/marker-icon.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map_3dd070a06de55853b72f0e183edb2609).bindPopup('Your Location').openPopup();
+        });
+    }
+</script>
+
+</html>
