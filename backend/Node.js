@@ -5,7 +5,7 @@ const port = 3000;
 const path = require('path');
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../garage-sale-map-client/build')));
+app.use(express.static(path.join(__dirname, '../build')));
 
 // API endpoint to serve addresses
 app.get('/api/addresses', (req, res) => {
@@ -15,7 +15,7 @@ app.get('/api/addresses', (req, res) => {
 
 // Catch-all to serve the React app for any route not handled
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../garage-sale-map-client/build/index.html'));
+    res.sendFile(path.join(__dirname, '../build/index.html'));
 });
 
 app.listen(port, () => {
