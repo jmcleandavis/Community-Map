@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import axios from 'axios';
 import './App.css'
-import { GoogleMap, LoadScript, InfoWindow, Marker } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -19,6 +19,9 @@ function App() {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   
+  const [currentLocationMarker, setCurrentLocationMarker] = useState(null);
+  const [saleMarkers, setSaleMarkers] = useState([]);
+
   const mapContainerStyle = {
     width: '100%',
     height: '100vh'
@@ -122,6 +125,82 @@ function App() {
     fetchGarageSales();
   }, [isLoaded]);
 
+  // Effect for current location marker
+  useEffect(() => {
+    if (!map || !position || !window.google) return;
+    
+    // Remove existing marker
+    if (currentLocationMarker) {
+      currentLocationMarker.map = null;
+    }
+
+    // Create new marker
+    const marker = new window.google.maps.marker.AdvancedMarkerElement({
+      position,
+      map,
+      title: "Your Location",
+      content: (() => {
+        const div = document.createElement('div');
+        div.className = 'current-location-marker';
+        div.style.backgroundColor = '#4285F4';
+        div.style.borderRadius = '50%';
+        div.style.border = '2px solid #FFFFFF';
+        div.style.width = '16px';
+        div.style.height = '16px';
+        return div;
+      })()
+    });
+
+    marker.addListener('click', () => setSelectedSale(null));
+    setCurrentLocationMarker(marker);
+
+    return () => {
+      if (marker) {
+        marker.map = null;
+      }
+    };
+  }, [map, position]);
+
+  // Effect for garage sale markers
+  useEffect(() => {
+    if (!map || !window.google) return;
+
+    // Remove existing markers
+    saleMarkers.forEach(marker => {
+      marker.map = null;
+    });
+
+    // Create new markers
+    const newMarkers = garageSales.map(sale => {
+      const marker = new window.google.maps.marker.AdvancedMarkerElement({
+        position: sale.position,
+        map,
+        title: sale.address,
+        content: (() => {
+          const div = document.createElement('div');
+          div.className = 'garage-sale-marker';
+          div.style.backgroundColor = '#FF0000';
+          div.style.borderRadius = '50%';
+          div.style.border = '2px solid #FFFFFF';
+          div.style.width = '16px';
+          div.style.height = '16px';
+          return div;
+        })()
+      });
+
+      marker.addListener('click', () => setSelectedSale(sale));
+      return marker;
+    });
+
+    setSaleMarkers(newMarkers);
+
+    return () => {
+      newMarkers.forEach(marker => {
+        marker.map = null;
+      });
+    };
+  }, [map, garageSales]);
+
   return (
     <div>
       <LoadScript 
@@ -142,41 +221,6 @@ function App() {
             setMap(map);
           }}
         >
-          {/* Current location marker */}
-          {position && (
-            <Marker
-              position={position}
-              title="Your Location"
-              icon={{
-                path: window.google?.maps?.SymbolPath?.CIRCLE || 'M 0 0 L 0 0',
-                fillColor: '#4285F4',
-                fillOpacity: 1,
-                strokeColor: '#FFFFFF',
-                strokeWeight: 2,
-                scale: 8,
-              }}
-              onClick={() => setSelectedSale(null)}
-            />
-          )}
-
-          {/* Garage sale markers */}
-          {garageSales.map((sale, index) => (
-            <Marker
-              key={index}
-              position={sale.position}
-              title={sale.address}
-              icon={{
-                path: window.google?.maps?.SymbolPath?.CIRCLE || 'M 0 0 L 0 0',
-                fillColor: '#FF0000',
-                fillOpacity: 1,
-                strokeColor: '#FFFFFF',
-                strokeWeight: 2,
-                scale: 8,
-              }}
-              onClick={() => setSelectedSale(sale)}
-            />
-          ))}
-
           {/* Info window for selected garage sale */}
           {selectedSale && (
             <InfoWindow
