@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import axios from 'axios';
 import './App.css'
 import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
+import HamburgerMenu from './components/HamburgerMenu';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -9,6 +10,18 @@ const libraries = ['marker'];
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: 'http://localhost:3001',
+  timeout: 5000
+});
+
+// Create axios instance with base URL for backend
+const backendApi = axios.create({
+  baseURL: 'http://localhost:3001',
+  timeout: 5000
+});
+
+// Create axios instance for Google Geocoding API
+const geocodingApi = axios.create({
+  baseURL: 'https://maps.googleapis.com/maps/api/geocode/json',
   timeout: 5000
 });
 
@@ -38,6 +51,10 @@ function App() {
     mapId: import.meta.env.VITE_GOOGLE_MAPS_ID,
     streetViewControl: true,
     mapTypeControl: true,
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: window.google?.maps?.ControlPosition?.RIGHT_TOP
+    }
   };
 
   // Get current position
@@ -86,32 +103,38 @@ function App() {
         }
 
         // Create Geocoding service
-        const geocoder = new window.google.maps.Geocoder();
-        
-        // Geocode all addresses
-        const geocodePromises = addresses.map(address => {
-          return new Promise((resolve) => {
+        const geocodeAddress = async (address) => {
+          try {
             const fullAddress = `${address}, Pickering, ON, Canada`;
             console.log('Geocoding address:', fullAddress);
             
-            geocoder.geocode({ address: fullAddress }, (results, status) => {
-              if (status === 'OK' && results && results[0]) {
-                const location = {
-                  address: address,
-                  position: {
-                    lat: results[0].geometry.location.lat(),
-                    lng: results[0].geometry.location.lng()
-                  }
-                };
-                console.log('Successfully geocoded:', location);
-                resolve(location);
-              } else {
-                console.error('Geocoding failed for address:', address, status);
-                resolve(null);
+            const response = await geocodingApi.get('', {
+              params: {
+                address: fullAddress,
+                key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
               }
             });
-          });
-        });
+
+            if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+              const location = response.data.results[0].geometry.location;
+              return {
+                address: address,
+                position: {
+                  lat: location.lat,
+                  lng: location.lng
+                }
+              };
+            }
+            console.warn(`Geocoding failed for address: ${fullAddress}`);
+            return null;
+          } catch (error) {
+            console.error(`Error geocoding address ${address}:`, error);
+            return null;
+          }
+        };
+
+        // Geocode all addresses using axios
+        const geocodePromises = addresses.map(address => geocodeAddress(address));
 
         const locations = await Promise.all(geocodePromises);
         const validLocations = locations.filter(location => location !== null);
@@ -205,35 +228,35 @@ function App() {
     <div>
       <LoadScript 
         googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-        onLoad={() => {
-          console.log('Google Maps script loaded');
-          setIsLoaded(true);
-        }}
         libraries={libraries}
+        onLoad={() => setIsLoaded(true)}
       >
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={position || defaultCenter}
-          zoom={12}
-          options={mapOptions}
-          onLoad={(map) => {
-            console.log('Map loaded');
-            setMap(map);
-          }}
-        >
-          {/* Info window for selected garage sale */}
-          {selectedSale && (
-            <InfoWindow
-              position={selectedSale.position}
-              onCloseClick={() => setSelectedSale(null)}
-            >
-              <div>
-                <h3>Garage Sale</h3>
-                <p>{selectedSale.address}</p>
-              </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
+        <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
+          <HamburgerMenu />
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={position || defaultCenter}
+            zoom={12}
+            options={mapOptions}
+            onLoad={(map) => {
+              console.log('Map loaded');
+              setMap(map);
+            }}
+          >
+            {/* Info window for selected garage sale */}
+            {selectedSale && (
+              <InfoWindow
+                position={selectedSale.position}
+                onCloseClick={() => setSelectedSale(null)}
+              >
+                <div>
+                  <h3>Garage Sale</h3>
+                  <p>{selectedSale.address}</p>
+                </div>
+              </InfoWindow>
+            )}
+          </GoogleMap>
+        </div>
       </LoadScript>
     </div>
   );
