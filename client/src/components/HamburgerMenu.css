@@ -1,12 +1,7 @@
 .hamburger-container {
-  position: absolute;
-  top: 10px;
-  left: 177px;  /* Moved left to butt up against Satellite button */
-  z-index: 1000;
-  width: 35px;
-  height: 38px; /* Match exact height of Map/Satellite buttons */
-  display: flex;
-  align-items: center;
+  margin: 10px;
+  margin-left: 0;
+  display: inline-block;
 }
 
 .hamburger-button {
@@ -16,8 +11,8 @@
   padding: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   cursor: pointer;
-  width: 100%;
-  height: 39px;  /* Match exact height */
+  width: 35px;
+  height: 39px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +20,7 @@
 }
 
 .hamburger-icon {
-  width: 18px; /* Slightly smaller icon */
+  width: 18px;
   height: 12px;
   position: relative;
   display: flex;
@@ -37,7 +32,7 @@
   display: block;
   height: 2px;
   width: 100%;
-  background-color: #666; /* Slightly darker color to match Google's controls */
+  background-color: #666;
   transition: all 0.3s ease;
 }
 
@@ -55,14 +50,12 @@
 
 .menu-content {
   position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 5px;
+  top: 50px;
+  left: 10px;
   background: white;
   border-radius: 2px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   min-width: 150px;
-  z-index: 1002;
 }
 
 .menu-content ul {

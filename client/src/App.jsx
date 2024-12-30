@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import axios from 'axios';
 import './App.css'
 import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
+import ReactDOM from 'react-dom';
 import HamburgerMenu from './components/HamburgerMenu';
 
 // Define libraries as a static constant
@@ -51,9 +52,8 @@ function App() {
     mapId: import.meta.env.VITE_GOOGLE_MAPS_ID,
     streetViewControl: true,
     mapTypeControl: true,
-    fullscreenControl: true,
-    fullscreenControlOptions: {
-      position: window.google?.maps?.ControlPosition?.RIGHT_TOP
+    mapTypeControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
     }
   };
 
@@ -224,24 +224,37 @@ function App() {
     };
   }, [map, garageSales]);
 
+  // Custom control for hamburger menu
+  const onLoad = (map) => {
+    console.log('Map loaded');
+    setMap(map);
+
+    // Create custom control div
+    const customControlDiv = document.createElement('div');
+    customControlDiv.style.marginLeft = '10px';
+    
+    // Add the control to the map
+    map.controls[window.google.maps.ControlPosition.TOP_LEFT].push(customControlDiv);
+
+    // Render hamburger menu into the control
+    const root = ReactDOM.createRoot(customControlDiv);
+    root.render(<HamburgerMenu />);
+  };
+
   return (
-    <div>
-      <LoadScript 
+    <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+      <LoadScript
         googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
         libraries={libraries}
         onLoad={() => setIsLoaded(true)}
       >
-        <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
-          <HamburgerMenu />
+        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={position || defaultCenter}
             zoom={12}
             options={mapOptions}
-            onLoad={(map) => {
-              console.log('Map loaded');
-              setMap(map);
-            }}
+            onLoad={onLoad}
           >
             {/* Info window for selected garage sale */}
             {selectedSale && (
