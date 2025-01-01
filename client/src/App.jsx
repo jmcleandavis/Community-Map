@@ -53,7 +53,8 @@ function App() {
     streetViewControl: true,
     mapTypeControl: true,
     mapTypeControlOptions: {
-      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
+      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR
     },
     fullscreenControl: true,
     fullscreenControlOptions: {

@@ -1,0 +1,118 @@
+.menu-item {
+  padding: 15px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+.menu-item h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.menu-item h3 {
+  margin: 10px 0;
+  font-size: 1em;
+  color: #666;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+
+.action-button:hover {
+  background: #45a049;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  color: #444;
+}
+
+input[type="checkbox"] {
+  margin: 0;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.radius-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-form input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.switch-auth {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 0.9em;
+}
+
+.switch-auth:hover {
+  text-decoration: underline;
+}
+
+.faq-item {
+  margin-bottom: 15px;
+}
+
+.faq-item h4 {
+  margin: 0 0 5px 0;
+  color: #444;
+}
+
+.faq-item p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.links a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
