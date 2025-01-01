@@ -54,6 +54,10 @@ function App() {
     mapTypeControl: true,
     mapTypeControlOptions: {
       position: window.google?.maps?.ControlPosition?.TOP_RIGHT
+    },
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
     }
   };
 
