@@ -27,6 +27,7 @@ const HamburgerMenu = () => {
             <li>Login/Signup</li>
             <li>Settings</li>
             <li>Help</li>
+            <li>Info</li>
             {/* Add more menu items as needed */}
           </ul>
         </div>
