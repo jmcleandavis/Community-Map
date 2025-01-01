@@ -116,3 +116,27 @@ input[type="range"] {
 .links a:hover {
   text-decoration: underline;
 }
+
+.developed-by {
+  margin: 15px 0;
+}
+
+.developer {
+  margin: 10px 0;
+}
+
+.developer p {
+  margin: 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.developer a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.developer a:hover {
+  text-decoration: underline;
+}
