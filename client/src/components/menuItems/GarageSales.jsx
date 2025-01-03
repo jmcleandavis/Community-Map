@@ -25,24 +25,13 @@ const GarageSales = () => {
   };
 
   return (
-    <div className="menu-item garage-sales">
+    <div 
+      className="menu-item garage-sales"
+      onClick={openGarageSalesList}
+      style={{ cursor: 'pointer' }}
+    >
       <h2>Garage Sales</h2>
       <div className="content">
-        <button 
-          className="action-button"
-          onClick={openGarageSalesList}
-        >
-          View All Sales
-        </button>
-        <div className="sale-filters">
-          <h3>Quick Filters</h3>
-          <label>
-            <input type="checkbox" /> Show Active Sales Only
-          </label>
-          <label>
-            <input type="checkbox" /> Within 5km
-          </label>
-        </div>
       </div>
     </div>
   );
