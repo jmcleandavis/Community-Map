@@ -145,10 +145,16 @@ function App() {
         const locations = await Promise.all(geocodePromises);
         const validLocations = locations.filter(location => location !== null);
         console.log('Final locations:', validLocations);
-        setGarageSales(validLocations);
         
-        // Store garage sales in localStorage
-        localStorage.setItem('garageSales', JSON.stringify(validLocations));
+        // Store garage sales in localStorage before setting state
+        try {
+          localStorage.setItem('garageSales', JSON.stringify(validLocations));
+          console.log('Stored garage sales in localStorage:', validLocations.length);
+        } catch (error) {
+          console.error('Error storing garage sales in localStorage:', error);
+        }
+        
+        setGarageSales(validLocations);
       } catch (error) {
         console.error('Error fetching garage sales:', error.response?.data || error.message);
       }

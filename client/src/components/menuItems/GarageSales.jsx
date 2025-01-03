@@ -8,14 +8,20 @@ const GarageSales = () => {
     const left = (window.screen.width - width) / 2;
     const top = (window.screen.height - height) / 2;
 
-    // Use the current origin to ensure we're using the correct development server
-    const windowUrl = `${window.location.origin}/garageSalesWindow.html`;
+    // Use the new garageSales.html entry point
+    const windowUrl = `${window.location.origin}/garageSales.html`;
     
-    window.open(
+    console.log('Opening garage sales window at:', windowUrl);
+    
+    const newWindow = window.open(
       windowUrl,
       'GarageSalesList',
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
     );
+
+    if (!newWindow) {
+      console.error('Failed to open garage sales window - popup might be blocked');
+    }
   };
 
   return (

@@ -3,61 +3,60 @@ import './GarageSalesList.css';
 
 const GarageSalesList = () => {
   const [garageSales, setGarageSales] = useState([]);
-  const [filter, setFilter] = useState('all'); // all, active, upcoming
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Read garage sales from localStorage
-    const loadGarageSales = () => {
+    try {
+      console.log('Component mounted, checking localStorage...');
+      
+      const keys = Object.keys(localStorage);
+      console.log('All localStorage keys:', keys);
+      
       const savedSales = localStorage.getItem('garageSales');
+      console.log('Raw garage sales data:', savedSales);
+      
       if (savedSales) {
-        setGarageSales(JSON.parse(savedSales));
+        const parsedSales = JSON.parse(savedSales);
+        console.log('Parsed garage sales:', parsedSales);
+        setGarageSales(parsedSales);
+      } else {
+        console.log('No garage sales found in localStorage');
+        setError('No garage sales data available');
       }
-    };
-
-    loadGarageSales();
-
-    // Set up event listener for storage changes
-    const handleStorageChange = (e) => {
-      if (e.key === 'garageSales') {
-        loadGarageSales();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    } catch (err) {
+      console.error('Error loading garage sales:', err);
+      setError(err.message);
+    }
   }, []);
 
-  const filteredSales = garageSales || [];
+  if (error) {
+    return (
+      <div className="garage-sales-standalone">
+        <div className="window-header">
+          <h2>Garage Sales</h2>
+        </div>
+        <div className="error-message">
+          Error: {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="garage-sales-standalone">
       <div className="window-header">
         <h2>Garage Sales</h2>
-      </div>
-
-      <div className="filters">
-        <select 
-          value={filter} 
-          onChange={(e) => setFilter(e.target.value)}
-          className="filter-select"
-        >
-          <option value="all">All Sales</option>
-          <option value="active">Active Sales</option>
-          <option value="upcoming">Upcoming Sales</option>
-        </select>
+        <p>Total Sales: {garageSales.length}</p>
       </div>
 
       <div className="sales-list">
-        {garageSales ? (
-          filteredSales.map((sale, index) => (
+        {garageSales.length > 0 ? (
+          garageSales.map((sale, index) => (
             <div key={index} className="sale-item">
               <h3>{sale.address}</h3>
-              <p className="date-time">{sale.date} | {sale.time}</p>
-              <p className="description">{sale.description}</p>
-              <span className={`status ${sale.status}`}>
-                {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
-              </span>
-              <p className="description">Location: ({sale.position.lat.toFixed(4)}, {sale.position.lng.toFixed(4)})</p>
+              <p className="description">
+                Location: ({sale.position.lat.toFixed(4)}, {sale.position.lng.toFixed(4)})
+              </p>
             </div>
           ))
         ) : (
