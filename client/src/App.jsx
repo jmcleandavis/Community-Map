@@ -4,6 +4,7 @@ import './App.css'
 import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
 import ReactDOM from 'react-dom';
 import HamburgerMenu from './components/HamburgerMenu';
+import GarageSalesList from './components/GarageSalesList';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -145,6 +146,9 @@ function App() {
         const validLocations = locations.filter(location => location !== null);
         console.log('Final locations:', validLocations);
         setGarageSales(validLocations);
+        
+        // Store garage sales in localStorage
+        localStorage.setItem('garageSales', JSON.stringify(validLocations));
       } catch (error) {
         console.error('Error fetching garage sales:', error.response?.data || error.message);
       }
@@ -280,4 +284,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

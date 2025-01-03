@@ -1,47 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import './GarageSalesList.css';
 
-const GarageSalesList = ({ onClose }) => {
-  const [sales, setSales] = useState([]);
-  const [loading, setLoading] = useState(true);
+const GarageSalesList = () => {
+  const [garageSales, setGarageSales] = useState([]);
   const [filter, setFilter] = useState('all'); // all, active, upcoming
 
   useEffect(() => {
-    // TODO: Fetch garage sales from your backend
-    // This is mock data for now
-    const mockSales = [
-      {
-        id: 1,
-        address: '123 Main St',
-        date: '2025-01-15',
-        time: '9:00 AM - 4:00 PM',
-        description: 'Moving sale! Everything must go!',
-        status: 'upcoming'
-      },
-      {
-        id: 2,
-        address: '456 Oak Ave',
-        date: '2025-01-02',
-        time: '8:00 AM - 2:00 PM',
-        description: 'Vintage furniture and collectibles',
-        status: 'active'
+    // Read garage sales from localStorage
+    const loadGarageSales = () => {
+      const savedSales = localStorage.getItem('garageSales');
+      if (savedSales) {
+        setGarageSales(JSON.parse(savedSales));
       }
-    ];
+    };
 
-    setSales(mockSales);
-    setLoading(false);
+    loadGarageSales();
+
+    // Set up event listener for storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === 'garageSales') {
+        loadGarageSales();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const filteredSales = sales.filter(sale => {
-    if (filter === 'all') return true;
-    return sale.status === filter;
-  });
+  const filteredSales = garageSales || [];
 
   return (
-    <div className="garage-sales-window">
+    <div className="garage-sales-standalone">
       <div className="window-header">
         <h2>Garage Sales</h2>
-        <button className="close-button" onClick={onClose}>&times;</button>
       </div>
 
       <div className="filters">
@@ -54,34 +45,23 @@ const GarageSalesList = ({ onClose }) => {
           <option value="active">Active Sales</option>
           <option value="upcoming">Upcoming Sales</option>
         </select>
-        <button className="add-sale-button">+ Add New Sale</button>
       </div>
 
       <div className="sales-list">
-        {loading ? (
-          <div className="loading">Loading sales...</div>
-        ) : filteredSales.length === 0 ? (
-          <div className="no-sales">No garage sales found</div>
-        ) : (
-          filteredSales.map(sale => (
-            <div key={sale.id} className="sale-card">
-              <div className="sale-header">
-                <h3>{sale.address}</h3>
-                <span className={`status ${sale.status}`}>
-                  {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
-                </span>
-              </div>
-              <div className="sale-details">
-                <p><strong>Date:</strong> {sale.date}</p>
-                <p><strong>Time:</strong> {sale.time}</p>
-                <p>{sale.description}</p>
-              </div>
-              <div className="sale-actions">
-                <button className="view-on-map">View on Map</button>
-                <button className="more-info">More Info</button>
-              </div>
+        {garageSales ? (
+          filteredSales.map((sale, index) => (
+            <div key={index} className="sale-item">
+              <h3>{sale.address}</h3>
+              <p className="date-time">{sale.date} | {sale.time}</p>
+              <p className="description">{sale.description}</p>
+              <span className={`status ${sale.status}`}>
+                {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
+              </span>
+              <p className="description">Location: ({sale.position.lat.toFixed(4)}, {sale.position.lng.toFixed(4)})</p>
             </div>
           ))
+        ) : (
+          <div className="loading">No garage sales found</div>
         )}
       </div>
     </div>
