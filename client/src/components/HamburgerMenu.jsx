@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './HamburgerMenu.css';
-import GarageSales from './menuItems/GarageSales';
+import GarageSales, { openGarageSalesList } from './menuItems/GarageSales';
 import MyLocation from './menuItems/MyLocation';
 import MapSettings from './menuItems/MapSettings';
 import Auth from './menuItems/Auth';
@@ -45,7 +45,13 @@ const HamburgerMenu = () => {
             {menuItems.map(({ id, label, component: Component }) => (
               <li 
                 key={id}
-                onClick={() => setActiveItem(activeItem === id ? null : id)}
+                onClick={() => {
+                  if (id === 'garage-sales') {
+                    openGarageSalesList();
+                  } else {
+                    setActiveItem(activeItem === id ? null : id);
+                  }
+                }}
                 className={activeItem === id ? 'active' : ''}
               >
                 {label}
