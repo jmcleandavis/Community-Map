@@ -109,9 +109,9 @@ function App() {
         }
 
         // Create Geocoding service
-        const geocodeAddress = async (address) => {
+        const geocodeAddress = async (addressData) => {
           try {
-            const fullAddress = `${address}, Pickering, ON, Canada`;
+            const fullAddress = `${addressData.address}, Pickering, ON, Canada`;
             console.log('Geocoding address:', fullAddress);
             
             const response = await geocodingApi.get('', {
@@ -124,7 +124,8 @@ function App() {
             if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
               const location = response.data.results[0].geometry.location;
               return {
-                address: address,
+                address: addressData.address,
+                description: addressData.description,
                 position: {
                   lat: location.lat,
                   lng: location.lng
@@ -134,13 +135,13 @@ function App() {
             console.warn(`Geocoding failed for address: ${fullAddress}`);
             return null;
           } catch (error) {
-            console.error(`Error geocoding address ${address}:`, error);
+            console.error(`Error geocoding address ${addressData.address}:`, error);
             return null;
           }
         };
 
         // Geocode all addresses using axios
-        const geocodePromises = addresses.map(address => geocodeAddress(address));
+        const geocodePromises = addresses.map(addressData => geocodeAddress(addressData));
 
         const locations = await Promise.all(geocodePromises);
         const validLocations = locations.filter(location => location !== null);
@@ -173,20 +174,18 @@ function App() {
     }
 
     // Create new marker
+    const div = document.createElement('div');
+    div.className = 'current-location-marker';
+    div.style.backgroundColor = '#4285F4';
+    div.style.borderRadius = '50%';
+    div.style.border = '2px solid #FFFFFF';
+    div.style.width = '16px';
+    div.style.height = '16px';
+
     const marker = new window.google.maps.marker.AdvancedMarkerElement({
       position,
       map,
-      title: "Your Location",
-      content: (() => {
-        const div = document.createElement('div');
-        div.className = 'current-location-marker';
-        div.style.backgroundColor = '#4285F4';
-        div.style.borderRadius = '50%';
-        div.style.border = '2px solid #FFFFFF';
-        div.style.width = '16px';
-        div.style.height = '16px';
-        return div;
-      })()
+      content: div
     });
 
     marker.addListener('click', () => setSelectedSale(null));
@@ -210,20 +209,18 @@ function App() {
 
     // Create new markers
     const newMarkers = garageSales.map(sale => {
+      const div = document.createElement('div');
+      div.className = 'garage-sale-marker';
+      div.style.backgroundColor = '#FF0000';
+      div.style.borderRadius = '50%';
+      div.style.border = '2px solid #FFFFFF';
+      div.style.width = '16px';
+      div.style.height = '16px';
+
       const marker = new window.google.maps.marker.AdvancedMarkerElement({
         position: sale.position,
         map,
-        title: sale.address,
-        content: (() => {
-          const div = document.createElement('div');
-          div.className = 'garage-sale-marker';
-          div.style.backgroundColor = '#FF0000';
-          div.style.borderRadius = '50%';
-          div.style.border = '2px solid #FFFFFF';
-          div.style.width = '16px';
-          div.style.height = '16px';
-          return div;
-        })()
+        content: div
       });
 
       marker.addListener('click', () => setSelectedSale(sale));
@@ -280,6 +277,7 @@ function App() {
                 <div>
                   <h3>Garage Sale</h3>
                   <p>{selectedSale.address}</p>
+                  <p>{selectedSale.description}</p>
                 </div>
               </InfoWindow>
             )}

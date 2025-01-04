@@ -25,7 +25,7 @@ app.get('/health', (req, res) => {
 app.get('/api/addresses', (req, res) => {
     try {
         console.log('Received request for addresses');
-        const filePath = path.join(__dirname, 'addresses.json');
+        const filePath = path.join(__dirname, 'addresses_with_unique_descriptions.json');
         console.log('Reading file from:', filePath);
         
         if (!fs.existsSync(filePath)) {
@@ -36,10 +36,16 @@ app.get('/api/addresses', (req, res) => {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         console.log('Raw file content:', fileContent);
 
-        const addresses = JSON.parse(fileContent);
-        console.log(`Successfully read ${addresses.length} addresses:`, addresses);
+        const addressesWithDescriptions = JSON.parse(fileContent);
+        console.log(`Successfully read ${addressesWithDescriptions.length} addresses:`, addressesWithDescriptions);
         
-        res.json(addresses);
+        // Transform the data to include both address and description
+        const formattedAddresses = addressesWithDescriptions.map(item => ({
+            address: item.Address,
+            description: item.Description
+        }));
+        
+        res.json(formattedAddresses);
     } catch (error) {
         console.error('Error processing request:', error);
         res.status(500).json({ error: error.message });

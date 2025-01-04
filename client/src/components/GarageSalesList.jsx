@@ -55,7 +55,7 @@ const GarageSalesList = () => {
             <div key={index} className="sale-item">
               <h3>{sale.address}</h3>
               <p className="description">
-                Location: ({sale.position.lat.toFixed(4)}, {sale.position.lng.toFixed(4)})
+                {sale.description}
               </p>
             </div>
           ))
