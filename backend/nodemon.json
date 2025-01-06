@@ -1,0 +1,6 @@
+{
+  "ignore": ["*.json", "*.txt", ".git", "node_modules/**/node_modules"],
+  "verbose": true,
+  "watch": ["server.js"],
+  "ext": "js"
+}

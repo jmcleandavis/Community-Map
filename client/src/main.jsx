@@ -1,15 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
-import GarageSalesWindow from './pages/GarageSalesWindow'
+import './index.css'
 
-// Determine which component to render based on the URL
-const isGarageSalesWindow = window.location.pathname.includes('garageSalesWindow');
-const Component = isGarageSalesWindow ? GarageSalesWindow : App;
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Component />
-  </StrictMode>,
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
 )

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './HamburgerMenu.css';
 import GarageSales, { openGarageSalesList } from './menuItems/GarageSales';
 import MyLocation from './menuItems/MyLocation';
@@ -6,11 +7,12 @@ import MapSettings from './menuItems/MapSettings';
 import Auth from './menuItems/Auth';
 import Settings from './menuItems/Settings';
 import Help from './menuItems/Help';
-import Info from './menuItems/Info';
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -19,15 +21,42 @@ const HamburgerMenu = () => {
     }
   };
 
+  const handleMapClick = () => {
+    navigate('/');
+    setIsOpen(false);
+  };
+
+  const handleInfoClick = () => {
+    navigate('/info');
+    setIsOpen(false);
+  };
+
+  const handleMyLocation = () => {
+    navigate('/my-location');
+    setIsOpen(false);
+  };
+
   const menuItems = [
-    { id: 'garage-sales', label: 'Garage Sales', component: GarageSales },
-    { id: 'my-location', label: 'My Location', component: MyLocation },
-    { id: 'map', label: 'Map', component: MapSettings },
-    { id: 'auth', label: 'Login/Signup', component: Auth },
-    { id: 'settings', label: 'Settings', component: Settings },
-    { id: 'help', label: 'Help', component: Help },
-    { id: 'info', label: 'Info', component: Info },
+    { id: 'map', label: 'Map', path: '/' },
+    { id: 'garage-sales', label: 'Garage Sales', path: '/sales' },
+    { id: 'my-location', label: 'My Location', onClick: handleMyLocation },
+    { id: 'map-settings', label: 'Map Settings', onClick: () => console.log('Map Settings clicked') },
+    { id: 'auth', label: 'Login/Signup', path: '/login' },
+    { id: 'settings', label: 'Settings', path: '/settings' },
+    { id: 'help', label: 'Help', path: '/help' },
+    { id: 'info', label: 'Info', path: '/info' }
   ];
+
+  const handleItemClick = (item) => {
+    if (item.onClick) {
+      item.onClick();
+    } else if (item.path) {
+      navigate(item.path);
+      setIsOpen(false);
+    } else {
+      setActiveItem(activeItem === item.id ? null : item.id);
+    }
+  };
 
   return (
     <div className="hamburger-container">
@@ -42,23 +71,24 @@ const HamburgerMenu = () => {
       {isOpen && (
         <div className="menu-content">
           <ul>
-            {menuItems.map(({ id, label, component: Component }) => (
+            {menuItems.map((item) => (
               <li 
-                key={id}
-                onClick={() => {
-                  if (id === 'garage-sales') {
-                    openGarageSalesList();
-                  } else {
-                    setActiveItem(activeItem === id ? null : id);
-                  }
-                }}
-                className={activeItem === id ? 'active' : ''}
+                key={item.id}
+                onClick={() => handleItemClick(item)}
+                className={activeItem === item.id ? 'active' : ''}
               >
-                {label}
-                {activeItem === id && <Component />}
+                {item.label}
               </li>
             ))}
           </ul>
+          {activeItem && !menuItems.find(item => item.id === activeItem)?.path && (
+            <div className="menu-item-content">
+              {(() => {
+                const Component = menuItems.find(item => item.id === activeItem)?.component;
+                return Component ? <Component /> : null;
+              })()}
+            </div>
+          )}
         </div>
       )}
     </div>
