@@ -15,7 +15,10 @@ const libraries = ['marker'];
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: 'http://localhost:3001',
-  timeout: 5000
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 function App() {
@@ -24,7 +27,246 @@ function App() {
   const [garageSales, setGarageSales] = useState([]);
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [center, setCenter] = useState({ lat: 43.5890, lng: -79.6441 });
+  const [addresses, setAddresses] = useState([]);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
   const markersRef = useRef([]);
+  const userMarkerRef = useRef(null);
+  const mapRef = useRef(null);
+
+  // Initial setup effect
+  useEffect(() => {
+    handleGetLocation();
+    fetchAddresses(); // Add this back to load initial addresses
+  }, []);
+
+  // Map load effect
+  useEffect(() => {
+    if (isLoaded && mapRef.current) {
+      console.log('Map is loaded, checking addresses');
+      if (addresses.length === 0) {
+        fetchAddresses();
+      }
+      
+      // Center map on first address if available
+      if (addresses.length > 0) {
+        const lat = parseFloat(addresses[0].lat);
+        const lng = parseFloat(addresses[0].lng);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          mapRef.current.setCenter({ lat, lng });
+          mapRef.current.setZoom(13);
+        }
+      }
+    }
+  }, [isLoaded, addresses]);
+
+  // Effect to manage markers
+  useEffect(() => {
+    if (isLoaded && mapRef.current && addresses.length > 0) {
+      // Clear existing markers
+      markersRef.current.forEach(marker => {
+        if (marker) {
+          marker.map = null;
+        }
+      });
+      markersRef.current = [];
+
+      // Create new markers
+      addresses.forEach(address => {
+        const lat = parseFloat(address.lat);
+        const lng = parseFloat(address.lng);
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const markerElement = document.createElement('div');
+          markerElement.className = 'garage-sale-marker';
+          markerElement.style.backgroundColor = '#FF0000';
+          markerElement.style.borderRadius = '50%';
+          markerElement.style.border = '2px solid #FFFFFF';
+          markerElement.style.width = '12px';
+          markerElement.style.height = '12px';
+
+          const marker = new window.google.maps.marker.AdvancedMarkerElement({
+            position: { lat, lng },
+            content: markerElement,
+            title: address.address,
+            map: mapRef.current
+          });
+
+          // Create info window for this marker
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div>
+                <h3>${address.address}</h3>
+                <p>${address.description}</p>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            // Close any open info windows
+            markersRef.current.forEach(m => {
+              if (m.infoWindow) {
+                m.infoWindow.close();
+              }
+            });
+            
+            infoWindow.open({
+              map: mapRef.current,
+              anchor: marker
+            });
+          });
+
+          marker.infoWindow = infoWindow;
+          markersRef.current.push(marker);
+        }
+      });
+
+      // Center map on first marker if available
+      if (addresses.length > 0) {
+        const lat = parseFloat(addresses[0].lat);
+        const lng = parseFloat(addresses[0].lng);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          mapRef.current.setCenter({ lat, lng });
+          mapRef.current.setZoom(13);
+        }
+      }
+    }
+  }, [isLoaded, addresses]);
+
+  // Remove markers when component unmounts
+  useEffect(() => {
+    return () => {
+      markersRef.current.forEach(marker => {
+        if (marker) {
+          marker.map = null;
+        }
+      });
+      markersRef.current = [];
+    };
+  }, []);
+
+  const onMapLoad = useCallback((map) => {
+    console.log('Map loaded, setting map ref');
+    mapRef.current = map;
+    setIsLoaded(true);
+  }, []);
+
+  const fetchAddresses = async () => {
+    try {
+      const selectedSalesStr = localStorage.getItem('selectedSales');
+      console.log('Retrieved from localStorage:', selectedSalesStr);
+      
+      if (selectedSalesStr) {
+        const selectedSales = JSON.parse(selectedSalesStr);
+        console.log('Parsed selected sales:', selectedSales);
+        if (Array.isArray(selectedSales) && selectedSales.length > 0) {
+          setAddresses(selectedSales);
+          localStorage.removeItem('selectedSales');
+        }
+      } else {
+        console.log('Fetching all addresses from API');
+        const response = await api.get('/api/addresses');
+        if (response.data && Array.isArray(response.data)) {
+          // Geocode addresses if they don't have coordinates
+          const geocodedAddresses = await Promise.all(
+            response.data.map(async (address) => {
+              if (!address.lat || !address.lng) {
+                try {
+                  const geocodeResponse = await api.get('/api/geocode', {
+                    params: { address: `${address.address}, Pickering, ON, Canada` }
+                  });
+                  
+                  if (geocodeResponse.data.status === 'OK' && 
+                      geocodeResponse.data.results && 
+                      geocodeResponse.data.results[0]) {
+                    const location = geocodeResponse.data.results[0].geometry.location;
+                    return {
+                      ...address,
+                      lat: location.lat,
+                      lng: location.lng
+                    };
+                  }
+                } catch (error) {
+                  console.error('Error geocoding address:', address.address, error);
+                }
+              }
+              return address;
+            })
+          );
+          setAddresses(geocodedAddresses);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+    }
+  };
+
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(userPos);
+          
+          // Create user location marker
+          if (userMarkerRef.current) {
+            userMarkerRef.current.map = null;
+          }
+
+          const markerElement = document.createElement('div');
+          markerElement.className = 'user-location-marker';
+          markerElement.style.backgroundColor = '#4285F4';
+          markerElement.style.borderRadius = '50%';
+          markerElement.style.border = '2px solid #FFFFFF';
+          markerElement.style.width = '16px';
+          markerElement.style.height = '16px';
+          markerElement.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.3)';
+
+          if (mapRef.current) {
+            userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
+              position: userPos,
+              content: markerElement,
+              title: 'Your Location',
+              map: mapRef.current,
+              zIndex: 1000 // Keep user marker on top
+            });
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  };
+
+  // Effect to update user location periodically
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (isLoaded) {
+        handleGetLocation();
+      }
+    }, 10000); // Update every 10 seconds
+
+    return () => {
+      clearInterval(intervalId);
+      if (userMarkerRef.current) {
+        userMarkerRef.current.map = null;
+      }
+    };
+  }, [isLoaded]);
+
+  // Effect to create user marker when map loads
+  useEffect(() => {
+    if (isLoaded && mapRef.current && userLocation) {
+      handleGetLocation();
+    }
+  }, [isLoaded, mapRef.current]);
 
   const clearMarkers = () => {
     markersRef.current.forEach(marker => {
@@ -33,172 +275,115 @@ function App() {
       }
     });
     markersRef.current = [];
+    
+    if (userMarkerRef.current) {
+      userMarkerRef.current.map = null;
+    }
   };
 
-  // Cleanup markers on unmount
-  useEffect(() => {
-    return () => {
-      clearMarkers();
-    };
-  }, []);
-
-  // Get current position
-  useEffect(() => {
-    if (!isLoaded || !window.google || !map) return;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          console.log('Current position:', pos);
-          setPosition(pos);
-          if (map) {
-            map.panTo(pos);
-          }
-
-          // Create current location marker
-          const div = document.createElement('div');
-          div.className = 'current-location-marker';
-          div.style.backgroundColor = '#4285F4';
-          div.style.borderRadius = '50%';
-          div.style.border = '2px solid #FFFFFF';
-          div.style.width = '16px';
-          div.style.height = '16px';
-
-          // Remove old current location marker if it exists
-          const currentLocationMarker = markersRef.current.find(m => m.title === 'Current Location');
-          if (currentLocationMarker) {
-            currentLocationMarker.map = null;
-            markersRef.current = markersRef.current.filter(m => m.title !== 'Current Location');
-          }
-
-          const marker = new window.google.maps.marker.AdvancedMarkerElement({
-            position: pos,
-            map,
-            content: div,
-            title: 'Current Location'
-          });
-
-          markersRef.current.push(marker);
-        },
-        (error) => {
-          console.error('Error getting current position:', error);
-        }
-      );
+  const fetchGarageSales = async () => {
+    if (!isLoaded || !window.google || !mapRef.current) {
+      console.log('Google Maps not yet loaded');
+      return;
     }
-  }, [isLoaded, map]);
 
-  // Fetch garage sale locations
-  useEffect(() => {
-    const fetchGarageSales = async () => {
-      if (!isLoaded || !window.google || !map) {
-        console.log('Google Maps not yet loaded');
+    try {
+      // Clear existing garage sale markers
+      markersRef.current = markersRef.current.filter(marker => {
+        if (marker.title === 'Current Location') {
+          return true; // Keep current location marker
+        }
+        marker.map = null; // Remove garage sale marker
+        return false;
+      });
+
+      // First check if server is healthy
+      await api.get('/health');
+      
+      console.log('Fetching addresses...');
+      const { data: addresses } = await api.get('/api/addresses');
+      console.log('Received addresses:', addresses);
+      
+      if (!addresses || addresses.length === 0) {
+        console.warn('No addresses received from server');
         return;
       }
 
-      try {
-        // Clear existing garage sale markers
-        markersRef.current = markersRef.current.filter(marker => {
-          if (marker.title === 'Current Location') {
-            return true; // Keep current location marker
-          }
-          marker.map = null; // Remove garage sale marker
-          return false;
-        });
+      // Create Geocoding service
+      const geocodeAddress = async (addressData) => {
+        try {
+          const fullAddress = `${addressData.address}, Pickering, ON, Canada`;
+          console.log('Geocoding address:', fullAddress);
+          
+          const response = await api.get('/api/geocode', {
+            params: {
+              address: fullAddress
+            }
+          });
 
-        // First check if server is healthy
-        await api.get('/health');
-        
-        console.log('Fetching addresses...');
-        const { data: addresses } = await api.get('/api/addresses');
-        console.log('Received addresses:', addresses);
-        
-        if (!addresses || addresses.length === 0) {
-          console.warn('No addresses received from server');
-          return;
-        }
-
-        // Create Geocoding service
-        const geocodeAddress = async (addressData) => {
-          try {
-            const fullAddress = `${addressData.address}, Pickering, ON, Canada`;
-            console.log('Geocoding address:', fullAddress);
+          if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+            const location = response.data.results[0].geometry.location;
             
-            const response = await api.get('/api/geocode', {
-              params: {
-                address: fullAddress
-              }
+            // Create marker element for garage sale
+            const markerElement = document.createElement('div');
+            markerElement.className = 'garage-sale-marker';
+            markerElement.style.backgroundColor = '#FF0000';
+            markerElement.style.borderRadius = '50%';
+            markerElement.style.border = '2px solid #FFFFFF';
+            markerElement.style.width = '12px';
+            markerElement.style.height = '12px';
+
+            const marker = new window.google.maps.marker.AdvancedMarkerElement({
+              position: {
+                lat: location.lat,
+                lng: location.lng
+              },
+              map: mapRef.current,
+              content: markerElement,
+              title: addressData.address
             });
 
-            if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-              const location = response.data.results[0].geometry.location;
-              
-              // Create marker element for garage sale
-              const markerElement = document.createElement('div');
-              markerElement.className = 'garage-sale-marker';
-              markerElement.style.backgroundColor = '#FF0000';
-              markerElement.style.borderRadius = '50%';
-              markerElement.style.border = '2px solid #FFFFFF';
-              markerElement.style.width = '12px';
-              markerElement.style.height = '12px';
-
-              const marker = new window.google.maps.marker.AdvancedMarkerElement({
+            marker.addListener('click', () => {
+              setSelectedSale({
                 position: {
                   lat: location.lat,
                   lng: location.lng
                 },
-                map,
-                content: markerElement,
-                title: addressData.address
-              });
-
-              marker.addListener('click', () => {
-                setSelectedSale({
-                  position: {
-                    lat: location.lat,
-                    lng: location.lng
-                  },
-                  address: addressData.address,
-                  description: addressData.description
-                });
-              });
-
-              markersRef.current.push(marker);
-
-              return {
                 address: addressData.address,
-                description: addressData.description,
-                position: {
-                  lat: location.lat,
-                  lng: location.lng
-                }
-              };
-            }
-            console.warn(`Geocoding failed for address: ${fullAddress}`);
-            return null;
-          } catch (error) {
-            console.error(`Error geocoding address ${addressData.address}:`, error);
-            return null;
+                description: addressData.description
+              });
+            });
+
+            markersRef.current.push(marker);
+
+            return {
+              address: addressData.address,
+              description: addressData.description,
+              position: {
+                lat: location.lat,
+                lng: location.lng
+              }
+            };
           }
-        };
+          console.warn(`Geocoding failed for address: ${fullAddress}`);
+          return null;
+        } catch (error) {
+          console.error(`Error geocoding address ${addressData.address}:`, error);
+          return null;
+        }
+      };
 
-        // Geocode all addresses
-        const geocodePromises = addresses.map(addressData => geocodeAddress(addressData));
-        const locations = await Promise.all(geocodePromises);
-        const validLocations = locations.filter(location => location !== null);
-        console.log('Final locations:', validLocations);
-        
-        setGarageSales(validLocations);
-      } catch (error) {
-        console.error('Error fetching garage sales:', error.response?.data || error.message);
-      }
-    };
-
-    fetchGarageSales();
-  }, [isLoaded, map]);
+      // Geocode all addresses
+      const geocodePromises = addresses.map(addressData => geocodeAddress(addressData));
+      const locations = await Promise.all(geocodePromises);
+      const validLocations = locations.filter(location => location !== null);
+      console.log('Final locations:', validLocations);
+      
+      setGarageSales(validLocations);
+    } catch (error) {
+      console.error('Error fetching garage sales:', error.response?.data || error.message);
+    }
+  };
 
   const mapContainerStyle = {
     width: '100%',
@@ -224,12 +409,6 @@ function App() {
     fullscreenControlOptions: {
       position: window.google?.maps?.ControlPosition?.TOP_RIGHT
     }
-  };
-
-  const onMapLoad = (map) => {
-    console.log('Map loaded');
-    setMap(map);
-    setIsLoaded(true);
   };
 
   return (
@@ -266,23 +445,11 @@ function App() {
               <div className="map-container">
                 <GoogleMap
                   mapContainerStyle={mapContainerStyle}
-                  center={position || defaultCenter}
-                  zoom={13}
+                  center={center}
+                  zoom={12}
                   options={mapOptions}
                   onLoad={onMapLoad}
                 >
-                  {selectedSale && (
-                    <InfoWindow
-                      position={selectedSale.position}
-                      onCloseClick={() => setSelectedSale(null)}
-                    >
-                      <div>
-                        <h3>Garage Sale</h3>
-                        <p>{selectedSale.address}</p>
-                        <p>{selectedSale.description}</p>
-                      </div>
-                    </InfoWindow>
-                  )}
                 </GoogleMap>
               </div>
             </>

@@ -65,21 +65,70 @@ function GarageSales() {
     }
   };
 
-  const handleViewSelected = () => {
-    const selectedSalesData = garageSales.filter(sale => selectedSales.has(sale.id));
-    localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
-    navigate('/');
+  const handleViewSelected = async () => {
+    const selectedSalesData = filteredSales.filter(sale => selectedSales.has(sale.id));
+    console.log('Selected sales before geocoding:', selectedSalesData);
+    
+    if (selectedSalesData.length > 0) {
+      try {
+        // Geocode each selected sale before storing
+        const geocodedSales = await Promise.all(selectedSalesData.map(async (sale) => {
+          const fullAddress = `${sale.address}, Pickering, ON, Canada`;
+          console.log('Geocoding address:', fullAddress);
+          
+          const response = await api.get('/api/geocode', {
+            params: { address: fullAddress }
+          });
+          console.log('Geocoding response:', response.data);
+          
+          if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+            const location = response.data.results[0].geometry.location;
+            // Ensure coordinates are stored as numbers
+            return {
+              ...sale,
+              lat: Number(location.lat),
+              lng: Number(location.lng)
+            };
+          }
+          return sale;
+        }));
+        
+        console.log('Storing geocoded sales:', geocodedSales);
+        localStorage.setItem('selectedSales', JSON.stringify(geocodedSales));
+        navigate('/');
+      } catch (error) {
+        console.error('Error geocoding selected sales:', error);
+      }
+    }
+  };
+
+  const handleViewOnMap = async (sale) => {
+    try {
+      const fullAddress = `${sale.address}, Pickering, ON, Canada`;
+      const response = await api.get('/api/geocode', {
+        params: { address: fullAddress }
+      });
+      
+      if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+        const location = response.data.results[0].geometry.location;
+        // Ensure coordinates are stored as numbers
+        const geocodedSale = {
+          ...sale,
+          lat: Number(location.lat),
+          lng: Number(location.lng)
+        };
+        localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error geocoding sale:', error);
+    }
   };
 
   const filteredSales = garageSales.filter(sale => 
     sale.address.toLowerCase().includes(searchTerm) ||
     sale.description.toLowerCase().includes(searchTerm)
   );
-
-  const handleViewOnMap = (sale) => {
-    localStorage.setItem('selectedSale', JSON.stringify(sale));
-    navigate('/');
-  };
 
   if (loading) {
     return (

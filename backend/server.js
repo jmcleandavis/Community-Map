@@ -11,7 +11,7 @@ const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 // Enable CORS for all routes
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Allow both localhost and IP
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://192.168.1.*:5173'], // Allow local network
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
     credentials: true

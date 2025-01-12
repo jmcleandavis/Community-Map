@@ -44,7 +44,7 @@ const HamburgerMenu = () => {
     { id: 'auth', label: 'Login/Signup', path: '/login' },
     { id: 'settings', label: 'Settings', path: '/settings' },
     { id: 'help', label: 'Help', path: '/help' },
-    { id: 'info', label: 'Info', path: '/info' }
+    { id: 'about', label: 'About', path: '/info' }
   ];
 
   const handleItemClick = (item) => {

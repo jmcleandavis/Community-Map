@@ -52,7 +52,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 
 /* Ensure buttons stay horizontal */
@@ -101,4 +101,33 @@
 .gm-fullscreen-control button {
   margin: 0 !important;
   padding: 0 8px !important;
+}
+
+.garage-sale-marker {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.garage-sale-marker:hover {
+  transform: scale(1.2);
+}
+
+.user-location-marker {
+  cursor: default;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
