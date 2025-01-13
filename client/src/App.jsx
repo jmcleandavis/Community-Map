@@ -35,10 +35,10 @@ function App() {
   const userMarkerRef = useRef(null);
   const mapRef = useRef(null);
 
-  // Initial setup effect
+  // Initial setup effect - get both location and addresses
   useEffect(() => {
     handleGetLocation();
-    fetchAddresses(); // Add this back to load initial addresses
+    fetchAddresses();
   }, []);
 
   // Map load effect
@@ -48,22 +48,14 @@ function App() {
       if (addresses.length === 0) {
         fetchAddresses();
       }
-      
-      // Center map on first address if available
-      if (addresses.length > 0) {
-        const lat = parseFloat(addresses[0].lat);
-        const lng = parseFloat(addresses[0].lng);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          mapRef.current.setCenter({ lat, lng });
-          mapRef.current.setZoom(13);
-        }
-      }
     }
-  }, [isLoaded, addresses]);
+  }, [isLoaded]);
 
   // Effect to manage markers
   useEffect(() => {
     if (isLoaded && mapRef.current && addresses.length > 0) {
+      console.log('Creating markers for addresses:', addresses);
+      
       // Clear existing markers
       markersRef.current.forEach(marker => {
         if (marker) {
@@ -122,29 +114,16 @@ function App() {
         }
       });
 
-      // Center map on first marker if available
-      if (addresses.length > 0) {
-        const lat = parseFloat(addresses[0].lat);
-        const lng = parseFloat(addresses[0].lng);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          mapRef.current.setCenter({ lat, lng });
-          mapRef.current.setZoom(13);
-        }
-      }
+      console.log('Created markers:', markersRef.current.length);
     }
   }, [isLoaded, addresses]);
 
-  // Remove markers when component unmounts
+  // Secondary effect for addresses - only center if no user location
   useEffect(() => {
-    return () => {
-      markersRef.current.forEach(marker => {
-        if (marker) {
-          marker.map = null;
-        }
-      });
-      markersRef.current = [];
-    };
-  }, []);
+    if (isLoaded && mapRef.current && !userLocation) {
+      fetchAddresses();
+    }
+  }, [isLoaded]);
 
   const onMapLoad = useCallback((map) => {
     console.log('Map loaded, setting map ref');
@@ -160,42 +139,35 @@ function App() {
       if (selectedSalesStr) {
         const selectedSales = JSON.parse(selectedSalesStr);
         console.log('Parsed selected sales:', selectedSales);
+        
         if (Array.isArray(selectedSales) && selectedSales.length > 0) {
-          setAddresses(selectedSales);
-          localStorage.removeItem('selectedSales');
+          // Ensure coordinates are numbers
+          const validSales = selectedSales.filter(sale => {
+            const lat = Number(sale.lat);
+            const lng = Number(sale.lng);
+            return !isNaN(lat) && !isNaN(lng);
+          });
+          
+          console.log('Valid sales with coordinates:', validSales);
+          if (validSales.length > 0) {
+            setAddresses(validSales);
+            localStorage.removeItem('selectedSales');
+            return;
+          }
         }
-      } else {
-        console.log('Fetching all addresses from API');
-        const response = await api.get('/api/addresses');
-        if (response.data && Array.isArray(response.data)) {
-          // Geocode addresses if they don't have coordinates
-          const geocodedAddresses = await Promise.all(
-            response.data.map(async (address) => {
-              if (!address.lat || !address.lng) {
-                try {
-                  const geocodeResponse = await api.get('/api/geocode', {
-                    params: { address: `${address.address}, Pickering, ON, Canada` }
-                  });
-                  
-                  if (geocodeResponse.data.status === 'OK' && 
-                      geocodeResponse.data.results && 
-                      geocodeResponse.data.results[0]) {
-                    const location = geocodeResponse.data.results[0].geometry.location;
-                    return {
-                      ...address,
-                      lat: location.lat,
-                      lng: location.lng
-                    };
-                  }
-                } catch (error) {
-                  console.error('Error geocoding address:', address.address, error);
-                }
-              }
-              return address;
-            })
-          );
-          setAddresses(geocodedAddresses);
-        }
+      }
+      
+      console.log('Fetching all addresses from API');
+      const response = await api.get('/api/sales');
+      if (response.data && Array.isArray(response.data)) {
+        console.log('Received addresses from API:', response.data);
+        // Map the addresses to include lowercase versions for display
+        const formattedAddresses = response.data.map(addr => ({
+          ...addr,
+          address: addr.Address,
+          description: addr.Description
+        }));
+        setAddresses(formattedAddresses);
       }
     } catch (error) {
       console.error('Error fetching addresses:', error);
@@ -211,6 +183,7 @@ function App() {
             lng: position.coords.longitude
           };
           setUserLocation(userPos);
+          setCenter(userPos); // Set center state
           
           // Create user location marker
           if (userMarkerRef.current) {
@@ -234,6 +207,10 @@ function App() {
               map: mapRef.current,
               zIndex: 1000 // Keep user marker on top
             });
+
+            // Center map on user location
+            mapRef.current.setCenter(userPos);
+            mapRef.current.setZoom(13);
           }
         },
         (error) => {
@@ -410,6 +387,22 @@ function App() {
       position: window.google?.maps?.ControlPosition?.TOP_RIGHT
     }
   };
+
+  // Remove markers when component unmounts
+  useEffect(() => {
+    return () => {
+      markersRef.current.forEach(marker => {
+        if (marker) {
+          marker.map = null;
+        }
+      });
+      markersRef.current = [];
+      
+      if (userMarkerRef.current) {
+        userMarkerRef.current.map = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="app">

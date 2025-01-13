@@ -73,7 +73,7 @@ function GarageSales() {
       try {
         // Geocode each selected sale before storing
         const geocodedSales = await Promise.all(selectedSalesData.map(async (sale) => {
-          const fullAddress = `${sale.address}, Pickering, ON, Canada`;
+          const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
           console.log('Geocoding address:', fullAddress);
           
           const response = await api.get('/api/geocode', {
@@ -83,12 +83,16 @@ function GarageSales() {
           
           if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
             const location = response.data.results[0].geometry.location;
-            // Ensure coordinates are stored as numbers
-            return {
+            // Store coordinates as numbers
+            const geocodedSale = {
               ...sale,
               lat: Number(location.lat),
-              lng: Number(location.lng)
+              lng: Number(location.lng),
+              address: sale.Address, // Add lowercase version for marker display
+              description: sale.Description
             };
+            console.log('Geocoded sale:', geocodedSale);
+            return geocodedSale;
           }
           return sale;
         }));
@@ -104,19 +108,25 @@ function GarageSales() {
 
   const handleViewOnMap = async (sale) => {
     try {
-      const fullAddress = `${sale.address}, Pickering, ON, Canada`;
+      const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
+      console.log('Geocoding single address:', fullAddress);
+      
       const response = await api.get('/api/geocode', {
         params: { address: fullAddress }
       });
+      console.log('Single geocoding response:', response.data);
       
       if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
         const location = response.data.results[0].geometry.location;
-        // Ensure coordinates are stored as numbers
+        // Store coordinates as numbers
         const geocodedSale = {
           ...sale,
           lat: Number(location.lat),
-          lng: Number(location.lng)
+          lng: Number(location.lng),
+          address: sale.Address, // Add lowercase version for marker display
+          description: sale.Description
         };
+        console.log('Storing single geocoded sale:', geocodedSale);
         localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
         navigate('/');
       }
@@ -126,8 +136,8 @@ function GarageSales() {
   };
 
   const filteredSales = garageSales.filter(sale => 
-    sale.address.toLowerCase().includes(searchTerm) ||
-    sale.description.toLowerCase().includes(searchTerm)
+    sale.Address.toLowerCase().includes(searchTerm) ||
+    sale.Description.toLowerCase().includes(searchTerm)
   );
 
   if (loading) {
@@ -201,8 +211,8 @@ function GarageSales() {
                 </label>
               </div>
               <div className="sale-content">
-                <h3>{sale.address}</h3>
-                <p>{sale.description}</p>
+                <h3>{sale.Address}</h3>
+                <p>{sale.Description}</p>
               </div>
               <button 
                 className="view-map-button"
