@@ -39,6 +39,7 @@ function App() {
   useEffect(() => {
     handleGetLocation();
     fetchAddresses();
+    fetchGarageSales();
   }, []);
 
   // Map load effect
