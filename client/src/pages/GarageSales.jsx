@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './GarageSales.css';
+import { useGarageSales } from '../context/GarageSalesContext';
 
 const api = axios.create({
   baseURL: 'http://localhost:3001',
@@ -9,59 +10,49 @@ const api = axios.create({
 });
 
 function GarageSales() {
-  const [garageSales, setGarageSales] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSales, setSelectedSales] = useState(new Set());
+  const {
+    garageSales,
+    loading,
+    error,
+    searchTerm,
+    selectedSales,
+    fetchGarageSales,
+    handleSearchChange,
+    handleCheckboxChange,
+    handleSelectAll,
+  } = useGarageSales();
+  
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchGarageSales();
   }, []);
 
-  const fetchGarageSales = async () => {
+  const handleViewOnMap = async (sale) => {
     try {
-      setLoading(true);
-      const { data: addresses } = await api.get('/api/addresses');
-      // Add a unique ID to each sale
-      const salesWithIds = addresses.map((sale, index) => ({
-        ...sale,
-        id: `sale-${index}`
-      }));
-      setGarageSales(salesWithIds);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load garage sales. Please try again later.');
-      console.error('Error fetching garage sales:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value.toLowerCase());
-  };
-
-  const handleCheckboxChange = (saleId) => {
-    setSelectedSales(prev => {
-      const newSelected = new Set(prev);
-      if (newSelected.has(saleId)) {
-        newSelected.delete(saleId);
-      } else {
-        newSelected.add(saleId);
+      const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
+      console.log('Geocoding single address:', fullAddress);
+      
+      const response = await api.get('/api/geocode', {
+        params: { address: fullAddress }
+      });
+      console.log('Single geocoding response:', response.data);
+      
+      if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+        const location = response.data.results[0].geometry.location;
+        const geocodedSale = {
+          ...sale,
+          lat: Number(location.lat),
+          lng: Number(location.lng),
+          address: sale.Address,
+          description: sale.Description
+        };
+        console.log('Storing single geocoded sale:', geocodedSale);
+        localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
+        navigate('/');
       }
-      return newSelected;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedSales.size === filteredSales.length) {
-      // If all are selected, unselect all
-      setSelectedSales(new Set());
-    } else {
-      // Select all filtered sales
-      setSelectedSales(new Set(filteredSales.map(sale => sale.id)));
+    } catch (error) {
+      console.error('Error geocoding sale:', error);
     }
   };
 
@@ -71,7 +62,6 @@ function GarageSales() {
     
     if (selectedSalesData.length > 0) {
       try {
-        // Geocode each selected sale before storing
         const geocodedSales = await Promise.all(selectedSalesData.map(async (sale) => {
           const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
           console.log('Geocoding address:', fullAddress);
@@ -83,12 +73,11 @@ function GarageSales() {
           
           if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
             const location = response.data.results[0].geometry.location;
-            // Store coordinates as numbers
             const geocodedSale = {
               ...sale,
               lat: Number(location.lat),
               lng: Number(location.lng),
-              address: sale.Address, // Add lowercase version for marker display
+              address: sale.Address,
               description: sale.Description
             };
             console.log('Geocoded sale:', geocodedSale);
@@ -103,35 +92,6 @@ function GarageSales() {
       } catch (error) {
         console.error('Error geocoding selected sales:', error);
       }
-    }
-  };
-
-  const handleViewOnMap = async (sale) => {
-    try {
-      const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
-      console.log('Geocoding single address:', fullAddress);
-      
-      const response = await api.get('/api/geocode', {
-        params: { address: fullAddress }
-      });
-      console.log('Single geocoding response:', response.data);
-      
-      if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-        const location = response.data.results[0].geometry.location;
-        // Store coordinates as numbers
-        const geocodedSale = {
-          ...sale,
-          lat: Number(location.lat),
-          lng: Number(location.lng),
-          address: sale.Address, // Add lowercase version for marker display
-          description: sale.Description
-        };
-        console.log('Storing single geocoded sale:', geocodedSale);
-        localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Error geocoding sale:', error);
     }
   };
 

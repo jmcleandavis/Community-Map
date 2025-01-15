@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import './App.css'
 import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
@@ -8,6 +8,7 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import GarageSales from './pages/GarageSales';
+import { GarageSalesProvider } from './context/GarageSalesContext';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -406,51 +407,55 @@ function App() {
   }, []);
 
   return (
-    <div className="app">
-      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
-        <Routes>
-          <Route path="/info" element={
-            <>
-              <HamburgerMenu />
-              <InfoPage />
-            </>
-          } />
-          <Route path="/help" element={
-            <>
-              <HamburgerMenu />
-              <Help />
-            </>
-          } />
-          <Route path="/login" element={
-            <>
-              <HamburgerMenu />
-              <Login />
-            </>
-          } />
-          <Route path="/sales" element={
-            <>
-              <HamburgerMenu />
-              <GarageSales />
-            </>
-          } />
-          <Route path="/" element={
-            <>
-              <HamburgerMenu />
-              <div className="map-container">
-                <GoogleMap
-                  mapContainerStyle={mapContainerStyle}
-                  center={center}
-                  zoom={12}
-                  options={mapOptions}
-                  onLoad={onMapLoad}
-                >
-                </GoogleMap>
-              </div>
-            </>
-          } />
-        </Routes>
-      </LoadScript>
-    </div>
+    <Router>
+      <GarageSalesProvider>
+        <div className="app">
+          <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
+            <Routes>
+              <Route path="/info" element={
+                <>
+                  <HamburgerMenu />
+                  <InfoPage />
+                </>
+              } />
+              <Route path="/help" element={
+                <>
+                  <HamburgerMenu />
+                  <Help />
+                </>
+              } />
+              <Route path="/login" element={
+                <>
+                  <HamburgerMenu />
+                  <Login />
+                </>
+              } />
+              <Route path="/sales" element={
+                <>
+                  <HamburgerMenu />
+                  <GarageSales />
+                </>
+              } />
+              <Route path="/" element={
+                <>
+                  <HamburgerMenu />
+                  <div className="map-container">
+                    <GoogleMap
+                      mapContainerStyle={mapContainerStyle}
+                      center={center}
+                      zoom={12}
+                      options={mapOptions}
+                      onLoad={onMapLoad}
+                    >
+                    </GoogleMap>
+                  </div>
+                </>
+              } />
+            </Routes>
+          </LoadScript>
+        </div>
+      </GarageSalesProvider>
+    </Router>
   );
 }
 
