@@ -1,15 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3001',
-  timeout: 5000
-});
-
-function GarageSales() {
+const GarageSales = () => {
   const {
     garageSales,
     loading,

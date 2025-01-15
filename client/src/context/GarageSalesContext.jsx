@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:3001',
-  timeout: 5000
-});
+import api from '../utils/api';
 
 const GarageSalesContext = createContext();
 
@@ -18,8 +13,8 @@ export function GarageSalesProvider({ children }) {
   const fetchGarageSales = async () => {
     try {
       setLoading(true);
-      const { data: addresses } = await api.get('/api/addresses');
-      const salesWithIds = addresses.map((sale, index) => ({
+      const { data } = await api.get('/api/sales');
+      const salesWithIds = data.map((sale, index) => ({
         ...sale,
         id: `sale-${index}`
       }));

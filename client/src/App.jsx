@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import axios from 'axios';
+import { Routes, Route } from 'react-router-dom';
+import api from './utils/api';
 import './App.css'
 import { GoogleMap, LoadScript, InfoWindow } from '@react-google-maps/api';
 import HamburgerMenu from './components/HamburgerMenu';
@@ -14,13 +14,13 @@ import { GarageSalesProvider } from './context/GarageSalesContext';
 const libraries = ['marker'];
 
 // Create axios instance with base URL
-const api = axios.create({
-  baseURL: 'http://localhost:3001',
-  timeout: 5000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+// const api = axios.create({
+//   baseURL: 'http://localhost:3001',
+//   timeout: 5000,
+//   headers: {
+//     'Content-Type': 'application/json'
+//   }
+// });
 
 function App() {
   const [map, setMap] = useState(null);
@@ -135,41 +135,10 @@ function App() {
 
   const fetchAddresses = async () => {
     try {
-      const selectedSalesStr = localStorage.getItem('selectedSales');
-      console.log('Retrieved from localStorage:', selectedSalesStr);
-      
-      if (selectedSalesStr) {
-        const selectedSales = JSON.parse(selectedSalesStr);
-        console.log('Parsed selected sales:', selectedSales);
-        
-        if (Array.isArray(selectedSales) && selectedSales.length > 0) {
-          // Ensure coordinates are numbers
-          const validSales = selectedSales.filter(sale => {
-            const lat = Number(sale.lat);
-            const lng = Number(sale.lng);
-            return !isNaN(lat) && !isNaN(lng);
-          });
-          
-          console.log('Valid sales with coordinates:', validSales);
-          if (validSales.length > 0) {
-            setAddresses(validSales);
-            localStorage.removeItem('selectedSales');
-            return;
-          }
-        }
-      }
-      
-      console.log('Fetching all addresses from API');
-      const response = await api.get('/api/sales');
-      if (response.data && Array.isArray(response.data)) {
-        console.log('Received addresses from API:', response.data);
-        // Map the addresses to include lowercase versions for display
-        const formattedAddresses = response.data.map(addr => ({
-          ...addr,
-          address: addr.Address,
-          description: addr.Description
-        }));
-        setAddresses(formattedAddresses);
+      const { data } = await api.get('/api/sales');
+      if (data && data.length > 0) {
+        setAddresses(data);
+        console.log('Fetched addresses:', data);
       }
     } catch (error) {
       console.error('Error fetching addresses:', error);
@@ -407,55 +376,53 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <GarageSalesProvider>
-        <div className="app">
-          <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
-            <Routes>
-              <Route path="/info" element={
-                <>
-                  <HamburgerMenu />
-                  <InfoPage />
-                </>
-              } />
-              <Route path="/help" element={
-                <>
-                  <HamburgerMenu />
-                  <Help />
-                </>
-              } />
-              <Route path="/login" element={
-                <>
-                  <HamburgerMenu />
-                  <Login />
-                </>
-              } />
-              <Route path="/sales" element={
-                <>
-                  <HamburgerMenu />
-                  <GarageSales />
-                </>
-              } />
-              <Route path="/" element={
-                <>
-                  <HamburgerMenu />
-                  <div className="map-container">
-                    <GoogleMap
-                      mapContainerStyle={mapContainerStyle}
-                      center={center}
-                      zoom={12}
-                      options={mapOptions}
-                      onLoad={onMapLoad}
-                    >
-                    </GoogleMap>
-                  </div>
-                </>
-              } />
-            </Routes>
-          </LoadScript>
-        </div>
-      </GarageSalesProvider>
-    </Router>
+    <div className="app">
+      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
+        <GarageSalesProvider>
+          <Routes>
+            <Route path="/info" element={
+              <>
+                <HamburgerMenu />
+                <InfoPage />
+              </>
+            } />
+            <Route path="/help" element={
+              <>
+                <HamburgerMenu />
+                <Help />
+              </>
+            } />
+            <Route path="/login" element={
+              <>
+                <HamburgerMenu />
+                <Login />
+              </>
+            } />
+            <Route path="/sales" element={
+              <>
+                <HamburgerMenu />
+                <GarageSales />
+              </>
+            } />
+            <Route path="/" element={
+              <>
+                <HamburgerMenu />
+                <div className="map-container">
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={center}
+                    zoom={12}
+                    options={mapOptions}
+                    onLoad={onMapLoad}
+                  >
+                  </GoogleMap>
+                </div>
+              </>
+            } />
+          </Routes>
+        </GarageSalesProvider>
+      </LoadScript>
+    </div>
   );
 }
 
