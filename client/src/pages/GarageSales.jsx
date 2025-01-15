@@ -136,8 +136,8 @@ function GarageSales() {
   };
 
   const filteredSales = garageSales.filter(sale => 
-    sale.Address.toLowerCase().includes(searchTerm) ||
-    sale.Description.toLowerCase().includes(searchTerm)
+    sale.address.toLowerCase().includes(searchTerm) ||
+    sale.description.toLowerCase().includes(searchTerm)
   );
 
   if (loading) {
@@ -211,8 +211,8 @@ function GarageSales() {
                 </label>
               </div>
               <div className="sale-content">
-                <h3>{sale.Address}</h3>
-                <p>{sale.Description}</p>
+                <h3>{sale.address}</h3>
+                <p>{sale.description}</p>
               </div>
               <button 
                 className="view-map-button"
