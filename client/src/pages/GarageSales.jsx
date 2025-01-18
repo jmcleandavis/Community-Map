@@ -39,15 +39,19 @@ const GarageSales = () => {
           ...sale,
           lat: Number(location.lat),
           lng: Number(location.lng),
-          address: sale.Address,
-          description: sale.Description
+          address: sale.Address || 'No Address Available',
+          description: sale.Description || 'No Description Available'
         };
         console.log('Storing single geocoded sale:', geocodedSale);
         localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
         navigate('/');
+      } else {
+        console.error('Failed to geocode address:', fullAddress);
+        alert('Failed to locate this address on the map. Please try again.');
       }
     } catch (error) {
       console.error('Error geocoding sale:', error);
+      alert('Error locating address on the map. Please try again.');
     }
   };
 
@@ -61,31 +65,43 @@ const GarageSales = () => {
           const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
           console.log('Geocoding address:', fullAddress);
           
-          const response = await api.get('/api/geocode', {
-            params: { address: fullAddress }
-          });
-          console.log('Geocoding response:', response.data);
-          
-          if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-            const location = response.data.results[0].geometry.location;
-            const geocodedSale = {
-              ...sale,
-              lat: Number(location.lat),
-              lng: Number(location.lng),
-              address: sale.Address,
-              description: sale.Description
-            };
-            console.log('Geocoded sale:', geocodedSale);
-            return geocodedSale;
+          try {
+            const response = await api.get('/api/geocode', {
+              params: { address: fullAddress }
+            });
+            console.log('Geocoding response:', response.data);
+            
+            if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
+              const location = response.data.results[0].geometry.location;
+              return {
+                ...sale,
+                lat: Number(location.lat),
+                lng: Number(location.lng),
+                address: sale.Address || 'No Address Available',
+                description: sale.Description || 'No Description Available'
+              };
+            }
+            console.warn(`Failed to geocode address: ${fullAddress}`);
+            return null;
+          } catch (error) {
+            console.error(`Error geocoding address ${fullAddress}:`, error);
+            return null;
           }
-          return sale;
         }));
         
-        console.log('Storing geocoded sales:', geocodedSales);
-        localStorage.setItem('selectedSales', JSON.stringify(geocodedSales));
-        navigate('/');
+        // Filter out any failed geocoding attempts
+        const validGeocodedSales = geocodedSales.filter(sale => sale !== null);
+        
+        if (validGeocodedSales.length > 0) {
+          console.log('Storing geocoded sales:', validGeocodedSales);
+          localStorage.setItem('selectedSales', JSON.stringify(validGeocodedSales));
+          navigate('/');
+        } else {
+          alert('Failed to locate any of the selected addresses on the map. Please try again.');
+        }
       } catch (error) {
         console.error('Error geocoding selected sales:', error);
+        alert('Error locating addresses on the map. Please try again.');
       }
     }
   };

@@ -68,10 +68,20 @@ function App() {
 
       // Create new markers
       addresses.forEach(address => {
+        if (!address.lat || !address.lng) {
+          console.warn('Address missing coordinates:', address);
+          return;
+        }
+
         const lat = parseFloat(address.lat);
         const lng = parseFloat(address.lng);
         
-        if (!isNaN(lat) && !isNaN(lng)) {
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn('Invalid coordinates for address:', address);
+          return;
+        }
+
+        try {
           const markerElement = document.createElement('div');
           markerElement.className = 'garage-sale-marker';
           markerElement.style.backgroundColor = '#FF0000';
@@ -99,24 +109,21 @@ function App() {
 
           marker.addListener('click', () => {
             // Close any open info windows
-            markersRef.current.forEach(m => {
-              if (m.infoWindow) {
-                m.infoWindow.close();
-              }
-            });
-            
+            if (selectedMarker) {
+              selectedMarker.close();
+            }
             infoWindow.open({
-              map: mapRef.current,
-              anchor: marker
+              anchor: marker,
+              map: mapRef.current
             });
+            setSelectedMarker(infoWindow);
           });
 
-          marker.infoWindow = infoWindow;
           markersRef.current.push(marker);
+        } catch (error) {
+          console.error('Error creating marker:', error);
         }
       });
-
-      console.log('Created markers:', markersRef.current.length);
     }
   }, [isLoaded, addresses]);
 
@@ -135,13 +142,22 @@ function App() {
 
   const fetchAddresses = async () => {
     try {
-      const { data } = await api.get('/api/sales');
+      console.log('Starting to fetch addresses...');
+      const { data } = await api.get('/api/addresses');
+      console.log('Received response from server:', data);
       if (data && data.length > 0) {
-        setAddresses(data);
-        console.log('Fetched addresses:', data);
+        // Transform data to ensure consistent property names
+        const formattedAddresses = data.map(addr => ({
+          ...addr,
+          address: addr.address || addr.Address,
+          description: addr.description || addr.Description
+        }));
+        setAddresses(formattedAddresses);
+        console.log('Fetched addresses:', formattedAddresses);
       }
     } catch (error) {
       console.error('Error fetching addresses:', error);
+      console.error('Error details:', error.response?.data || error.message);
     }
   };
 
