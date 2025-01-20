@@ -6,27 +6,16 @@ function MapView({ isLoaded }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const mapRef = useRef(null);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
+  const hasFetchedRef = useRef(false);
 
-  // Debug log for component render
-  console.log('MapView: Component rendered with:', { 
-    isLoaded, 
-    hasMapRef: !!mapRef.current,
-    garageSalesCount: garageSales?.length,
-    garageSales,
-    loading,
-    error
-  });
-
+  // Only fetch once when component mounts and map is loaded
   useEffect(() => {
-    if (isLoaded && !loading) {
-      console.log('MapView: Map is loaded and not loading, fetching garage sales...');
+    if (isLoaded && !hasFetchedRef.current) {
+      console.log('MapView: Initial fetch of garage sales...');
+      hasFetchedRef.current = true;
       fetchGarageSales();
     }
   }, [isLoaded, fetchGarageSales]);
-
-  useEffect(() => {
-    console.log('MapView: garageSales updated:', garageSales);
-  }, [garageSales]);
 
   const mapContainerStyle = {
     width: '100%',
@@ -57,8 +46,6 @@ function MapView({ isLoaded }) {
 
   // Render markers only if we have garage sales and they have position data
   const markers = garageSales?.map((sale, index) => {
-    console.log('MapView: Processing marker for sale:', sale);
-    
     if (!sale?.position?.lat || !sale?.position?.lng) {
       console.warn('MapView: Sale missing position data:', sale);
       return null;
@@ -75,8 +62,6 @@ function MapView({ isLoaded }) {
       />
     );
   }).filter(Boolean) || [];
-
-  console.log('MapView: Rendering map with markers:', markers.length);
 
   return (
     <>
@@ -108,5 +93,4 @@ function MapView({ isLoaded }) {
   );
 }
 
-// Make sure we're exporting as default
 export default MapView;

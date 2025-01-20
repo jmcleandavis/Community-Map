@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import api from '../utils/api';
 import { mockGarageSales } from '../utils/mockData';
 
@@ -11,7 +11,7 @@ export function GarageSalesProvider({ children }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSales, setSelectedSales] = useState(new Set());
 
-  const fetchGarageSales = async () => {
+  const fetchGarageSales = useCallback(async () => {
     try {
       setLoading(true);
       console.log('GarageSalesContext: Attempting to fetch garage sales from /api/addresses');
@@ -65,7 +65,7 @@ export function GarageSalesProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setError, setGarageSales]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
