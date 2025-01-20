@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import api from '../utils/api';
 import { mockGarageSales } from '../utils/mockData';
 
@@ -9,7 +9,17 @@ export function GarageSalesProvider({ children }) {
   const [loading, setLoading] = useState(false); // Start with false to avoid double fetch
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSales, setSelectedSales] = useState(new Set());
+  
+  // Initialize selectedSales from localStorage if available
+  const [selectedSales, setSelectedSales] = useState(() => {
+    const saved = localStorage.getItem('selectedSaleIds');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  // Persist selectedSales to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('selectedSaleIds', JSON.stringify([...selectedSales]));
+  }, [selectedSales]);
 
   const fetchGarageSales = useCallback(async () => {
     try {
