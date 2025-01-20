@@ -37,21 +37,19 @@ function App() {
   const mapRef = useRef(null);
 
   // Initial setup effect - get both location and addresses
-  useEffect(() => {
-    handleGetLocation();
-    fetchAddresses();
-    fetchGarageSales();
-  }, []);
+  // useEffect(() => {
+  //   fetchGarageSales();
+  // }, [isLoaded]);
 
   // Map load effect
   useEffect(() => {
     if (isLoaded && mapRef.current) {
       console.log('Map is loaded, checking addresses');
       if (addresses.length === 0) {
-        fetchAddresses();
+        console.log('No addresses to display');
       }
     }
-  }, [isLoaded]);
+  }, [isLoaded, addresses]);
 
   // Effect to manage markers
   useEffect(() => {
@@ -126,13 +124,6 @@ function App() {
       });
     }
   }, [isLoaded, addresses]);
-
-  // Secondary effect for addresses - only center if no user location
-  useEffect(() => {
-    if (isLoaded && mapRef.current && !userLocation) {
-      fetchAddresses();
-    }
-  }, [isLoaded]);
 
   const onMapLoad = useCallback((map) => {
     console.log('Map loaded, setting map ref');
