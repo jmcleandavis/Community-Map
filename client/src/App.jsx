@@ -36,11 +36,6 @@ function App() {
   const userMarkerRef = useRef(null);
   const mapRef = useRef(null);
 
-  // Initial setup effect - get both location and addresses
-  // useEffect(() => {
-  //   fetchGarageSales();
-  // }, [isLoaded]);
-
   // Map load effect
   useEffect(() => {
     if (isLoaded && mapRef.current) {
@@ -233,110 +228,6 @@ function App() {
     
     if (userMarkerRef.current) {
       userMarkerRef.current.map = null;
-    }
-  };
-
-  const fetchGarageSales = async () => {
-    if (!isLoaded || !window.google || !mapRef.current) {
-      console.log('Google Maps not yet loaded');
-      return;
-    }
-
-    try {
-      // Clear existing garage sale markers
-      markersRef.current = markersRef.current.filter(marker => {
-        if (marker.title === 'Current Location') {
-          return true; // Keep current location marker
-        }
-        marker.map = null; // Remove garage sale marker
-        return false;
-      });
-
-      // First check if server is healthy
-      await api.get('/health');
-      
-      console.log('Fetching addresses...');
-      const { data: addresses } = await api.get('/api/addresses');
-      console.log('Received addresses:', addresses);
-      
-      if (!addresses || addresses.length === 0) {
-        console.warn('No addresses received from server');
-        return;
-      }
-
-      // Create Geocoding service
-      const geocodeAddress = async (addressData) => {
-        try {
-          const fullAddress = `${addressData.address}, Pickering, ON, Canada`;
-          console.log('Geocoding address:', fullAddress);
-          
-          const response = await api.get('/api/geocode', {
-            params: {
-              address: fullAddress
-            }
-          });
-
-          if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-            const location = response.data.results[0].geometry.location;
-            
-            // Create marker element for garage sale
-            const markerElement = document.createElement('div');
-            markerElement.className = 'garage-sale-marker';
-            markerElement.style.backgroundColor = '#FF0000';
-            markerElement.style.borderRadius = '50%';
-            markerElement.style.border = '2px solid #FFFFFF';
-            markerElement.style.width = '12px';
-            markerElement.style.height = '12px';
-
-            const marker = new window.google.maps.marker.AdvancedMarkerElement({
-              position: {
-                lat: location.lat,
-                lng: location.lng
-              },
-              map: mapRef.current,
-              content: markerElement,
-              title: addressData.address
-            });
-
-            marker.addListener('click', () => {
-              setSelectedSale({
-                position: {
-                  lat: location.lat,
-                  lng: location.lng
-                },
-                address: addressData.address,
-                description: addressData.description
-              });
-            });
-
-            markersRef.current.push(marker);
-
-            return {
-              address: addressData.address,
-              description: addressData.description,
-              position: {
-                lat: location.lat,
-                lng: location.lng
-              }
-            };
-          }
-          console.warn(`Geocoding failed for address: ${fullAddress}`);
-          return null;
-        } catch (error) {
-          console.error(`Error geocoding address ${addressData.address}:`, error);
-          return null;
-        }
-      };
-
-      // Geocode all addresses
-      const geocodePromises = addresses.map(addressData => geocodeAddress(addressData));
-      const locations = await Promise.all(geocodePromises);
-      const validLocations = locations.filter(location => location !== null);
-      console.log('Final locations:', validLocations);
-      
-      setGarageSales(validLocations);
-    } catch (error) {
-      console.error('Error fetching garage sales:', error.response?.data || error.message);
     }
   };
 
