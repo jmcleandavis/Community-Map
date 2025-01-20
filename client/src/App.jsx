@@ -7,13 +7,34 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import GarageSales from './pages/GarageSales';
-import MapContainer from './components/MapContainer';
+import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
 
 function App() {
+  const mapContainerStyle = {
+    width: '100%',
+    height: '100vh'
+  };
+
+  const mapOptions = {
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapId: import.meta.env.VITE_GOOGLE_MAPS_ID,
+    streetViewControl: true,
+    mapTypeControl: true,
+    mapTypeControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
+      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR
+    },
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
+    }
+  };
+
   return (
     <div className="app">
       <GarageSalesProvider>
@@ -49,7 +70,12 @@ function App() {
             <Route path="/" element={
               <>
                 <HamburgerMenu />
-                <MapContainer />
+                <div className="map-container">
+                  <MapView 
+                    mapContainerStyle={mapContainerStyle}
+                    mapOptions={mapOptions}
+                  />
+                </div>
               </>
             } />
           </Routes>

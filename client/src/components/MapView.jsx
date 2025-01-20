@@ -1,12 +1,19 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 
-function MapView({ isLoaded }) {
+function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const mapRef = useRef(null);
+  const markersRef = useRef([]);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const hasFetchedRef = useRef(false);
+
+  const center = {
+    lat: 43.8384,
+    lng: -79.0868
+  };
 
   // Only fetch once when component mounts and map is loaded
   useEffect(() => {
@@ -17,51 +24,81 @@ function MapView({ isLoaded }) {
     }
   }, [isLoaded, fetchGarageSales]);
 
-  const mapContainerStyle = {
-    width: '100%',
-    height: '100vh'
-  };
-
-  const center = {
-    lat: 43.8384,
-    lng: -79.0868
-  };
-
-  const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: true,
-    styles: [
-      {
-        featureType: "poi",
-        elementType: "labels",
-        stylers: [{ visibility: "off" }]
-      }
-    ]
-  };
-
   const onMapLoad = useCallback((map) => {
     console.log('MapView: Map loaded and ref set');
     mapRef.current = map;
+    setIsLoaded(true);
   }, []);
 
-  // Render markers only if we have garage sales and they have position data
-  const markers = garageSales?.map((sale, index) => {
-    if (!sale?.position?.lat || !sale?.position?.lng) {
-      console.warn('MapView: Sale missing position data:', sale);
-      return null;
-    }
+  // Effect to manage markers
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current || !garageSales?.length) return;
 
-    return (
-      <Marker
-        key={sale.id || index}
-        position={sale.position}
-        onClick={() => {
-          console.log('MapView: Marker clicked:', sale);
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      if (marker) {
+        marker.map = null;
+      }
+    });
+    markersRef.current = [];
+
+    // Create new markers
+    garageSales.forEach((sale, index) => {
+      if (!sale?.position?.lat || !sale?.position?.lng) {
+        console.warn('MapView: Sale missing position data:', sale);
+        return;
+      }
+
+      try {
+        const markerElement = document.createElement('div');
+        markerElement.className = 'garage-sale-marker';
+        markerElement.style.backgroundColor = '#FF0000';
+        markerElement.style.borderRadius = '50%';
+        markerElement.style.border = '2px solid #FFFFFF';
+        markerElement.style.width = '12px';
+        markerElement.style.height = '12px';
+
+        const marker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: sale.position,
+          content: markerElement,
+          title: sale.address,
+          map: mapRef.current
+        });
+
+        // Create info window for this marker
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `
+            <div>
+              <h3>${sale.address}</h3>
+              <p>${sale.description || ''}</p>
+            </div>
+          `
+        });
+
+        marker.addListener('click', () => {
           setSelectedSale(sale);
-        }}
-      />
-    );
-  }).filter(Boolean) || [];
+          infoWindow.open({
+            anchor: marker,
+            map: mapRef.current
+          });
+        });
+
+        markersRef.current.push(marker);
+      } catch (error) {
+        console.error('Error creating marker:', error);
+      }
+    });
+
+    // Cleanup function
+    return () => {
+      markersRef.current.forEach(marker => {
+        if (marker) {
+          marker.map = null;
+        }
+      });
+      markersRef.current = [];
+    };
+  }, [isLoaded, garageSales]);
 
   return (
     <>
@@ -72,8 +109,6 @@ function MapView({ isLoaded }) {
         options={mapOptions}
         onLoad={onMapLoad}
       >
-        {markers}
-        
         {selectedSale && selectedSale.position && (
           <InfoWindow
             position={selectedSale.position}
@@ -81,14 +116,14 @@ function MapView({ isLoaded }) {
           >
             <div>
               <h3>{selectedSale.address}</h3>
-              <p>{selectedSale.description}</p>
+              <p>{selectedSale.description || ''}</p>
             </div>
           </InfoWindow>
         )}
       </GoogleMap>
       {loading && <div>Loading...</div>}
       {error && <div>Error: {error}</div>}
-      {!loading && !error && markers.length === 0 && <div>No addresses to display</div>}
+      {!loading && !error && (!garageSales || garageSales.length === 0) && <div>No addresses to display</div>}
     </>
   );
 }

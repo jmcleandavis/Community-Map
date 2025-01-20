@@ -21,15 +21,21 @@ export function GarageSalesProvider({ children }) {
         // Use the dynamic timeout function instead of regular get
         const response = await api.getAddressesWithDynamicTimeout();
         console.log('GarageSalesContext: Response from /api/addresses:', response.data);
-        data = response.data;
+        data = response.data.map(sale => ({
+          ...sale,
+          position: {
+            lat: parseFloat(sale.lat || sale.position?.lat),
+            lng: parseFloat(sale.lng || sale.position?.lng)
+          }
+        }));
       } catch (apiError) {
         console.log('GarageSalesContext: API call failed, using mock data. Error:', apiError.message);
         console.log('GarageSalesContext: Mock data:', mockGarageSales);
         data = mockGarageSales.map(sale => ({
           ...sale,
           position: {
-            lat: parseFloat(sale.position.lat),
-            lng: parseFloat(sale.position.lng)
+            lat: parseFloat(sale.position?.lat || sale.lat),
+            lng: parseFloat(sale.position?.lng || sale.lng)
           }
         }));
       }
@@ -39,7 +45,22 @@ export function GarageSalesProvider({ children }) {
         throw new Error('Invalid data format received');
       }
 
-      console.log('GarageSalesContext: Raw data before processing:', data);
+      // Validate and filter out items with invalid coordinates
+      data = data.filter(sale => {
+        const hasValidPosition = 
+          sale.position &&
+          !isNaN(sale.position.lat) && 
+          !isNaN(sale.position.lng) &&
+          sale.position.lat !== null &&
+          sale.position.lng !== null;
+        
+        if (!hasValidPosition) {
+          console.warn('GarageSalesContext: Filtered out sale with invalid position:', sale);
+        }
+        return hasValidPosition;
+      });
+
+      console.log('GarageSalesContext: Raw data after position processing:', data);
 
       // Add IDs to the sales data
       const salesWithIds = data.map((sale, index) => {
