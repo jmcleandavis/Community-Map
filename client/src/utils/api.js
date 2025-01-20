@@ -24,10 +24,10 @@ api.interceptors.response.use(
 );
 
 // Calculate timeout based on number of addresses
-// Base timeout of 30 seconds + 250ms per address
+// Base timeout of 60 seconds + 500ms per address
 const calculateTimeout = (addressCount) => {
-  const baseTimeout = 30000;  // 30 seconds base
-  const timePerAddress = 250; // 250ms per address
+  const baseTimeout = 60000;  // 60 seconds base
+  const timePerAddress = 500; // 500ms per address
   const timeout = baseTimeout + (addressCount * timePerAddress);
   console.log(`Calculated timeout: ${timeout}ms for ${addressCount} addresses`);
   return timeout;
