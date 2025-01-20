@@ -23,6 +23,9 @@ export function GarageSalesProvider({ children }) {
         console.log('GarageSalesContext: Response from /api/addresses:', response.data);
         data = response.data.map(sale => ({
           ...sale,
+          id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
+          Address: sale.Address || sale.address,
+          Description: sale.Description || sale.description,
           position: {
             lat: parseFloat(sale.lat || sale.position?.lat),
             lng: parseFloat(sale.lng || sale.position?.lng)
@@ -33,6 +36,9 @@ export function GarageSalesProvider({ children }) {
         console.log('GarageSalesContext: Mock data:', mockGarageSales);
         data = mockGarageSales.map(sale => ({
           ...sale,
+          id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
+          Address: sale.Address || sale.address,
+          Description: sale.Description || sale.description,
           position: {
             lat: parseFloat(sale.position?.lat || sale.lat),
             lng: parseFloat(sale.position?.lng || sale.lng)
@@ -61,20 +67,7 @@ export function GarageSalesProvider({ children }) {
       });
 
       console.log('GarageSalesContext: Raw data after position processing:', data);
-
-      // Add IDs to the sales data
-      const salesWithIds = data.map((sale, index) => {
-        const processedSale = {
-          ...sale,
-          id: `sale-${index}`
-        };
-        console.log(`GarageSalesContext: Processed sale ${index}:`, processedSale);
-        return processedSale;
-      });
-
-      console.log('GarageSalesContext: Final processed sales data:', salesWithIds);
-      console.log('GarageSalesContext: Updating garageSales state with:', salesWithIds);
-      setGarageSales(salesWithIds);
+      setGarageSales(data);
       setError(null);
     } catch (err) {
       console.error('GarageSalesContext: Error in fetchGarageSales:', err);

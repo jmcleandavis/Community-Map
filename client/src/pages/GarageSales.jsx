@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 
@@ -19,96 +18,42 @@ const GarageSales = () => {
   
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchGarageSales();
-  }, []);
-
-  const handleViewOnMap = async (sale) => {
-    try {
-      const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
-      console.log('Geocoding single address:', fullAddress);
-      
-      const response = await api.get('/api/geocode', {
-        params: { address: fullAddress }
-      });
-      console.log('Single geocoding response:', response.data);
-      
-      if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-        const location = response.data.results[0].geometry.location;
-        const geocodedSale = {
-          ...sale,
-          lat: Number(location.lat),
-          lng: Number(location.lng),
-          address: sale.Address || 'No Address Available',
-          description: sale.Description || 'No Description Available'
-        };
-        console.log('Storing single geocoded sale:', geocodedSale);
-        localStorage.setItem('selectedSales', JSON.stringify([geocodedSale]));
-        navigate('/');
-      } else {
-        console.error('Failed to geocode address:', fullAddress);
-        alert('Failed to locate this address on the map. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error geocoding sale:', error);
-      alert('Error locating address on the map. Please try again.');
-    }
+  const handleViewOnMap = (sale) => {
+    // Use the existing geocoded data
+    const saleToView = {
+      ...sale,
+      lat: sale.position.lat,
+      lng: sale.position.lng,
+      address: sale.Address,
+      description: sale.Description
+    };
+    
+    localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
+    navigate('/');
   };
 
-  const handleViewSelected = async () => {
-    const selectedSalesData = filteredSales.filter(sale => selectedSales.has(sale.id));
-    console.log('Selected sales before geocoding:', selectedSalesData);
-    
+  const handleViewSelected = () => {
+    const selectedSalesData = filteredSales
+      .filter(sale => selectedSales.has(sale.id))
+      .map(sale => ({
+        ...sale,
+        lat: sale.position.lat,
+        lng: sale.position.lng,
+        address: sale.Address,
+        description: sale.Description
+      }));
+
     if (selectedSalesData.length > 0) {
-      try {
-        const geocodedSales = await Promise.all(selectedSalesData.map(async (sale) => {
-          const fullAddress = `${sale.Address}, Pickering, ON, Canada`;
-          console.log('Geocoding address:', fullAddress);
-          
-          try {
-            const response = await api.get('/api/geocode', {
-              params: { address: fullAddress }
-            });
-            console.log('Geocoding response:', response.data);
-            
-            if (response.data.status === 'OK' && response.data.results && response.data.results[0]) {
-              const location = response.data.results[0].geometry.location;
-              return {
-                ...sale,
-                lat: Number(location.lat),
-                lng: Number(location.lng),
-                address: sale.Address || 'No Address Available',
-                description: sale.Description || 'No Description Available'
-              };
-            }
-            console.warn(`Failed to geocode address: ${fullAddress}`);
-            return null;
-          } catch (error) {
-            console.error(`Error geocoding address ${fullAddress}:`, error);
-            return null;
-          }
-        }));
-        
-        // Filter out any failed geocoding attempts
-        const validGeocodedSales = geocodedSales.filter(sale => sale !== null);
-        
-        if (validGeocodedSales.length > 0) {
-          console.log('Storing geocoded sales:', validGeocodedSales);
-          localStorage.setItem('selectedSales', JSON.stringify(validGeocodedSales));
-          navigate('/');
-        } else {
-          alert('Failed to locate any of the selected addresses on the map. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error geocoding selected sales:', error);
-        alert('Error locating addresses on the map. Please try again.');
-      }
+      localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
+      navigate('/');
+    } else {
+      alert('Please select at least one garage sale to view on the map.');
     }
   };
 
   const filteredSales = garageSales.filter(sale => 
-    sale.address.toLowerCase().includes(searchTerm) ||
-    sale.description.toLowerCase().includes(searchTerm)
+    (sale.Address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sale.Description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -148,10 +93,11 @@ const GarageSales = () => {
         <div className="selection-controls">
           <button 
             className="select-all-button"
-            onClick={handleSelectAll}
+            onClick={() => handleSelectAll(filteredSales)}
           >
             {selectedSales.size === filteredSales.length ? 'Unselect All' : 'Select All'}
           </button>
+          
           {selectedSales.size > 0 && (
             <button 
               className="view-selected-button"
@@ -182,8 +128,8 @@ const GarageSales = () => {
                 </label>
               </div>
               <div className="sale-content">
-                <h3>{sale.address}</h3>
-                <p>{sale.description}</p>
+                <h3>{sale.Address || 'No Address Available'}</h3>
+                <p>{sale.Description || 'No Description Available'}</p>
               </div>
               <button 
                 className="view-map-button"
@@ -202,6 +148,6 @@ const GarageSales = () => {
       </div>
     </div>
   );
-}
+};
 
 export default GarageSales;

@@ -27,11 +27,14 @@ function App() {
     mapTypeControl: true,
     mapTypeControlOptions: {
       position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
-      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR
+      style: window.google?.maps?.MapTypeControlStyle?.DROPDOWN_MENU
     },
     fullscreenControl: true,
     fullscreenControlOptions: {
       position: window.google?.maps?.ControlPosition?.TOP_RIGHT
+    },
+    zoomControlOptions: {
+      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
     }
   };
 
