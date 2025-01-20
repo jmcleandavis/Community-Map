@@ -30,22 +30,13 @@ export function GarageSalesProvider({ children }) {
         throw new Error('Invalid data format received');
       }
 
-      const salesWithIds = data.map((sale, index) => {
-        if (!sale.address && !sale.Address) {
-          console.warn('Sale missing address:', sale);
-        }
-        if (!sale.description && !sale.Description) {
-          console.warn('Sale missing description:', sale);
-        }
-        return {
-          ...sale,
-          id: `sale-${index}`,
-          // Handle both lowercase and uppercase property names
-          address: sale.address || sale.Address || 'No Address Available',
-          description: sale.description || sale.Description || 'No Description Available'
-        };
-      });
+      // Add IDs to the sales data
+      const salesWithIds = data.map((sale, index) => ({
+        ...sale,
+        id: `sale-${index}`
+      }));
 
+      console.log('Processed sales data:', salesWithIds);
       setGarageSales(salesWithIds);
       setError(null);
     } catch (err) {
@@ -59,6 +50,7 @@ export function GarageSalesProvider({ children }) {
         data: err.response?.data
       });
       setError(errorMessage);
+      setGarageSales([]); // Clear garage sales on error
     } finally {
       setLoading(false);
     }

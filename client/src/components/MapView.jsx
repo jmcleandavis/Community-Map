@@ -5,14 +5,29 @@ import { useGarageSales } from '../context/GarageSalesContext';
 function MapView({ isLoaded }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const mapRef = useRef(null);
-  const { fetchGarageSales, garageSales } = useGarageSales();
+  const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
+
+  // Debug log for component render
+  console.log('MapView render state:', { 
+    isLoaded, 
+    hasMapRef: !!mapRef.current,
+    garageSalesCount: garageSales?.length,
+    loading,
+    error
+  });
 
   useEffect(() => {
     if (isLoaded && mapRef.current) {
-      console.log('Map is loaded, fetching garage sales');
+      console.log('MapView: Fetching garage sales...');
       fetchGarageSales();
     }
   }, [isLoaded, fetchGarageSales]);
+
+  useEffect(() => {
+    if (garageSales?.length > 0) {
+      console.log('MapView: Garage sales updated:', garageSales);
+    }
+  }, [garageSales]);
 
   const mapContainerStyle = {
     width: '100%',
@@ -37,9 +52,27 @@ function MapView({ isLoaded }) {
   };
 
   const onMapLoad = useCallback((map) => {
-    console.log('Map loaded, setting map ref');
+    console.log('MapView: Map loaded and ref set');
     mapRef.current = map;
   }, []);
+
+  // Render markers only if we have garage sales and they have position data
+  const markers = garageSales?.map((sale, index) => {
+    if (!sale?.position?.lat || !sale?.position?.lng) {
+      console.warn('MapView: Sale missing position data:', sale);
+      return null;
+    }
+    return (
+      <Marker
+        key={sale.id || index}
+        position={sale.position}
+        onClick={() => {
+          console.log('MapView: Marker clicked:', sale);
+          setSelectedSale(sale);
+        }}
+      />
+    );
+  }).filter(Boolean);
 
   return (
     <GoogleMap
@@ -49,15 +82,9 @@ function MapView({ isLoaded }) {
       options={mapOptions}
       onLoad={onMapLoad}
     >
-      {garageSales.map((sale, index) => (
-        <Marker
-          key={index}
-          position={sale.position}
-          onClick={() => setSelectedSale(sale)}
-        />
-      ))}
+      {markers}
       
-      {selectedSale && (
+      {selectedSale && selectedSale.position && (
         <InfoWindow
           position={selectedSale.position}
           onCloseClick={() => setSelectedSale(null)}
