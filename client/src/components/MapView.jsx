@@ -5,15 +5,17 @@ import { useGarageSales } from '../context/GarageSalesContext';
 function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const mapRef = useRef(null);
-  const markersRef = useRef([]);
-  const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
-  const hasFetchedRef = useRef(false);
-
-  const center = {
+  const [userLocation, setUserLocation] = useState(null);
+  const [center, setCenter] = useState({
     lat: 43.8384,
     lng: -79.0868
-  };
+  });
+  
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+  const userMarkerRef = useRef(null);
+  const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
+  const hasFetchedRef = useRef(false);
 
   // Only fetch once when component mounts and map is loaded
   useEffect(() => {
@@ -29,6 +31,72 @@ function MapView({ mapContainerStyle, mapOptions }) {
     mapRef.current = map;
     setIsLoaded(true);
   }, []);
+
+  const handleGetLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(userPos);
+          setCenter(userPos);
+
+          // Create or update user location marker
+          if (userMarkerRef.current) {
+            userMarkerRef.current.map = null;
+          }
+
+          if (mapRef.current) {
+            const markerElement = document.createElement('div');
+            markerElement.className = 'user-location-marker';
+            markerElement.style.backgroundColor = '#4285F4';
+            markerElement.style.borderRadius = '50%';
+            markerElement.style.border = '2px solid #FFFFFF';
+            markerElement.style.width = '16px';
+            markerElement.style.height = '16px';
+            markerElement.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.3)';
+
+            userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
+              position: userPos,
+              content: markerElement,
+              title: 'Your Location',
+              map: mapRef.current,
+              zIndex: 1000 // Keep user marker on top
+            });
+
+            // Center map on user location
+            mapRef.current.setCenter(userPos);
+            mapRef.current.setZoom(13);
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  }, []);
+
+  // Effect to update user location periodically
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    handleGetLocation(); // Get initial location
+
+    const intervalId = setInterval(() => {
+      handleGetLocation();
+    }, 10000); // Update every 10 seconds
+
+    return () => {
+      clearInterval(intervalId);
+      if (userMarkerRef.current) {
+        userMarkerRef.current.map = null;
+      }
+    };
+  }, [isLoaded, handleGetLocation]);
 
   // Effect to manage markers
   useEffect(() => {
