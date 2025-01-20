@@ -8,19 +8,10 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import GarageSales from './pages/GarageSales';
-import { GarageSalesProvider } from './context/GarageSalesContext';
+import { GarageSalesProvider, useGarageSales } from './context/GarageSalesContext';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
-
-// Create axios instance with base URL
-// const api = axios.create({
-//   baseURL: 'http://localhost:3001',
-//   timeout: 5000,
-//   headers: {
-//     'Content-Type': 'application/json'
-//   }
-// });
 
 function App() {
   const [map, setMap] = useState(null);
@@ -35,6 +26,7 @@ function App() {
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const mapRef = useRef(null);
+  const { fetchGarageSales } = useGarageSales();
 
   // Map load effect
   useEffect(() => {
@@ -43,8 +35,9 @@ function App() {
       if (addresses.length === 0) {
         console.log('No addresses to display');
       }
+      fetchGarageSales();
     }
-  }, [isLoaded, addresses]);
+  }, [isLoaded, addresses, fetchGarageSales]);
 
   // Effect to manage markers
   useEffect(() => {
@@ -275,8 +268,8 @@ function App() {
 
   return (
     <div className="app">
-      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
-        <GarageSalesProvider>
+      <GarageSalesProvider>
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
           <Routes>
             <Route path="/info" element={
               <>
@@ -318,8 +311,8 @@ function App() {
               </>
             } />
           </Routes>
-        </GarageSalesProvider>
-      </LoadScript>
+        </LoadScript>
+      </GarageSalesProvider>
     </div>
   );
 }
