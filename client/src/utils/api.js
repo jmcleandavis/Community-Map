@@ -9,18 +9,35 @@ const api = axios.create({
   }
 });
 
+// Add response interceptor to handle errors
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('API Error:', {
+      message: error.message,
+      code: error.code,
+      response: error.response?.data,
+      timeout: error.config?.timeout
+    });
+    return Promise.reject(error);
+  }
+);
+
 // Calculate timeout based on number of addresses
 // Base timeout of 30 seconds + 250ms per address
 const calculateTimeout = (addressCount) => {
   const baseTimeout = 30000;  // 30 seconds base
   const timePerAddress = 250; // 250ms per address
-  return baseTimeout + (addressCount * timePerAddress);
+  const timeout = baseTimeout + (addressCount * timePerAddress);
+  console.log(`Calculated timeout: ${timeout}ms for ${addressCount} addresses`);
+  return timeout;
 };
 
 // Custom get method for addresses with dynamic timeout
 const getAddressesWithDynamicTimeout = async () => {
   try {
-    // First, get the count of addresses
+    // First, try to get the count of addresses
+    console.log('Fetching address count...');
     const countResponse = await api.get('/api/addresses/count');
     const addressCount = countResponse.data.count;
     
@@ -31,9 +48,19 @@ const getAddressesWithDynamicTimeout = async () => {
     // Make the main request with dynamic timeout
     return await axios.get(`${api.defaults.baseURL}/api/addresses`, {
       ...api.defaults,
-      timeout: dynamicTimeout
+      timeout: dynamicTimeout,
+      headers: api.defaults.headers
     });
   } catch (error) {
+    if (error.response?.status === 404) {
+      // If count endpoint doesn't exist, use a generous default timeout
+      console.log('Count endpoint not found, using default timeout of 60 seconds');
+      return await axios.get(`${api.defaults.baseURL}/api/addresses`, {
+        ...api.defaults,
+        timeout: 60000, // 60 seconds
+        headers: api.defaults.headers
+      });
+    }
     console.error('Error in getAddressesWithDynamicTimeout:', error);
     throw error;
   }

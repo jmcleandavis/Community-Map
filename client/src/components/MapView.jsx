@@ -12,22 +12,17 @@ function MapView({ isLoaded }) {
     isLoaded, 
     hasMapRef: !!mapRef.current,
     garageSalesCount: garageSales?.length,
+    garageSales,
     loading,
     error
   });
 
   useEffect(() => {
-    if (isLoaded && mapRef.current) {
-      console.log('MapView: Fetching garage sales...');
+    if (isLoaded && !loading) {
+      console.log('MapView: Map is loaded and not loading, fetching garage sales...');
       fetchGarageSales();
     }
   }, [isLoaded, fetchGarageSales]);
-
-  useEffect(() => {
-    if (garageSales?.length > 0) {
-      console.log('MapView: Garage sales updated:', garageSales);
-    }
-  }, [garageSales]);
 
   const mapContainerStyle = {
     width: '100%',
@@ -58,10 +53,13 @@ function MapView({ isLoaded }) {
 
   // Render markers only if we have garage sales and they have position data
   const markers = garageSales?.map((sale, index) => {
+    console.log('Processing marker for sale:', sale);
+    
     if (!sale?.position?.lat || !sale?.position?.lng) {
       console.warn('MapView: Sale missing position data:', sale);
       return null;
     }
+
     return (
       <Marker
         key={sale.id || index}
@@ -72,30 +70,37 @@ function MapView({ isLoaded }) {
         }}
       />
     );
-  }).filter(Boolean);
+  }).filter(Boolean) || [];
+
+  console.log('Rendering map with markers:', markers.length);
 
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center}
-      zoom={12}
-      options={mapOptions}
-      onLoad={onMapLoad}
-    >
-      {markers}
-      
-      {selectedSale && selectedSale.position && (
-        <InfoWindow
-          position={selectedSale.position}
-          onCloseClick={() => setSelectedSale(null)}
-        >
-          <div>
-            <h3>{selectedSale.address}</h3>
-            <p>{selectedSale.description}</p>
-          </div>
-        </InfoWindow>
-      )}
-    </GoogleMap>
+    <>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={12}
+        options={mapOptions}
+        onLoad={onMapLoad}
+      >
+        {markers}
+        
+        {selectedSale && selectedSale.position && (
+          <InfoWindow
+            position={selectedSale.position}
+            onCloseClick={() => setSelectedSale(null)}
+          >
+            <div>
+              <h3>{selectedSale.address}</h3>
+              <p>{selectedSale.description}</p>
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error}</div>}
+      {!loading && !error && markers.length === 0 && <div>No addresses to display</div>}
+    </>
   );
 }
 

@@ -6,7 +6,7 @@ const GarageSalesContext = createContext();
 
 export function GarageSalesProvider({ children }) {
   const [garageSales, setGarageSales] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false to avoid double fetch
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSales, setSelectedSales] = useState(new Set());
@@ -18,37 +18,47 @@ export function GarageSalesProvider({ children }) {
       let data;
       
       try {
-        const response = await api.get('/api/addresses');
+        // Use the dynamic timeout function instead of regular get
+        const response = await api.getAddressesWithDynamicTimeout();
         console.log('Response from /api/addresses:', response.data);
         data = response.data;
       } catch (apiError) {
-        console.warn('API call failed, using mock data:', apiError);
-        data = mockGarageSales;
+        console.log('API call failed, using mock data. Error:', apiError.message);
+        console.log('Mock data:', mockGarageSales);
+        data = mockGarageSales.map(sale => ({
+          ...sale,
+          position: {
+            lat: parseFloat(sale.position.lat),
+            lng: parseFloat(sale.position.lng)
+          }
+        }));
       }
 
       if (!data || !Array.isArray(data)) {
+        console.error('Invalid data format received:', data);
         throw new Error('Invalid data format received');
       }
 
-      // Add IDs to the sales data
-      const salesWithIds = data.map((sale, index) => ({
-        ...sale,
-        id: `sale-${index}`
-      }));
+      console.log('Raw data before processing:', data);
 
-      console.log('Processed sales data:', salesWithIds);
+      // Add IDs to the sales data
+      const salesWithIds = data.map((sale, index) => {
+        const processedSale = {
+          ...sale,
+          id: `sale-${index}`
+        };
+        console.log(`Processed sale ${index}:`, processedSale);
+        return processedSale;
+      });
+
+      console.log('Final processed sales data:', salesWithIds);
       setGarageSales(salesWithIds);
       setError(null);
     } catch (err) {
+      console.error('Error in fetchGarageSales:', err);
       const errorMessage = err.response 
         ? `Server error: ${err.response.status} - ${err.response.statusText}`
         : 'Failed to load garage sales. Please try again later.';
-      console.error('Error details:', {
-        message: err.message,
-        response: err.response,
-        status: err.response?.status,
-        data: err.response?.data
-      });
       setError(errorMessage);
       setGarageSales([]); // Clear garage sales on error
     } finally {
