@@ -14,17 +14,17 @@ export function GarageSalesProvider({ children }) {
   const fetchGarageSales = async () => {
     try {
       setLoading(true);
-      console.log('Attempting to fetch garage sales from /api/addresses');
+      console.log('GarageSalesContext: Attempting to fetch garage sales from /api/addresses');
       let data;
       
       try {
         // Use the dynamic timeout function instead of regular get
         const response = await api.getAddressesWithDynamicTimeout();
-        console.log('Response from /api/addresses:', response.data);
+        console.log('GarageSalesContext: Response from /api/addresses:', response.data);
         data = response.data;
       } catch (apiError) {
-        console.log('API call failed, using mock data. Error:', apiError.message);
-        console.log('Mock data:', mockGarageSales);
+        console.log('GarageSalesContext: API call failed, using mock data. Error:', apiError.message);
+        console.log('GarageSalesContext: Mock data:', mockGarageSales);
         data = mockGarageSales.map(sale => ({
           ...sale,
           position: {
@@ -35,11 +35,11 @@ export function GarageSalesProvider({ children }) {
       }
 
       if (!data || !Array.isArray(data)) {
-        console.error('Invalid data format received:', data);
+        console.error('GarageSalesContext: Invalid data format received:', data);
         throw new Error('Invalid data format received');
       }
 
-      console.log('Raw data before processing:', data);
+      console.log('GarageSalesContext: Raw data before processing:', data);
 
       // Add IDs to the sales data
       const salesWithIds = data.map((sale, index) => {
@@ -47,15 +47,16 @@ export function GarageSalesProvider({ children }) {
           ...sale,
           id: `sale-${index}`
         };
-        console.log(`Processed sale ${index}:`, processedSale);
+        console.log(`GarageSalesContext: Processed sale ${index}:`, processedSale);
         return processedSale;
       });
 
-      console.log('Final processed sales data:', salesWithIds);
+      console.log('GarageSalesContext: Final processed sales data:', salesWithIds);
+      console.log('GarageSalesContext: Updating garageSales state with:', salesWithIds);
       setGarageSales(salesWithIds);
       setError(null);
     } catch (err) {
-      console.error('Error in fetchGarageSales:', err);
+      console.error('GarageSalesContext: Error in fetchGarageSales:', err);
       const errorMessage = err.response 
         ? `Server error: ${err.response.status} - ${err.response.statusText}`
         : 'Failed to load garage sales. Please try again later.';
@@ -103,6 +104,8 @@ export function GarageSalesProvider({ children }) {
     setSelectedSales
   };
 
+  console.log('GarageSalesContext: Providing context with garageSales:', garageSales);
+
   return (
     <GarageSalesContext.Provider value={value}>
       {children}
@@ -115,5 +118,6 @@ export function useGarageSales() {
   if (context === undefined) {
     throw new Error('useGarageSales must be used within a GarageSalesProvider');
   }
+  console.log('useGarageSales hook: Returning context with garageSales:', context.garageSales);
   return context;
 }

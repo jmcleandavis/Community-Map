@@ -16,33 +16,28 @@ const libraries = ['marker'];
 function App() {
   const [map, setMap] = useState(null);
   const [position, setPosition] = useState(null);
-  const [garageSales, setGarageSales] = useState([]);
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [center, setCenter] = useState({ lat: 43.5890, lng: -79.6441 });
-  const [addresses, setAddresses] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const mapRef = useRef(null);
-  const { fetchGarageSales } = useGarageSales();
+  const { fetchGarageSales, garageSales } = useGarageSales();
 
   // Map load effect
   useEffect(() => {
     if (isLoaded && mapRef.current) {
-      console.log('Map is loaded, checking addresses');
-      if (addresses.length === 0) {
-        console.log('No addresses to display');
-      }
+      console.log('Map is loaded');
       fetchGarageSales();
     }
-  }, [isLoaded, addresses, fetchGarageSales]);
+  }, [isLoaded, fetchGarageSales]);
 
   // Effect to manage markers
   useEffect(() => {
-    if (isLoaded && mapRef.current && addresses.length > 0) {
-      console.log('Creating markers for addresses:', addresses);
+    if (isLoaded && mapRef.current && garageSales.length > 0) {
+      console.log('Creating markers for garage sales:', garageSales);
       
       // Clear existing markers
       markersRef.current.forEach(marker => {
@@ -53,17 +48,17 @@ function App() {
       markersRef.current = [];
 
       // Create new markers
-      addresses.forEach(address => {
-        if (!address.lat || !address.lng) {
-          console.warn('Address missing coordinates:', address);
+      garageSales.forEach(sale => {
+        if (!sale.lat || !sale.lng) {
+          console.warn('Sale missing coordinates:', sale);
           return;
         }
 
-        const lat = parseFloat(address.lat);
-        const lng = parseFloat(address.lng);
+        const lat = parseFloat(sale.lat);
+        const lng = parseFloat(sale.lng);
         
         if (isNaN(lat) || isNaN(lng)) {
-          console.warn('Invalid coordinates for address:', address);
+          console.warn('Invalid coordinates for sale:', sale);
           return;
         }
 
@@ -79,7 +74,7 @@ function App() {
           const marker = new window.google.maps.marker.AdvancedMarkerElement({
             position: { lat, lng },
             content: markerElement,
-            title: address.address,
+            title: sale.address,
             map: mapRef.current
           });
 
@@ -87,8 +82,8 @@ function App() {
           const infoWindow = new window.google.maps.InfoWindow({
             content: `
               <div>
-                <h3>${address.address}</h3>
-                <p>${address.description}</p>
+                <h3>${sale.address}</h3>
+                <p>${sale.description}</p>
               </div>
             `
           });
@@ -111,34 +106,13 @@ function App() {
         }
       });
     }
-  }, [isLoaded, addresses]);
+  }, [isLoaded, garageSales]);
 
   const onMapLoad = useCallback((map) => {
     console.log('Map loaded, setting map ref');
     mapRef.current = map;
     setIsLoaded(true);
   }, []);
-
-  const fetchAddresses = async () => {
-    try {
-      console.log('Starting to fetch addresses...');
-      const { data } = await api.get('/api/addresses');
-      console.log('Received response from server:', data);
-      if (data && data.length > 0) {
-        // Transform data to ensure consistent property names
-        const formattedAddresses = data.map(addr => ({
-          ...addr,
-          address: addr.address || addr.Address,
-          description: addr.description || addr.Description
-        }));
-        setAddresses(formattedAddresses);
-        console.log('Fetched addresses:', formattedAddresses);
-      }
-    } catch (error) {
-      console.error('Error fetching addresses:', error);
-      console.error('Error details:', error.response?.data || error.message);
-    }
-  };
 
   const handleGetLocation = () => {
     if (navigator.geolocation) {
