@@ -14,6 +14,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
+  const initialLocationSetRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const hasFetchedRef = useRef(false);
 
@@ -41,7 +42,16 @@ function MapView({ mapContainerStyle, mapOptions }) {
             lng: position.coords.longitude
           };
           setUserLocation(userPos);
-          setCenter(userPos);
+          
+          // Only set center and zoom on initial location fetch
+          if (!initialLocationSetRef.current) {
+            setCenter(userPos);
+            if (mapRef.current) {
+              mapRef.current.setCenter(userPos);
+              mapRef.current.setZoom(13);
+              initialLocationSetRef.current = true;
+            }
+          }
 
           // Create or update user location marker
           if (userMarkerRef.current) {
@@ -65,10 +75,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
               map: mapRef.current,
               zIndex: 1000 // Keep user marker on top
             });
-
-            // Center map on user location
-            mapRef.current.setCenter(userPos);
-            mapRef.current.setZoom(13);
           }
         },
         (error) => {
