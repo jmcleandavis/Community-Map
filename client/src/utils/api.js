@@ -1,72 +1,118 @@
 import axios from 'axios';
 
-// Base API configuration
-const api = axios.create({
-  baseURL: 'http://localhost:3001',
-  timeout: 30000,  // Default timeout of 30 seconds
+// Session API configuration
+const sessionApi = axios.create({
+  baseURL: 'https://br-session-api-dev001-207215937730.us-central1.run.app',
+  timeout: 30000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'app-name': 'web-service',
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY
+  }
+});
+
+// Maps API configuration
+const mapsApi = axios.create({
+  baseURL: 'https://br-maps-mgt-api-dev001-207215937730.us-central1.run.app',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'app-key': import.meta.env.VITE_APP_API_MAP_KEY
   }
 });
 
 // Add response interceptor to handle errors
-api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API Error:', {
-      message: error.message,
-      code: error.code,
-      response: error.response?.data,
-      timeout: error.config?.timeout
-    });
-    return Promise.reject(error);
-  }
-);
-
-// Calculate timeout based on number of addresses
-// Base timeout of 60 seconds + 500ms per address
-const calculateTimeout = (addressCount) => {
-  const baseTimeout = 60000;  // 60 seconds base
-  const timePerAddress = 500; // 500ms per address
-  const timeout = baseTimeout + (addressCount * timePerAddress);
-  console.log(`Calculated timeout: ${timeout}ms for ${addressCount} addresses`);
-  return timeout;
+const errorInterceptor = error => {
+  console.error('API Error:', {
+    message: error.message,
+    code: error.code,
+    response: error.response?.data,
+    timeout: error.config?.timeout
+  });
+  return Promise.reject(error);
 };
 
-// Custom get method for addresses with dynamic timeout
-const getAddressesWithDynamicTimeout = async () => {
+sessionApi.interceptors.response.use(response => response, errorInterceptor);
+mapsApi.interceptors.response.use(response => response, errorInterceptor);
+
+// Create a new session
+const createSession = async () => {
   try {
-    // First, try to get the count of addresses
-    console.log('Fetching address count...');
-    const countResponse = await api.get('/api/addresses/count');
-    const addressCount = countResponse.data.count;
-    
-    // Calculate appropriate timeout
-    const dynamicTimeout = calculateTimeout(addressCount);
-    console.log(`Setting timeout to ${dynamicTimeout}ms for ${addressCount} addresses`);
-    
-    // Make the main request with dynamic timeout
-    return await axios.get(`${api.defaults.baseURL}/api/addresses`, {
-      ...api.defaults,
-      timeout: dynamicTimeout,
-      headers: api.defaults.headers
-    });
-  } catch (error) {
-    if (error.response?.status === 404) {
-      // If count endpoint doesn't exist, use a generous default timeout
-      console.log('Count endpoint not found, using default timeout of 60 seconds');
-      return await axios.get(`${api.defaults.baseURL}/api/addresses`, {
-        ...api.defaults,
-        timeout: 60000, // 60 seconds
-        headers: api.defaults.headers
-      });
+    console.log('Creating new session...');
+    const response = await sessionApi.post('/createSession');
+    console.log('Create session response:', response);
+    if (!response.data || !response.data.sessionId) {
+      throw new Error('No sessionId received from createSession');
     }
-    console.error('Error in getAddressesWithDynamicTimeout:', error);
+    const sessionId = response.data.sessionId;
+    console.log('New session created:', sessionId);
+    localStorage.setItem('sessionId', sessionId);
+    return sessionId;
+  } catch (error) {
+    console.error('Error creating session:', error);
     throw error;
   }
 };
 
-// Add the custom method to the api object
-api.getAddressesWithDynamicTimeout = getAddressesWithDynamicTimeout;
+// Verify session is valid
+const verifySession = async (sessionId) => {
+  try {
+    console.log('Verifying session:', sessionId);
+    const response = await sessionApi.get(`/getSessionDetailsById/${sessionId}`);
+    console.log('Session verification response:', response);
+    return true;
+  } catch (error) {
+    console.error('Session verification failed:', error);
+    return false;
+  }
+};
+
+// Get or create session ID
+const getSessionId = async () => {
+  const storedSessionId = localStorage.getItem('sessionId');
+  if (storedSessionId) {
+    console.log('Found stored session:', storedSessionId);
+    const isValid = await verifySession(storedSessionId);
+    if (isValid) {
+      console.log('Stored session is valid');
+      return storedSessionId;
+    }
+    console.log('Stored session is invalid, creating new one...');
+    localStorage.removeItem('sessionId');
+  }
+  return await createSession();
+};
+
+// Custom get method for addresses
+const getAddresses = async () => {
+  try {
+    console.log('Fetching addresses from backend...');
+    
+    // Ensure we have a valid session
+    const sessionId = await getSessionId();
+    console.log('Using sessionId for request:', sessionId);
+    
+    // Add sessionId to headers
+    const response = await mapsApi.get('/getAddressList', {
+      headers: {
+        'sessionId': sessionId
+      }
+    });
+    
+    console.log('Response from backend:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error fetching addresses:', error);
+    throw error;
+  }
+};
+
+// Add the custom methods to the api object
+const api = {
+  createSession,
+  getSessionId,
+  verifySession,
+  getAddresses
+};
 
 export default api;

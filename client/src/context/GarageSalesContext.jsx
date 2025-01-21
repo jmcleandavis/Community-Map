@@ -24,36 +24,38 @@ export function GarageSalesProvider({ children }) {
   const fetchGarageSales = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('GarageSalesContext: Attempting to fetch garage sales from /api/addresses');
+      console.log('GarageSalesContext: Checking localStorage for cached data...');
+      
+      // Try to get cached data first
+      const cachedData = localStorage.getItem('garageSales');
+      if (cachedData) {
+        const parsedData = JSON.parse(cachedData);
+        console.log('GarageSalesContext: Found cached data:', parsedData);
+        setGarageSales(parsedData);
+        setLoading(false);
+        return;
+      }
+
+      console.log('GarageSalesContext: No cached data found, fetching from API...');
       let data;
       
       try {
-        // Use the dynamic timeout function instead of regular get
-        const response = await api.getAddressesWithDynamicTimeout();
-        console.log('GarageSalesContext: Response from /api/addresses:', response.data);
+        const response = await api.getAddresses();
+        console.log('GarageSalesContext: Response from getAddressList:', response.data);
+        
+        // Map the response data to our expected format
         data = response.data.map(sale => ({
-          ...sale,
           id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
-          Address: sale.Address || sale.address,
-          Description: sale.Description || sale.description,
+          Address: sale.address,
+          Description: sale.description,
           position: {
-            lat: parseFloat(sale.lat || sale.position?.lat),
-            lng: parseFloat(sale.lng || sale.position?.lng)
+            lat: parseFloat(sale.latitude),
+            lng: parseFloat(sale.longitude)
           }
         }));
       } catch (apiError) {
-        console.log('GarageSalesContext: API call failed, using mock data. Error:', apiError.message);
-        console.log('GarageSalesContext: Mock data:', mockGarageSales);
-        data = mockGarageSales.map(sale => ({
-          ...sale,
-          id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
-          Address: sale.Address || sale.address,
-          Description: sale.Description || sale.description,
-          position: {
-            lat: parseFloat(sale.position?.lat || sale.lat),
-            lng: parseFloat(sale.position?.lng || sale.lng)
-          }
-        }));
+        console.error('GarageSalesContext: API call failed:', apiError.message);
+        throw apiError;
       }
 
       if (!data || !Array.isArray(data)) {
@@ -77,6 +79,11 @@ export function GarageSalesProvider({ children }) {
       });
 
       console.log('GarageSalesContext: Raw data after position processing:', data);
+      
+      // Cache the processed data in localStorage
+      localStorage.setItem('garageSales', JSON.stringify(data));
+      console.log('GarageSalesContext: Data cached in localStorage');
+      
       setGarageSales(data);
       setError(null);
     } catch (err) {
