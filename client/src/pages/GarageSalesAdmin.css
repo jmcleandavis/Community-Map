@@ -23,17 +23,16 @@
   cursor: not-allowed;
 }
 
-.add-sale-form {
-  background-color: #f9f9f9;
+.garage-sales-admin {
   padding: 20px;
-  border-radius: 8px;
-  margin: 20px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.add-sale-form h2 {
-  margin-top: 0;
-  color: #333;
+.add-sale-form {
+  margin-bottom: 30px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -43,41 +42,39 @@
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  color: #666;
+  font-weight: 500;
+  color: #333;
 }
 
 .form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  height: 100px;
-}
-
 .form-group textarea,
 .form-group .description-input {
-  width: 100%;
+  width: 500px;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   line-height: 1.5;
-  min-height: 60px;
+  min-height: 120px;
+  height: 120px;
   transition: border-color 0.3s ease;
-  resize: both; /* Allow both horizontal and vertical resizing */
+  resize: vertical;
 }
 
+/* Special styles just for the regular input */
+.form-group input {
+  min-height: auto;
+  height: auto;
+}
+
+.form-group textarea:focus,
 .form-group .description-input:focus {
   border-color: #4CAF50;
   outline: none;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
+.form-group textarea::placeholder,
 .form-group .description-input::placeholder {
   color: #999;
 }
@@ -89,11 +86,12 @@
 }
 
 .form-buttons button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
 }
 
 .form-buttons button[type="submit"] {
@@ -101,9 +99,17 @@
   color: white;
 }
 
+.form-buttons button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
 .form-buttons button[type="button"] {
-  background-color: #f44336;
-  color: white;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.form-buttons button[type="button"]:hover {
+  background-color: #e8e8e8;
 }
 
 .sale-actions {
@@ -115,10 +121,11 @@
 .delete-button {
   background-color: #f44336;
   color: white;
-  padding: 6px 12px;
   border: none;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .delete-button:hover {

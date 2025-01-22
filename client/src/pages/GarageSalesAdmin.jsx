@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './GarageSales.css';
+import './GarageSalesAdmin.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 
@@ -86,7 +86,7 @@ const GarageSalesAdmin = () => {
 
   if (loading) {
     return (
-      <div className="garage-sales-container">
+      <div className="garage-sales-admin">
         <div className="loading">Loading garage sales...</div>
       </div>
     );
@@ -94,7 +94,7 @@ const GarageSalesAdmin = () => {
 
   if (error) {
     return (
-      <div className="garage-sales-container">
+      <div className="garage-sales-admin">
         <div className="error">{error}</div>
         <button className="retry-button" onClick={fetchGarageSales}>
           Retry
@@ -104,17 +104,13 @@ const GarageSalesAdmin = () => {
   }
 
   return (
-    <div className="garage-sales-container">
+    <div className="garage-sales-admin">
       <h1>Garage Sales Administration</h1>
       
       <div className="admin-controls">
-        <button 
-          className="add-new-button"
-          onClick={handleAddNew}
-          disabled={isAddingNew}
-        >
-          Add New Garage Sale
-        </button>
+        {!isAddingNew && (
+          <button onClick={handleAddNew}>Add New Garage Sale</button>
+        )}
       </div>
 
       {isAddingNew && (
