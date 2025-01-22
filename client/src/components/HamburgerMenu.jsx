@@ -7,12 +7,14 @@ import MapSettings from './menuItems/MapSettings';
 import Auth from './menuItems/Auth';
 import Settings from './menuItems/Settings';
 import Help from './menuItems/Help';
+import { useAuth } from '../context/AuthContext';
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -36,12 +38,24 @@ const HamburgerMenu = () => {
     setIsOpen(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const menuItems = [
     { id: 'map', label: 'Map', path: '/' },
     { id: 'garage-sales', label: 'Garage Sales', path: '/sales' },
     { id: 'my-location', label: 'My Location', onClick: handleMyLocation },
     { id: 'map-settings', label: 'Map Settings', onClick: () => console.log('Map Settings clicked') },
-    { id: 'auth', label: 'Login/Signup', path: '/login' },
+    isAuthenticated
+      ? { id: 'logout', label: 'Logout', onClick: handleLogout }
+      : { id: 'auth', label: 'Login/Signup', path: '/login' },
     { id: 'settings', label: 'Settings', path: '/settings' },
     { id: 'help', label: 'Help', path: '/help' },
     { id: 'about', label: 'About', path: '/info' }

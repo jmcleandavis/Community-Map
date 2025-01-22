@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import GarageSales from './pages/GarageSales';
 import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -39,52 +40,54 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <AuthProvider>
       <GarageSalesProvider>
         <LoadScript 
           googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} 
           libraries={libraries}
         >
-          <Routes>
-            <Route path="/info" element={
-              <>
-                <HamburgerMenu />
-                <InfoPage />
-              </>
-            } />
-            <Route path="/help" element={
-              <>
-                <HamburgerMenu />
-                <Help />
-              </>
-            } />
-            <Route path="/login" element={
-              <>
-                <HamburgerMenu />
-                <Login />
-              </>
-            } />
-            <Route path="/sales" element={
-              <>
-                <HamburgerMenu />
-                <GarageSales />
-              </>
-            } />
-            <Route path="/" element={
-              <>
-                <HamburgerMenu />
-                <div className="map-container">
-                  <MapView 
-                    mapContainerStyle={mapContainerStyle}
-                    mapOptions={mapOptions}
-                  />
-                </div>
-              </>
-            } />
-          </Routes>
+          <div className="app">
+            <Routes>
+              <Route path="/info" element={
+                <>
+                  <HamburgerMenu />
+                  <InfoPage />
+                </>
+              } />
+              <Route path="/help" element={
+                <>
+                  <HamburgerMenu />
+                  <Help />
+                </>
+              } />
+              <Route path="/login" element={
+                <>
+                  <HamburgerMenu />
+                  <Login />
+                </>
+              } />
+              <Route path="/sales" element={
+                <>
+                  <HamburgerMenu />
+                  <GarageSales />
+                </>
+              } />
+              <Route path="/" element={
+                <>
+                  <HamburgerMenu />
+                  <div className="map-container">
+                    <MapView 
+                      mapContainerStyle={mapContainerStyle}
+                      mapOptions={mapOptions}
+                    />
+                  </div>
+                </>
+              } />
+            </Routes>
+          </div>
         </LoadScript>
       </GarageSalesProvider>
-    </div>
+    </AuthProvider>
   );
 }
 

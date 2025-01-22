@@ -1,0 +1,134 @@
+.admin-controls {
+  margin: 20px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.add-new-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.add-new-button:hover {
+  background-color: #45a049;
+}
+
+.add-new-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.add-sale-form {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-sale-form h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.form-buttons button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #f44336;
+  color: white;
+}
+
+.sale-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #da190b;
+}
+
+.coordinates {
+  display: flex;
+  gap: 20px;
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.garage-sale-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.sale-info {
+  flex: 1;
+}
+
+.sale-info h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.sale-info p {
+  margin: 0 0 10px 0;
+  color: #666;
+}

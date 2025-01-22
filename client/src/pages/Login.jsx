@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 import './Login.css';
 
 function Login() {
@@ -12,6 +13,7 @@ function Login() {
     name: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,25 +27,45 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     // Basic validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all required fields');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isLogin && !formData.name) {
+      setError('Name is required for registration');
+      setIsLoading(false);
       return;
     }
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      setIsLoading(false);
       return;
     }
 
     try {
-      // Here you would typically make an API call to your backend
-      console.log('Form submitted:', formData);
-      // For now, just simulate success
-      navigate('/');
-    } catch (error) {
-      setError(error.message || 'An error occurred');
+      if (isLogin) {
+        const response = await api.login(formData.email, formData.password);
+        console.log('Login successful:', response);
+        // Redirect to home page or dashboard after successful login
+        navigate('/');
+      } else {
+        await api.register(formData.email, formData.password, formData.name);
+        // After successful registration, automatically log in
+        const loginResponse = await api.login(formData.email, formData.password);
+        console.log('Registration and login successful:', loginResponse);
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,7 +131,7 @@ function Login() {
             </div>
           )}
 
-          <button type="submit" className="submit-button">
+          <button type="submit" className="submit-button" disabled={isLoading}>
             {isLogin ? 'Login' : 'Sign Up'}
           </button>
         </form>
