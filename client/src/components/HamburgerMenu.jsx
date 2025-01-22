@@ -14,7 +14,7 @@ const HamburgerMenu = () => {
   const [activeItem, setActiveItem] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -51,6 +51,7 @@ const HamburgerMenu = () => {
   const menuItems = [
     { id: 'map', label: 'Map', path: '/' },
     { id: 'garage-sales', label: 'Garage Sales', path: '/sales' },
+    ...(isAuthenticated && isAdmin ? [{ id: 'admin-sales', label: 'Manage Sales', path: '/admin/sales' }] : []),
     { id: 'my-location', label: 'My Location', onClick: handleMyLocation },
     { id: 'map-settings', label: 'Map Settings', onClick: () => console.log('Map Settings clicked') },
     isAuthenticated

@@ -20,11 +20,7 @@ const GarageSalesAdmin = () => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newSale, setNewSale] = useState({
     Address: '',
-    Description: '',
-    position: {
-      lat: '',
-      lng: ''
-    }
+    Description: ''
   });
 
   const handleAddNew = () => {
@@ -35,31 +31,16 @@ const GarageSalesAdmin = () => {
     setIsAddingNew(false);
     setNewSale({
       Address: '',
-      Description: '',
-      position: {
-        lat: '',
-        lng: ''
-      }
+      Description: ''
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setNewSale(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setNewSale(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setNewSale(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -69,11 +50,7 @@ const GarageSalesAdmin = () => {
     setIsAddingNew(false);
     setNewSale({
       Address: '',
-      Description: '',
-      position: {
-        lat: '',
-        lng: ''
-      }
+      Description: ''
     });
     // Refresh the list after adding
     fetchGarageSales();
@@ -162,28 +139,6 @@ const GarageSalesAdmin = () => {
                 required
               />
             </div>
-            <div className="form-group">
-              <label>Latitude:</label>
-              <input
-                type="number"
-                name="position.lat"
-                value={newSale.position.lat}
-                onChange={handleInputChange}
-                step="any"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Longitude:</label>
-              <input
-                type="number"
-                name="position.lng"
-                value={newSale.position.lng}
-                onChange={handleInputChange}
-                step="any"
-                required
-              />
-            </div>
             <div className="form-buttons">
               <button type="submit">Save</button>
               <button type="button" onClick={handleCancelAdd}>Cancel</button>
@@ -213,10 +168,6 @@ const GarageSalesAdmin = () => {
               <div className="sale-info">
                 <h3>{sale.Address}</h3>
                 <p>{sale.Description}</p>
-                <div className="coordinates">
-                  <span>Lat: {sale.position.lat}</span>
-                  <span>Lng: {sale.position.lng}</span>
-                </div>
               </div>
               <div className="sale-actions">
                 <button

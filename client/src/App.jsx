@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './App.css';
 import HamburgerMenu from './components/HamburgerMenu';
@@ -7,9 +7,22 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import GarageSales from './pages/GarageSales';
+import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
+
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
+  
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 // Define libraries as a static constant
 const libraries = ['marker'];
@@ -82,6 +95,11 @@ function App() {
                     />
                   </div>
                 </>
+              } />
+              <Route path="/admin/sales" element={
+                <ProtectedRoute>
+                  <GarageSalesAdmin />
+                </ProtectedRoute>
               } />
             </Routes>
           </div>

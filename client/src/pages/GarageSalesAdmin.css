@@ -103,14 +103,6 @@
   background-color: #da190b;
 }
 
-.coordinates {
-  display: flex;
-  gap: 20px;
-  color: #666;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
 .garage-sale-item {
   display: flex;
   justify-content: space-between;
@@ -129,6 +121,6 @@
 }
 
 .sale-info p {
-  margin: 0 0 10px 0;
+  margin: 0;
   color: #666;
 }

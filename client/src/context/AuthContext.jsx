@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -13,6 +14,8 @@ export const AuthProvider = ({ children }) => {
     if (sessionId) {
       setIsAuthenticated(true);
       // You might want to verify the session here
+      const userRole = localStorage.getItem('userRole');
+      setIsAdmin(userRole === 'admin');
     }
   }, []);
 
@@ -21,6 +24,10 @@ export const AuthProvider = ({ children }) => {
       const response = await api.login(email, password);
       setIsAuthenticated(true);
       setUser(response.user);
+      // Check if user is admin from response
+      const isAdminUser = response.user?.role === 'admin';
+      setIsAdmin(isAdminUser);
+      localStorage.setItem('userRole', isAdminUser ? 'admin' : 'user');
       return response;
     } catch (error) {
       throw error;
@@ -31,19 +38,23 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.logout();
       setIsAuthenticated(false);
+      setIsAdmin(false);
       setUser(null);
       localStorage.removeItem('sessionId');
+      localStorage.removeItem('userRole');
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear local state even if API call fails
       setIsAuthenticated(false);
+      setIsAdmin(false);
       setUser(null);
       localStorage.removeItem('sessionId');
+      localStorage.removeItem('userRole');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isAdmin, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
