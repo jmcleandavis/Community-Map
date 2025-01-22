@@ -57,7 +57,29 @@
 
 .form-group textarea {
   height: 100px;
-  resize: vertical;
+}
+
+.form-group textarea,
+.form-group .description-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 60px;
+  transition: border-color 0.3s ease;
+  resize: both; /* Allow both horizontal and vertical resizing */
+}
+
+.form-group .description-input:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.form-group .description-input::placeholder {
+  color: #999;
 }
 
 .form-buttons {

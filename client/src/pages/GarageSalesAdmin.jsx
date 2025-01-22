@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
+import AutoResizeTextArea from '../components/AutoResizeTextArea';
 
 const GarageSalesAdmin = () => {
   const {
@@ -132,11 +133,14 @@ const GarageSalesAdmin = () => {
             </div>
             <div className="form-group">
               <label>Description:</label>
-              <textarea
+              <AutoResizeTextArea
                 name="Description"
                 value={newSale.Description}
                 onChange={handleInputChange}
                 required
+                className="description-input"
+                placeholder="Enter garage sale description..."
+                minRows={3}
               />
             </div>
             <div className="form-buttons">

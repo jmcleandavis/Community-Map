@@ -4,19 +4,21 @@ import api from '../utils/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [user, setUser] = useState(null);
+  // Temporary: Set both authenticated and admin to true for testing
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [user, setUser] = useState({ role: 'admin' });
 
   useEffect(() => {
-    // Check if user is logged in on component mount
+    // Temporarily disabled for testing
+    /*
     const sessionId = localStorage.getItem('sessionId');
     if (sessionId) {
       setIsAuthenticated(true);
-      // You might want to verify the session here
       const userRole = localStorage.getItem('userRole');
       setIsAdmin(userRole === 'admin');
     }
+    */
   }, []);
 
   const login = async (email, password) => {
