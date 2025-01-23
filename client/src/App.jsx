@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './App.css';
@@ -33,7 +33,7 @@ function App() {
     height: '100vh'
   };
 
-  const mapOptions = {
+  const mapOptions = useMemo(() => ({
     disableDefaultUI: false,
     zoomControl: true,
     mapId: import.meta.env.VITE_GOOGLE_MAPS_ID,
@@ -50,15 +50,16 @@ function App() {
     zoomControlOptions: {
       position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
     }
-  };
+  }), []); // Empty dependency array since these options don't change
 
   return (
     <AuthProvider>
-      <GarageSalesProvider>
-        <LoadScript 
-          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} 
-          libraries={libraries}
-        >
+      <LoadScript 
+        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} 
+        libraries={libraries}
+        loadingElement={<div>Loading Google Maps...</div>}
+      >
+        <GarageSalesProvider>
           <div className="app">
             <Routes>
               <Route path="/info" element={
@@ -103,8 +104,8 @@ function App() {
               } />
             </Routes>
           </div>
-        </LoadScript>
-      </GarageSalesProvider>
+        </GarageSalesProvider>
+      </LoadScript>
     </AuthProvider>
   );
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { mockGarageSales } from '../utils/mockData';
 
@@ -6,10 +6,35 @@ const GarageSalesContext = createContext();
 
 export function GarageSalesProvider({ children }) {
   const [garageSales, setGarageSales] = useState([]);
-  const [loading, setLoading] = useState(false); // Start with false to avoid double fetch
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const fetchInProgressRef = useRef(false);
+  const initialFetchDoneRef = useRef(false);
   
+  // Debug mount/unmount cycles
+  useEffect(() => {
+    console.log('GarageSalesContext: Provider mounted');
+    return () => {
+      console.log('GarageSalesContext: Provider unmounted');
+    };
+  }, []);
+
+  // Clear cache on initial mount
+  useEffect(() => {
+    console.log('GarageSalesContext: Clearing cache on initial mount');
+    console.log('Initial fetch status:', {
+      fetchInProgress: fetchInProgressRef.current,
+      initialFetchDone: initialFetchDoneRef.current
+    });
+    localStorage.removeItem('garageSales');
+    return () => {
+      console.log('GarageSalesContext: Cleanup - Resetting refs');
+      fetchInProgressRef.current = false;
+      initialFetchDoneRef.current = false;
+    };
+  }, []); // Empty dependency array means this runs once on mount
+
   // Initialize selectedSales from localStorage if available
   const [selectedSales, setSelectedSales] = useState(() => {
     const saved = localStorage.getItem('selectedSaleIds');
@@ -21,88 +46,130 @@ export function GarageSalesProvider({ children }) {
     localStorage.setItem('selectedSaleIds', JSON.stringify([...selectedSales]));
   }, [selectedSales]);
 
+  const parseCoordinates = (coordString) => {
+    if (!coordString) return null;
+    
+    try {
+      // Remove brackets and split by comma
+      const parts = coordString.replace(/[\[\]]/g, '').split(',');
+      if (parts.length !== 2) return null;
+
+      // Process latitude
+      const latPart = parts[0].trim();
+      const latMatch = latPart.match(/([\d.]+)°\s*([NS])/);
+      if (!latMatch) return null;
+      const lat = parseFloat(latMatch[1]);
+      const latDir = latMatch[2];
+      const latitude = latDir === 'S' ? -lat : lat;
+
+      // Process longitude
+      const lngPart = parts[1].trim();
+      const lngMatch = lngPart.match(/([\d.]+)°\s*([EW])/);
+      if (!lngMatch) return null;
+      const lng = parseFloat(lngMatch[1]);
+      const lngDir = lngMatch[2];
+      const longitude = lngDir === 'W' ? -lng : lng;
+
+      if (isNaN(latitude) || isNaN(longitude)) return null;
+
+      return { lat: latitude, lng: longitude };
+    } catch (e) {
+      console.error('Failed to parse coordinates:', coordString, e);
+      return null;
+    }
+  };
+
   const fetchGarageSales = useCallback(async () => {
+    console.log('fetchGarageSales called. Current state:', {
+      initialFetchDone: initialFetchDoneRef.current,
+      fetchInProgress: fetchInProgressRef.current,
+      garageSalesLength: garageSales.length
+    });
+
+    // Check if we have cached data first
+    const cachedData = localStorage.getItem('garageSales');
+    if (cachedData) {
+      const parsed = JSON.parse(cachedData);
+      console.log('Found cached data:', parsed.length, 'items');
+      setGarageSales(parsed);
+      initialFetchDoneRef.current = true;
+      return;
+    }
+
+    // Multiple safeguards against repeated fetches
+    if (initialFetchDoneRef.current) {
+      console.log('GarageSalesContext: Initial fetch already completed');
+      return;
+    }
+
+    if (fetchInProgressRef.current) {
+      console.log('GarageSalesContext: Fetch already in progress');
+      return;
+    }
+
+    console.log('GarageSalesContext: Starting fresh fetch...');
+    fetchInProgressRef.current = true;
+    
     try {
       setLoading(true);
-      console.log('GarageSalesContext: Clearing cached data to force fresh API call...');
-      localStorage.removeItem('garageSales');
       
       console.log('GarageSalesContext: Fetching from API...');
-      let data;
+      const response = await api.getAddresses();
+      console.log('GarageSalesContext: Raw API response:', response.data);
       
-      try {
-        const response = await api.getAddresses();
-        console.log('GarageSalesContext: Response from getAddressList:', response.data);
+      // Map the response data to our expected format
+      let data = response.data.map(sale => {
+        const position = parseCoordinates(sale.coordinates);
         
-        // Map the response data to our expected format
-        data = response.data.map(sale => {
-          // Parse coordinates from string format "[lat° N/S, lng° E/W]"
-          let position = { lat: null, lng: null };
-          if (sale.coordinates) {
-            try {
-              const coords = sale.coordinates.replace(/[[\]°]/g, '').split(',');
-              const lat = parseFloat(coords[0].trim());
-              const lng = parseFloat(coords[1].trim());
-              position = {
-                lat: coords[0].includes('S') ? -lat : lat,
-                lng: coords[1].includes('W') ? -lng : lng
-              };
-            } catch (e) {
-              console.warn('Failed to parse coordinates:', sale.coordinates);
-            }
-          }
+        if (!position) {
+          console.warn('GarageSalesContext: Failed to parse coordinates for sale:', {
+            id: sale.id,
+            coordinates: sale.coordinates
+          });
+        }
 
-          return {
-            id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
-            Address: sale.address,
-            Description: sale.description,
-            position: position,
-          };
-        });
-      } catch (apiError) {
-        console.error('GarageSalesContext: API call failed:', apiError.message);
-        throw apiError;
-      }
+        const address = sale.address ? 
+          `${sale.address.streetNum} ${sale.address.street}` : 
+          'Address not available';
 
-      if (!data || !Array.isArray(data)) {
-        console.error('GarageSalesContext: Invalid data format received:', data);
-        throw new Error('Invalid data format received');
-      }
+        return {
+          id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
+          address: address,
+          description: sale.description || '',
+          position: position,
+          highlightedItems: sale.highlightedItems || []
+        };
+      });
 
-      // Validate and filter out items with invalid coordinates
-      data = data.filter(sale => {
-        const hasValidPosition = 
-          sale.position &&
-          !isNaN(sale.position.lat) && 
-          !isNaN(sale.position.lng) &&
-          sale.position.lat !== null &&
-          sale.position.lng !== null;
-        
+      // Filter out invalid positions
+      const validData = data.filter(sale => {
+        const hasValidPosition = sale.position !== null;
         if (!hasValidPosition) {
           console.warn('GarageSalesContext: Filtered out sale with invalid position:', sale);
         }
         return hasValidPosition;
       });
 
-      console.log('GarageSalesContext: Raw data after position processing:', data);
+      console.log('GarageSalesContext: Processed data:', {
+        total: data.length,
+        valid: validData.length,
+        data: validData
+      });
+
+      // Cache the processed data
+      localStorage.setItem('garageSales', JSON.stringify(validData));
       
-      // Cache the processed data in localStorage
-      localStorage.setItem('garageSales', JSON.stringify(data));
-      console.log('GarageSalesContext: Data cached in localStorage');
-      
-      setGarageSales(data);
-      setError(null);
-    } catch (err) {
-      console.error('GarageSalesContext: Error in fetchGarageSales:', err);
-      const errorMessage = err.response 
-        ? `Server error: ${err.response.status} - ${err.response.statusText}`
-        : 'Failed to load garage sales. Please try again later.';
-      setError(errorMessage);
-      setGarageSales([]); // Clear garage sales on error
+      setGarageSales(validData);
+      initialFetchDoneRef.current = true;
+      console.log('GarageSalesContext: Fetch completed successfully');
+    } catch (error) {
+      console.error('GarageSalesContext: Error fetching garage sales:', error);
+      setError(error.message || 'Failed to fetch garage sales');
     } finally {
       setLoading(false);
+      fetchInProgressRef.current = false;
     }
-  }, [setLoading, setError, setGarageSales]);
+  }, [garageSales.length]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
