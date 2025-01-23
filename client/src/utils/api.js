@@ -17,10 +17,7 @@ const mapsApi = axios.create({
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-    'app-key': import.meta.env.VITE_APP_API_KEY,
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization, X-Request-With'
+    'app-key': import.meta.env.VITE_APP_API_KEY
   },
   withCredentials: false
 });
@@ -150,18 +147,30 @@ const getSessionId = async () => {
 // Custom get method for addresses
 const getAddresses = async () => {
   try {
-    console.log('Fetching addresses from backend...');
+    console.log('API: Starting getAddresses call...');
     
     // Ensure we have a valid session
+    console.log('API: Getting session ID...');
     await getSessionId(); // This will create or verify the session
     
     // Make the request - sessionId will be added by interceptor
+    console.log('API: Making request to /getAddressList...');
     const response = await mapsApi.get('/getAddressList');
     
-    console.log('Response from backend:', response.data);
+    console.log('API: Successful response from backend:', response);
     return response;
   } catch (error) {
-    console.error('Error fetching addresses:', error);
+    console.error('API Error in getAddresses:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      }
+    });
     throw error;
   }
 };

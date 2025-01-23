@@ -24,19 +24,10 @@ export function GarageSalesProvider({ children }) {
   const fetchGarageSales = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('GarageSalesContext: Checking localStorage for cached data...');
+      console.log('GarageSalesContext: Clearing cached data to force fresh API call...');
+      localStorage.removeItem('garageSales');
       
-      // Try to get cached data first
-      const cachedData = localStorage.getItem('garageSales');
-      if (cachedData) {
-        const parsedData = JSON.parse(cachedData);
-        console.log('GarageSalesContext: Found cached data:', parsedData);
-        setGarageSales(parsedData);
-        setLoading(false);
-        return;
-      }
-
-      console.log('GarageSalesContext: No cached data found, fetching from API...');
+      console.log('GarageSalesContext: Fetching from API...');
       let data;
       
       try {
@@ -44,15 +35,30 @@ export function GarageSalesProvider({ children }) {
         console.log('GarageSalesContext: Response from getAddressList:', response.data);
         
         // Map the response data to our expected format
-        data = response.data.map(sale => ({
-          id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
-          Address: sale.address,
-          Description: sale.description,
-          position: {
-            lat: parseFloat(sale.latitude),
-            lng: parseFloat(sale.longitude)
+        data = response.data.map(sale => {
+          // Parse coordinates from string format "[lat° N/S, lng° E/W]"
+          let position = { lat: null, lng: null };
+          if (sale.coordinates) {
+            try {
+              const coords = sale.coordinates.replace(/[[\]°]/g, '').split(',');
+              const lat = parseFloat(coords[0].trim());
+              const lng = parseFloat(coords[1].trim());
+              position = {
+                lat: coords[0].includes('S') ? -lat : lat,
+                lng: coords[1].includes('W') ? -lng : lng
+              };
+            } catch (e) {
+              console.warn('Failed to parse coordinates:', sale.coordinates);
+            }
           }
-        }));
+
+          return {
+            id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
+            Address: sale.address,
+            Description: sale.description,
+            position: position,
+          };
+        });
       } catch (apiError) {
         console.error('GarageSalesContext: API call failed:', apiError.message);
         throw apiError;
