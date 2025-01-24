@@ -26,8 +26,8 @@ const GarageSales = () => {
       ...sale,
       lat: sale.position.lat,
       lng: sale.position.lng,
-      address: sale.Address,
-      description: sale.Description
+      address: sale.address,
+      description: sale.description
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
@@ -41,8 +41,8 @@ const GarageSales = () => {
         ...sale,
         lat: sale.position.lat,
         lng: sale.position.lng,
-        address: sale.Address,
-        description: sale.Description
+        address: sale.address,
+        description: sale.description
       }));
 
     if (selectedSalesData.length > 0) {
@@ -54,8 +54,8 @@ const GarageSales = () => {
   };
 
   const filteredSales = garageSales.filter(sale => 
-    (sale.Address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (sale.Description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (sale.address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sale.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -133,8 +133,8 @@ const GarageSales = () => {
                 </label>
               </div>
               <div className="sale-content">
-                <h3>{sale.Address || 'No Address Available'}</h3>
-                <p>{sale.Description || 'No Description Available'}</p>
+                <h3>{sale.address || 'No Address Available'}</h3>
+                <p>{sale.description || 'No Description Available'}</p>
               </div>
               <button 
                 className="view-map-button"
