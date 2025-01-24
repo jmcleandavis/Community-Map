@@ -240,6 +240,11 @@ const login = async (email, password) => {
     });
     
     if (response.data) {
+      console.log('Login response data:', {
+        fullResponse: response.data,
+        user: response.data.user,
+        sessionId: sessionId
+      });
       localStorage.setItem('sessionId', sessionId);
       return response.data;
     }

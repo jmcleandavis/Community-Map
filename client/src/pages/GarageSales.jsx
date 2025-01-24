@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
+import { useAuth } from '../context/AuthContext';
 
 const GarageSales = () => {
   const {
@@ -17,6 +18,7 @@ const GarageSales = () => {
   } = useGarageSales();
   
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
   const handleViewOnMap = (sale) => {
     // Use the existing geocoded data
@@ -78,6 +80,9 @@ const GarageSales = () => {
   return (
     <div className="garage-sales-container">
       <h1>Garage Sales</h1>
+      {isAuthenticated && user?.data?.email && (
+        <div className="user-email">Logged in as: {user.data.email}</div>
+      )}
       
       <div className="controls-container">
         <div className="search-container">

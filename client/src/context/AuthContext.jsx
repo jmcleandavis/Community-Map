@@ -4,32 +4,40 @@ import api from '../utils/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Temporary: Set both authenticated and admin to true for testing
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(true);
-  const [user, setUser] = useState({ role: 'admin' });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Temporarily disabled for testing
-    /*
     const sessionId = localStorage.getItem('sessionId');
     if (sessionId) {
       setIsAuthenticated(true);
       const userRole = localStorage.getItem('userRole');
       setIsAdmin(userRole === 'admin');
+      // Restore user data if available
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
     }
-    */
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await api.login(email, password);
       setIsAuthenticated(true);
-      setUser(response.user);
-      // Check if user is admin from response
-      const isAdminUser = response.user?.role === 'admin';
+      // Create user object from response data
+      const userData = {
+        email: response.userID,
+        role: response.userType || 'user'
+      };
+      setUser(userData);
+      // Check if user is admin
+      const isAdminUser = response.userType === 'admin';
       setIsAdmin(isAdminUser);
       localStorage.setItem('userRole', isAdminUser ? 'admin' : 'user');
+      // Store user data
+      localStorage.setItem('userData', JSON.stringify(userData));
       return response;
     } catch (error) {
       throw error;
@@ -44,6 +52,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       localStorage.removeItem('sessionId');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('userData');
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear local state even if API call fails
@@ -52,6 +61,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       localStorage.removeItem('sessionId');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('userData');
     }
   };
 
@@ -69,3 +79,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

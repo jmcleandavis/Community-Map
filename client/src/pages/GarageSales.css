@@ -228,6 +228,13 @@
   font-size: 0.9em;
 }
 
+.user-email {
+  text-align: center;
+  color: #666;
+  margin: -20px 0 20px;
+  font-size: 0.9em;
+}
+
 @media (max-width: 768px) {
   .garage-sales-container {
     padding: 15px;
