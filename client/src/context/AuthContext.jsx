@@ -25,18 +25,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.login(email, password);
+      console.log('Login response:', response); 
       setIsAuthenticated(true);
+      
       // Create user object from response data
       const userData = {
         email: response.userID,
         role: response.userType || 'user'
       };
+      console.log('Created user data:', userData); 
+      
       setUser(userData);
+      
       // Check if user is admin
-      const isAdminUser = response.userType === 'admin';
+      const isAdminUser = response.userType === 'admin'; 
+      console.log('Is admin user?', { userType: response.userType, isAdmin: isAdminUser }); 
+      
       setIsAdmin(isAdminUser);
       localStorage.setItem('userRole', isAdminUser ? 'admin' : 'user');
-      // Store user data
       localStorage.setItem('userData', JSON.stringify(userData));
       return response;
     } catch (error) {
