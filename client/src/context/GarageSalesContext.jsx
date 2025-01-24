@@ -135,7 +135,7 @@ export function GarageSalesProvider({ children }) {
         return {
           id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
           address: address,
-          description: sale.description || '',
+          description: sale.description || 'No description available',
           position: position,
           highlightedItems: sale.highlightedItems || []
         };

@@ -99,7 +99,10 @@ function App() {
               } />
               <Route path="/admin/sales" element={
                 <ProtectedRoute>
-                  <GarageSalesAdmin />
+                  <>
+                    <HamburgerMenu />
+                    <GarageSalesAdmin />
+                  </>
                 </ProtectedRoute>
               } />
             </Routes>

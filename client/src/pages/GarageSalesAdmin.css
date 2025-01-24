@@ -25,6 +25,13 @@
 
 .garage-sales-admin {
   padding: 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.garage-sales-admin-content {
+  flex: 1;
+  padding: 20px;
 }
 
 .add-sale-form {
@@ -152,4 +159,14 @@
 .sale-info p {
   margin: 0;
   color: #666;
+}
+
+@media (max-width: 768px) {
+  .garage-sale-item {
+    flex-direction: column;
+  }
+
+  .sale-actions {
+    margin-top: 15px;
+  }
 }
