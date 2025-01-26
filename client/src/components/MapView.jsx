@@ -22,17 +22,39 @@ function MapView({ mapContainerStyle, mapOptions }) {
     console.log('MapView: Component mounted');
     return () => {
       console.log('MapView: Component unmounted');
+      // Clean up markers on unmount
+      if (markersRef.current) {
+        markersRef.current.forEach(marker => {
+          if (marker?.map) {
+            marker.map = null;
+          }
+        });
+        markersRef.current = [];
+      }
     };
   }, []);
 
-  // Fetch garage sales only once when component mounts
+  // Load garage sales data
   useEffect(() => {
-    console.log('MapView: Fetch effect running. GarageSales length:', garageSales.length);
-    if (garageSales.length === 0) {
-      console.log('MapView: No garage sales data, triggering fetch');
+    console.log('MapView: Checking for garage sales data');
+    
+    // Check localStorage for selected sales
+    const selectedSalesData = localStorage.getItem('selectedSales');
+    const cachedGarageSales = localStorage.getItem('garageSales');
+    
+    if (selectedSalesData) {
+      console.log('MapView: Found selected sales in localStorage');
+      const parsedSelectedSales = JSON.parse(selectedSalesData);
+      if (parsedSelectedSales.length > 0) {
+        // If we have selected sales, make sure they're loaded
+        fetchGarageSales();
+      }
+    } else if (!cachedGarageSales || garageSales.length === 0) {
+      // If no cached data or no garage sales in state, fetch them
+      console.log('MapView: No garage sales data found, triggering fetch');
       fetchGarageSales();
     }
-  }, [fetchGarageSales, garageSales.length]);
+  }, [fetchGarageSales]);
 
   // Memorize callbacks
   const onMapLoad = useCallback((map) => {
@@ -49,25 +71,21 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const userPos = {
+        const newLocation = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        setUserLocation(userPos);
-        
-        // Only set center and zoom on initial location fetch
+        setUserLocation(newLocation);
+
         if (!initialLocationSetRef.current && mapRef.current) {
-          mapRef.current.setCenter(userPos);
-          mapRef.current.setZoom(13);
+          mapRef.current.panTo(newLocation);
           initialLocationSetRef.current = true;
         }
 
-        // Update user marker
+        // Update user location marker
         if (userMarkerRef.current) {
-          userMarkerRef.current.map = null;
-        }
-
-        if (mapRef.current && window.google) {
+          userMarkerRef.current.position = newLocation;
+        } else if (mapRef.current && window.google) {
           const markerElement = document.createElement('div');
           markerElement.className = 'user-location-marker';
           markerElement.style.cssText = `
@@ -76,15 +94,15 @@ function MapView({ mapContainerStyle, mapOptions }) {
             border: 2px solid #FFFFFF;
             width: 16px;
             height: 16px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
           `;
 
           userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
-            position: userPos,
+            position: newLocation,
             content: markerElement,
             title: 'Your Location',
-            map: mapRef.current,
-            zIndex: 1000
+            map: mapRef.current
           });
         }
       },
@@ -117,20 +135,28 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Effect to manage markers
   useEffect(() => {
+    console.log('MapView: Marker effect running with conditions:', {
+      isLoaded,
+      hasMap: !!mapRef.current,
+      salesCount: garageSales?.length,
+      hasGoogle: !!window.google
+    });
+
     if (!isLoaded || !mapRef.current || !garageSales?.length || !window.google) {
-      console.log('MapView: Skipping marker creation - conditions not met:', {
-        isLoaded,
-        hasMap: !!mapRef.current,
-        salesCount: garageSales?.length,
-        hasGoogle: !!window.google
-      });
       return;
     }
 
     console.log('MapView: Creating markers for sales:', garageSales);
 
     // Clear existing markers
-    markersRef.current.forEach(marker => marker?.map && (marker.map = null));
+    markersRef.current.forEach(marker => {
+      if (marker?.infoWindow) {
+        marker.infoWindow.close();
+      }
+      if (marker?.map) {
+        marker.map = null;
+      }
+    });
     markersRef.current = [];
 
     // Create new markers
@@ -154,6 +180,14 @@ function MapView({ mapContainerStyle, mapOptions }) {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         `;
 
+        // Create the marker
+        const marker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: sale.position,
+          content: markerElement,
+          title: sale.address,
+          map: mapRef.current
+        });
+
         // Create info window content
         const infoContent = document.createElement('div');
         infoContent.className = 'garage-sale-info';
@@ -171,14 +205,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
             ` : ''}
           </div>
         `;
-
-        // Create the marker
-        const marker = new window.google.maps.marker.AdvancedMarkerElement({
-          position: sale.position,
-          content: markerElement,
-          title: sale.address,
-          map: mapRef.current
-        });
 
         // Create info window
         const infoWindow = new window.google.maps.InfoWindow({
@@ -215,18 +241,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     console.log('MapView: Created markers:', markersRef.current.length);
-
-    return () => {
-      markersRef.current.forEach(marker => {
-        if (marker?.infoWindow) {
-          marker.infoWindow.close();
-        }
-        if (marker?.map) {
-          marker.map = null;
-        }
-      });
-      markersRef.current = [];
-    };
   }, [isLoaded, garageSales]);
 
   return (
