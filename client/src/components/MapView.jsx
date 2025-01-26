@@ -60,7 +60,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
   }, [fetchGarageSales]);
 
-  // Memorize callbacks
+  // Memoize callbacks
   const onMapLoad = useCallback((map) => {
     console.log('MapView: Map loaded and ref set');
     mapRef.current = map;
@@ -188,6 +188,72 @@ function MapView({ mapContainerStyle, mapOptions }) {
     streetViewControl: true,
     mapTypeControl: true,
   }), [mapOptions]);
+
+  // Handle user location tracking
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current) return;
+
+    const updateUserLocation = (position) => {
+      const { latitude, longitude } = position.coords;
+      const newLocation = { lat: latitude, lng: longitude };
+      setUserLocation(newLocation);
+
+      // Create or update user location marker
+      if (!userMarkerRef.current) {
+        const markerElement = document.createElement('div');
+        markerElement.className = 'user-location-marker';
+        markerElement.style.cssText = `
+          background-color: #4285F4;
+          border: 2px solid #FFFFFF;
+          border-radius: 50%;
+          width: 16px;
+          height: 16px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        `;
+
+        userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
+          position: newLocation,
+          content: markerElement,
+          map: mapRef.current,
+          title: 'Your Location'
+        });
+      } else {
+        userMarkerRef.current.position = newLocation;
+      }
+
+      // Center map on user location if it's the first time
+      if (!initialLocationSetRef.current) {
+        mapRef.current.panTo(newLocation);
+        initialLocationSetRef.current = true;
+      }
+    };
+
+    const handleError = (error) => {
+      console.error('Error getting user location:', error);
+    };
+
+    // Start watching user location
+    const watchId = navigator.geolocation.watchPosition(
+      updateUserLocation,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+
+    // Cleanup function
+    return () => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+      if (userMarkerRef.current) {
+        userMarkerRef.current.map = null;
+        userMarkerRef.current = null;
+      }
+    };
+  }, [isLoaded]);
 
   return (
     <>
