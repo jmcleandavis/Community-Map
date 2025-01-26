@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
+import { useSearch } from '../context/SearchContext';
+import { useSelection } from '../context/SelectionContext';
 import { useAuth } from '../context/AuthContext';
 
 const GarageSales = () => {
@@ -9,19 +11,20 @@ const GarageSales = () => {
     garageSales,
     loading,
     error,
-    searchTerm,
-    selectedSales,
-    fetchGarageSales,
-    handleSearchChange,
-    handleCheckboxChange,
-    handleSelectAll,
+    fetchGarageSales
   } = useGarageSales();
+  
+  const { searchTerm, handleSearchChange } = useSearch();
+  const { selectedSales, handleCheckboxChange, handleSelectAll } = useSelection();
   
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
+  useEffect(() => {
+    fetchGarageSales();
+  }, [fetchGarageSales]);
+
   const handleViewOnMap = (sale) => {
-    // Use the existing geocoded data
     const saleToView = {
       ...sale,
       lat: sale.position.lat,

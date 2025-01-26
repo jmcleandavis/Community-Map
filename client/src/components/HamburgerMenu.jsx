@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HamburgerMenu.css';
-import GarageSales, { openGarageSalesList } from './menuItems/GarageSales';
+import GarageSalesMenuItem from './menuItems/GarageSales';
 import MyLocation from './menuItems/MyLocation';
 import MapSettings from './menuItems/MapSettings';
 import Auth from './menuItems/Auth';
