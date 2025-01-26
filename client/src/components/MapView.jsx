@@ -17,28 +17,34 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const initialLocationSetRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
 
+  // Cleanup function for markers
+  const cleanupMarkers = useCallback(() => {
+    if (markersRef.current) {
+      markersRef.current.forEach(marker => {
+        if (marker?.infoWindow) {
+          marker.infoWindow.close();
+        }
+        if (marker?.map) {
+          marker.map = null;
+        }
+      });
+      markersRef.current = [];
+    }
+  }, []);
+
   // Debug mount/unmount cycles
   useEffect(() => {
     console.log('MapView: Component mounted');
     return () => {
       console.log('MapView: Component unmounted');
-      // Clean up markers on unmount
-      if (markersRef.current) {
-        markersRef.current.forEach(marker => {
-          if (marker?.map) {
-            marker.map = null;
-          }
-        });
-        markersRef.current = [];
-      }
+      cleanupMarkers();
     };
-  }, []);
+  }, [cleanupMarkers]);
 
   // Load garage sales data
   useEffect(() => {
     console.log('MapView: Checking for garage sales data');
     
-    // Check localStorage for selected sales
     const selectedSalesData = localStorage.getItem('selectedSales');
     const cachedGarageSales = localStorage.getItem('garageSales');
     
@@ -46,11 +52,9 @@ function MapView({ mapContainerStyle, mapOptions }) {
       console.log('MapView: Found selected sales in localStorage');
       const parsedSelectedSales = JSON.parse(selectedSalesData);
       if (parsedSelectedSales.length > 0) {
-        // If we have selected sales, make sure they're loaded
         fetchGarageSales();
       }
     } else if (!cachedGarageSales || garageSales.length === 0) {
-      // If no cached data or no garage sales in state, fetch them
       console.log('MapView: No garage sales data found, triggering fetch');
       fetchGarageSales();
     }
@@ -63,103 +67,16 @@ function MapView({ mapContainerStyle, mapOptions }) {
     setIsLoaded(true);
   }, []);
 
-  const handleGetLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser.');
+  // Create markers function
+  const createMarkers = useCallback(() => {
+    if (!mapRef.current || !garageSales?.length || !window.google) {
+      console.log('MapView: Cannot create markers - missing dependencies');
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        setUserLocation(newLocation);
+    console.log('MapView: Creating markers for sales:', garageSales.length);
+    cleanupMarkers();
 
-        if (!initialLocationSetRef.current && mapRef.current) {
-          mapRef.current.panTo(newLocation);
-          initialLocationSetRef.current = true;
-        }
-
-        // Update user location marker
-        if (userMarkerRef.current) {
-          userMarkerRef.current.position = newLocation;
-        } else if (mapRef.current && window.google) {
-          const markerElement = document.createElement('div');
-          markerElement.className = 'user-location-marker';
-          markerElement.style.cssText = `
-            background-color: #4285F4;
-            border-radius: 50%;
-            border: 2px solid #FFFFFF;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-          `;
-
-          userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
-            position: newLocation,
-            content: markerElement,
-            title: 'Your Location',
-            map: mapRef.current
-          });
-        }
-      },
-      (error) => console.error('Error getting location:', error)
-    );
-  }, []);
-
-  // Memorize map options
-  const finalMapOptions = useMemo(() => ({
-    ...mapOptions,
-    zoomControl: true,
-    streetViewControl: true,
-    mapTypeControl: true,
-  }), [mapOptions]);
-
-  // Effect to update user location periodically
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    handleGetLocation();
-    const intervalId = setInterval(handleGetLocation, 10000);
-
-    return () => {
-      clearInterval(intervalId);
-      if (userMarkerRef.current) {
-        userMarkerRef.current.map = null;
-      }
-    };
-  }, [isLoaded, handleGetLocation]);
-
-  // Effect to manage markers
-  useEffect(() => {
-    console.log('MapView: Marker effect running with conditions:', {
-      isLoaded,
-      hasMap: !!mapRef.current,
-      salesCount: garageSales?.length,
-      hasGoogle: !!window.google
-    });
-
-    if (!isLoaded || !mapRef.current || !garageSales?.length || !window.google) {
-      return;
-    }
-
-    console.log('MapView: Creating markers for sales:', garageSales);
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => {
-      if (marker?.infoWindow) {
-        marker.infoWindow.close();
-      }
-      if (marker?.map) {
-        marker.map = null;
-      }
-    });
-    markersRef.current = [];
-
-    // Create new markers
     garageSales.forEach(sale => {
       if (!sale?.position?.lat || !sale?.position?.lng) {
         console.warn('MapView: Sale missing position data:', sale);
@@ -167,7 +84,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
       }
 
       try {
-        // Create marker element
         const markerElement = document.createElement('div');
         markerElement.className = 'garage-sale-marker';
         markerElement.style.cssText = `
@@ -180,7 +96,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         `;
 
-        // Create the marker
         const marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: sale.position,
           content: markerElement,
@@ -188,7 +103,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
           map: mapRef.current
         });
 
-        // Create info window content
         const infoContent = document.createElement('div');
         infoContent.className = 'garage-sale-info';
         infoContent.innerHTML = `
@@ -206,15 +120,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
           </div>
         `;
 
-        // Create info window
         const infoWindow = new window.google.maps.InfoWindow({
           content: infoContent,
           maxWidth: 250
         });
 
-        // Add click listener
         marker.addListener('click', () => {
-          // Close any open info windows
           markersRef.current.forEach(m => {
             if (m.infoWindow && m.infoWindow !== infoWindow) {
               m.infoWindow.close();
@@ -229,7 +140,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
           setSelectedSale(sale);
         });
 
-        // Store info window reference with marker
         marker.infoWindow = infoWindow;
         markersRef.current.push(marker);
       } catch (error) {
@@ -241,7 +151,43 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     console.log('MapView: Created markers:', markersRef.current.length);
-  }, [isLoaded, garageSales]);
+  }, [garageSales]);
+
+  // Effect to manage markers
+  useEffect(() => {
+    console.log('MapView: Marker effect running with conditions:', {
+      isLoaded,
+      hasMap: !!mapRef.current,
+      salesCount: garageSales?.length,
+      hasGoogle: !!window.google
+    });
+
+    if (!isLoaded) return;
+
+    // Small delay to ensure map is fully loaded
+    const timeoutId = setTimeout(() => {
+      createMarkers();
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isLoaded, createMarkers]);
+
+  // Handle map bounds update
+  const onBoundsChanged = useCallback(() => {
+    if (mapRef.current && markersRef.current.length === 0) {
+      createMarkers();
+    }
+  }, [createMarkers]);
+
+  // Memorize map options
+  const finalMapOptions = useMemo(() => ({
+    ...mapOptions,
+    zoomControl: true,
+    streetViewControl: true,
+    mapTypeControl: true,
+  }), [mapOptions]);
 
   return (
     <>
@@ -251,6 +197,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
         zoom={12}
         options={finalMapOptions}
         onLoad={onMapLoad}
+        onBoundsChanged={onBoundsChanged}
       >
         {selectedSale && selectedSale.position && (
           <InfoWindow
