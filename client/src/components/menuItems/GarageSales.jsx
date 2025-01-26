@@ -1,36 +1,22 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../menuItems/menuItems.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStore } from '@fortawesome/free-solid-svg-icons';
 
-export const openGarageSalesList = () => {
-  const width = 800;
-  const height = 600;
-  const left = (window.screen.width - width) / 2;
-  const top = (window.screen.height - height) / 2;
+const GarageSalesMenuItem = () => {
+  const navigate = useNavigate();
 
-  // Use the new garageSales.html entry point
-  const windowUrl = `${window.location.origin}/garageSales.html`;
-  
-  console.log('Opening garage sales window at:', windowUrl);
-  
-  const newWindow = window.open(
-    windowUrl,
-    'GarageSalesList',
-    `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-  );
+  const openGarageSalesList = () => {
+    navigate('/garage-sales');
+  };
 
-  if (!newWindow) {
-    console.error('Failed to open garage sales window - popup might be blocked');
-  }
-};
-
-const GarageSales = () => {
   return (
-    <div className="menu-item garage-sales">
-      <h2>Garage Sales</h2>
-      <div className="content">
-      </div>
+    <div className="menu-item" onClick={openGarageSalesList}>
+      <FontAwesomeIcon icon={faStore} className="menu-icon" />
+      <span>Garage Sales</span>
     </div>
   );
 };
 
-export default GarageSales;
+export default GarageSalesMenuItem;
