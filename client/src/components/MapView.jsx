@@ -15,7 +15,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const initialLocationSetRef = useRef(false);
-  const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
+  const { fetchGarageSales, garageSales, loading, error, setGarageSales } = useGarageSales();
 
   // Cleanup function for markers
   const cleanupMarkers = useCallback(() => {
@@ -52,13 +52,22 @@ function MapView({ mapContainerStyle, mapOptions }) {
       console.log('MapView: Found selected sales in localStorage');
       const parsedSelectedSales = JSON.parse(selectedSalesData);
       if (parsedSelectedSales.length > 0) {
-        fetchGarageSales();
+        // Filter the garage sales to only show selected ones
+        const selectedSaleIds = new Set(parsedSelectedSales);
+        const filteredSales = garageSales.filter(sale => selectedSaleIds.has(sale.id));
+        if (filteredSales.length > 0) {
+          console.log('MapView: Displaying selected sales:', filteredSales.length);
+          setGarageSales(filteredSales);
+        } else {
+          console.log('MapView: No matching selected sales found, fetching all sales');
+          fetchGarageSales();
+        }
       }
     } else if (!cachedGarageSales || garageSales.length === 0) {
       console.log('MapView: No garage sales data found, triggering fetch');
       fetchGarageSales();
     }
-  }, [fetchGarageSales]);
+  }, [fetchGarageSales, garageSales, setGarageSales]);
 
   // Memoize callbacks
   const onMapLoad = useCallback((map) => {
