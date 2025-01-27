@@ -76,7 +76,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
 
     console.log('MapView: Creating markers for', garageSales.length, 'sales');
-    cleanupMarkers();
+    
+    // Only cleanup if we have existing markers
+    if (markersRef.current.length > 0) {
+      console.log('MapView: Cleaning up existing markers before creating new ones');
+      cleanupMarkers();
+    }
 
     // Filter sales based on display mode
     const salesToShow = showOnlySelected 
@@ -88,6 +93,9 @@ function MapView({ mapContainerStyle, mapOptions }) {
       console.error('AdvancedMarkerElement not available');
       return;
     }
+
+    console.log('MapView: Starting to create', salesToShow.length, 'markers');
+    let markersCreated = 0;
 
     salesToShow.forEach(sale => {
       const markerColor = selectedSaleIds.includes(sale.id) ? '#4CAF50' : '#FF0000';
@@ -115,10 +123,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
         });
 
         markersRef.current.push(marker);
+        markersCreated++;
       } catch (error) {
-        console.error('Error creating marker:', error);
+        console.error('Error creating marker:', error, sale);
       }
     });
+
+    console.log('MapView: Successfully created', markersCreated, 'markers');
   }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers]);
 
   // Effect to handle centering on user location
