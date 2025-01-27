@@ -39,8 +39,9 @@ export function LocationProvider({ children }) {
     setShouldCenterOnUser(false);
   }, []);
 
-  // Get initial location when provider mounts
+  // Get initial location when component mounts
   useEffect(() => {
+    console.log('LocationContext: Getting initial location');
     centerOnUserLocation();
   }, [centerOnUserLocation]);
 
