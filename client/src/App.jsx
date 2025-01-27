@@ -12,6 +12,7 @@ import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
 import { AuthProvider } from './context/AuthContext';
 import { DisplayProvider } from './context/DisplayContext';
+import { LocationProvider } from './context/LocationContext';
 import { useAuth } from './context/AuthContext';
 
 // Protected Route component
@@ -62,53 +63,55 @@ function App() {
       >
         <GarageSalesProvider>
           <DisplayProvider>
-            <div className="app">
-              <Routes>
-                <Route path="/info" element={
-                  <>
-                    <HamburgerMenu />
-                    <InfoPage />
-                  </>
-                } />
-                <Route path="/help" element={
-                  <>
-                    <HamburgerMenu />
-                    <Help />
-                  </>
-                } />
-                <Route path="/login" element={
-                  <>
-                    <HamburgerMenu />
-                    <Login />
-                  </>
-                } />
-                <Route path="/sales" element={
-                  <>
-                    <HamburgerMenu />
-                    <GarageSales />
-                  </>
-                } />
-                <Route path="/" element={
-                  <>
-                    <HamburgerMenu />
-                    <div className="map-container">
-                      <MapView 
-                        mapContainerStyle={mapContainerStyle}
-                        mapOptions={mapOptions}
-                      />
-                    </div>
-                  </>
-                } />
-                <Route path="/admin/sales" element={
-                  <ProtectedRoute>
+            <LocationProvider>
+              <div className="app">
+                <Routes>
+                  <Route path="/info" element={
                     <>
                       <HamburgerMenu />
-                      <GarageSalesAdmin />
+                      <InfoPage />
                     </>
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </div>
+                  } />
+                  <Route path="/help" element={
+                    <>
+                      <HamburgerMenu />
+                      <Help />
+                    </>
+                  } />
+                  <Route path="/login" element={
+                    <>
+                      <HamburgerMenu />
+                      <Login />
+                    </>
+                  } />
+                  <Route path="/sales" element={
+                    <>
+                      <HamburgerMenu />
+                      <GarageSales />
+                    </>
+                  } />
+                  <Route path="/" element={
+                    <>
+                      <HamburgerMenu />
+                      <div className="map-container">
+                        <MapView 
+                          mapContainerStyle={mapContainerStyle}
+                          mapOptions={mapOptions}
+                        />
+                      </div>
+                    </>
+                  } />
+                  <Route path="/admin/sales" element={
+                    <ProtectedRoute>
+                      <>
+                        <HamburgerMenu />
+                        <GarageSalesAdmin />
+                      </>
+                    </ProtectedRoute>
+                  } />
+                </Routes>
+              </div>
+            </LocationProvider>
           </DisplayProvider>
         </GarageSalesProvider>
       </LoadScript>

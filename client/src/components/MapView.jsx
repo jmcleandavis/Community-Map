@@ -2,11 +2,11 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
+import { useLocation } from '../context/LocationContext';
 
 function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
   const [center] = useState({
     lat: 43.8384,
     lng: -79.0868
@@ -19,6 +19,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const initialLoadRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error, setGarageSales } = useGarageSales();
   const { showOnlySelected } = useDisplay();
+  const { userLocation, shouldCenterOnUser, clearCenterOnUser } = useLocation();
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -230,84 +231,37 @@ function MapView({ mapContainerStyle, mapOptions }) {
     mapTypeControl: true,
   }), [mapOptions]);
 
-  // Get user's location
+  // Effect to handle centering on user location
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || !window.google || initialLocationSetRef.current) {
-      return;
+    if (shouldCenterOnUser && userLocation && mapRef.current) {
+      mapRef.current.panTo(userLocation);
+      mapRef.current.setZoom(15);
+      clearCenterOnUser();
+    }
+  }, [shouldCenterOnUser, userLocation, clearCenterOnUser]);
+
+  // Effect to update user location marker
+  useEffect(() => {
+    if (!mapRef.current || !userLocation || !window.google) return;
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
     }
 
-    const getUserLocation = () => {
-      if (!navigator.geolocation) {
-        console.warn('Geolocation is not supported by this browser.');
-        handleLocationError();
-        return;
-      }
-
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      };
-
-      const handleLocationError = () => {
-        console.log('MapView: Using default location');
-        const defaultPos = center;
-        if (mapRef.current) {
-          mapRef.current.panTo(defaultPos);
-          mapRef.current.setZoom(11);
-        }
-      };
-
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            if (!mapRef.current) return;
-
-            const pos = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            };
-            setUserLocation(pos);
-            mapRef.current.panTo(pos);
-            mapRef.current.setZoom(13);
-
-            // Create user location marker
-            if (userMarkerRef.current) {
-              userMarkerRef.current.setMap(null);
-            }
-
-            if (window.google && mapRef.current) {
-              userMarkerRef.current = new window.google.maps.Marker({
-                position: pos,
-                map: mapRef.current,
-                title: 'Your Location',
-                icon: {
-                  path: window.google.maps.SymbolPath.CIRCLE,
-                  scale: 10,
-                  fillColor: '#4285F4',
-                  fillOpacity: 1,
-                  strokeColor: '#ffffff',
-                  strokeWeight: 2,
-                },
-              });
-            }
-          },
-          (error) => {
-            console.warn('Error getting location:', error);
-            handleLocationError();
-          },
-          options
-        );
-      } catch (error) {
-        console.error('Error in geolocation:', error);
-        handleLocationError();
-      }
-    };
-
-    initialLocationSetRef.current = true;
-    getUserLocation();
-
-  }, [isLoaded, center]);
+    userMarkerRef.current = new window.google.maps.Marker({
+      position: userLocation,
+      map: mapRef.current,
+      title: 'Your Location',
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 10,
+        fillColor: '#4285F4',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+      },
+    });
+  }, [userLocation]);
 
   return (
     <>
