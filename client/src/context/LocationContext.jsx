@@ -1,43 +1,53 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
   const [userLocation, setUserLocation] = useState(null);
   const [shouldCenterOnUser, setShouldCenterOnUser] = useState(false);
+  const [error, setError] = useState(null);
 
   const centerOnUserLocation = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(pos);
-          setShouldCenterOnUser(true);
-        },
-        (error) => {
-          console.warn('Error getting location:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      console.warn('Geolocation is not supported by this browser.');
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(pos);
+        setShouldCenterOnUser(true);
+        setError(null);
+      },
+      (error) => {
+        setError(`Error getting location: ${error.message}`);
+        console.warn('Error getting location:', error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   }, []);
 
   const clearCenterOnUser = useCallback(() => {
     setShouldCenterOnUser(false);
   }, []);
 
+  // Get initial location when provider mounts
+  useEffect(() => {
+    centerOnUserLocation();
+  }, [centerOnUserLocation]);
+
   const value = {
     userLocation,
     shouldCenterOnUser,
+    error,
     centerOnUserLocation,
     clearCenterOnUser
   };

@@ -15,225 +15,116 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
-  const initialLocationSetRef = useRef(false);
   const initialLoadRef = useRef(false);
-  const { fetchGarageSales, garageSales, loading, error, setGarageSales } = useGarageSales();
+  const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser } = useLocation();
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
-    const data = localStorage.getItem('selectedSaleIds');
-    return data ? JSON.parse(data) : [];
+    const selectedSalesStr = localStorage.getItem('selectedSaleIds');
+    return selectedSalesStr ? JSON.parse(selectedSalesStr) : [];
   }, []);
 
-  // Filter sales based on display mode
-  const displayedSales = useMemo(() => {
-    if (showOnlySelected) {
-      return garageSales.filter(sale => selectedSaleIds.includes(sale.id));
+  // Initial load of garage sales
+  useEffect(() => {
+    if (!initialLoadRef.current) {
+      console.log('MapView: Initial load - fetching garage sales');
+      fetchGarageSales();
+      initialLoadRef.current = true;
     }
-    return garageSales;
-  }, [garageSales, showOnlySelected, selectedSaleIds]);
+  }, [fetchGarageSales]);
 
   // Cleanup function for markers
   const cleanupMarkers = useCallback(() => {
+    console.log('MapView: Cleaning up markers');
     if (markersRef.current) {
       markersRef.current.forEach(marker => {
-        if (marker?.infoWindow) {
-          marker.infoWindow.close();
-        }
-        if (marker?.map) {
+        if (marker) {
           marker.map = null;
         }
       });
       markersRef.current = [];
     }
+    if (userMarkerRef.current) {
+      userMarkerRef.current.map = null;
+      userMarkerRef.current = null;
+    }
   }, []);
 
-  // Debug mount/unmount cycles
+  // Cleanup on unmount
   useEffect(() => {
-    console.log('MapView: Component mounted');
     return () => {
-      console.log('MapView: Component unmounted');
+      console.log('MapView: Component unmounting, cleaning up');
       cleanupMarkers();
+      if (mapRef.current) {
+        console.log('MapView: Clearing map reference');
+        mapRef.current = null;
+        setIsLoaded(false);
+      }
     };
   }, [cleanupMarkers]);
 
-  // Load garage sales data
-  useEffect(() => {
-    if (initialLoadRef.current) return;
-    
-    console.log('MapView: Checking for garage sales data');
-    
-    const cachedGarageSales = localStorage.getItem('garageSales');
-    
-    const loadData = async () => {
-      if (!cachedGarageSales || garageSales.length === 0) {
-        console.log('MapView: No garage sales data found, triggering fetch');
-        await fetchGarageSales();
-      }
-      initialLoadRef.current = true;
-    };
-
-    loadData().catch(err => {
-      console.error('MapView: Error loading garage sales:', err);
-    });
-  }, [fetchGarageSales, garageSales.length]);
-
-  // Handle map load
-  const onLoad = useCallback((map) => {
-    console.log('MapView: Map loaded');
-    mapRef.current = map;
-    setIsLoaded(true);
-  }, []);
-
-  // Handle map unmount
-  const onUnmount = useCallback(() => {
-    console.log('MapView: Map unmounted');
-    mapRef.current = null;
-    setIsLoaded(false);
-  }, []);
-
-  // Create markers function
   const createMarkers = useCallback(() => {
-    if (!mapRef.current || !window.google) {
-      console.log('MapView: Cannot create markers - map or google not ready');
+    if (!mapRef.current || !window.google || !garageSales) {
+      console.log('MapView: Cannot create markers - missing requirements', {
+        hasMap: !!mapRef.current,
+        hasGoogle: !!window.google,
+        salesCount: garageSales?.length
+      });
       return;
     }
 
-    if (!displayedSales?.length) {
-      console.log('MapView: Cannot create markers - no garage sales data');
-      return;
-    }
-
-    console.log('MapView: Creating markers for sales:', displayedSales.length);
+    console.log('MapView: Creating markers for', garageSales.length, 'sales');
     cleanupMarkers();
 
-    displayedSales.forEach(sale => {
-      if (!sale?.position?.lat || !sale?.position?.lng) {
-        console.warn('MapView: Sale missing position data:', sale);
-        return;
-      }
+    // Filter sales based on display mode
+    const salesToShow = showOnlySelected 
+      ? garageSales.filter(sale => selectedSaleIds.includes(sale.id))
+      : garageSales;
+
+    const { AdvancedMarkerElement } = window.google.maps.marker;
+    if (!AdvancedMarkerElement) {
+      console.error('AdvancedMarkerElement not available');
+      return;
+    }
+
+    salesToShow.forEach(sale => {
+      const markerColor = selectedSaleIds.includes(sale.id) ? '#4CAF50' : '#FF0000';
+      
+      const pinElement = document.createElement('div');
+      pinElement.className = 'custom-pin';
+      pinElement.style.cursor = 'pointer';
+      pinElement.style.width = '24px';
+      pinElement.style.height = '24px';
+      pinElement.style.borderRadius = '50%';
+      pinElement.style.backgroundColor = markerColor;
+      pinElement.style.border = '2px solid white';
+      pinElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
       try {
-        const markerElement = document.createElement('div');
-        markerElement.className = 'garage-sale-marker';
-        // Set color based on whether the sale is selected
-        const markerColor = selectedSaleIds.includes(sale.id) ? '#4CAF50' : '#FF0000';
-        markerElement.style.cssText = `
-          background-color: ${markerColor};
-          border-radius: 50%;
-          border: 2px solid #FFFFFF;
-          width: 12px;
-          height: 12px;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        `;
-
-        const marker = new window.google.maps.marker.AdvancedMarkerElement({
-          position: sale.position,
-          content: markerElement,
-          title: sale.address,
-          map: mapRef.current
-        });
-
-        const infoContent = document.createElement('div');
-        infoContent.className = 'garage-sale-info';
-        infoContent.innerHTML = `
-          <div style="padding: 8px; max-width: 200px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${sale.address}</h3>
-            ${sale.description ? `<p style="margin: 0 0 8px 0;">${sale.description}</p>` : ''}
-            ${sale.highlightedItems?.length ? `
-              <div style="margin-top: 8px;">
-                <strong>Featured Items:</strong>
-                <ul style="margin: 4px 0 0 0; padding-left: 20px;">
-                  ${sale.highlightedItems.map(item => `<li>${item}</li>`).join('')}
-                </ul>
-              </div>
-            ` : ''}
-          </div>
-        `;
-
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: infoContent,
-          maxWidth: 250
+        const marker = new AdvancedMarkerElement({
+          map: mapRef.current,
+          position: { lat: sale.position.lat, lng: sale.position.lng },
+          content: pinElement,
+          title: sale.address
         });
 
         marker.addListener('click', () => {
-          markersRef.current.forEach(m => {
-            if (m.infoWindow && m.infoWindow !== infoWindow) {
-              m.infoWindow.close();
-            }
-          });
-
-          infoWindow.open({
-            anchor: marker,
-            map: mapRef.current
-          });
-
           setSelectedSale(sale);
         });
 
-        marker.infoWindow = infoWindow;
         markersRef.current.push(marker);
       } catch (error) {
-        console.error('MapView: Error creating marker:', {
-          sale,
-          error: error.message
-        });
+        console.error('Error creating marker:', error);
       }
     });
-
-    console.log('MapView: Created markers:', markersRef.current.length);
-  }, [displayedSales, cleanupMarkers]);
-
-  // Effect to manage markers
-  useEffect(() => {
-    console.log('MapView: Marker effect running with conditions:', {
-      isLoaded,
-      hasMap: !!mapRef.current,
-      salesCount: displayedSales?.length,
-      hasGoogle: !!window.google
-    });
-
-    if (!isLoaded || !mapRef.current || !window.google) {
-      console.log('MapView: Skipping marker creation - map not ready');
-      return;
-    }
-
-    if (!displayedSales?.length) {
-      console.log('MapView: Skipping marker creation - no garage sales data');
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      createMarkers();
-    }, 500); // Give a bit more time for everything to be ready
-
-    return () => {
-      clearTimeout(timeoutId);
-      cleanupMarkers();
-    };
-  }, [isLoaded, createMarkers, cleanupMarkers, displayedSales]);
-
-  // Handle map bounds update
-  const onBoundsChanged = useCallback(() => {
-    if (mapRef.current && markersRef.current.length === 0) {
-      createMarkers();
-    }
-  }, [createMarkers]);
-
-  // Memoize map options
-  const combinedMapOptions = useMemo(() => ({
-    ...mapOptions,
-    zoomControl: true,
-    streetViewControl: true,
-    mapTypeControl: true,
-  }), [mapOptions]);
+  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers]);
 
   // Effect to handle centering on user location
   useEffect(() => {
     if (shouldCenterOnUser && userLocation && mapRef.current) {
+      console.log('MapView: Centering on user location', userLocation);
       mapRef.current.panTo(userLocation);
       mapRef.current.setZoom(15);
       clearCenterOnUser();
@@ -242,26 +133,159 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Effect to update user location marker
   useEffect(() => {
-    if (!mapRef.current || !userLocation || !window.google) return;
-
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setMap(null);
+    // Only proceed if map is loaded and we have location
+    if (!isLoaded) {
+      console.log('MapView: Map not yet loaded, waiting...');
+      return;
     }
 
-    userMarkerRef.current = new window.google.maps.Marker({
-      position: userLocation,
-      map: mapRef.current,
-      title: 'Your Location',
-      icon: {
-        path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: '#4285F4',
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeWeight: 2,
-      },
+    if (!userLocation) {
+      console.log('MapView: No user location yet, waiting...');
+      return;
+    }
+
+    if (!window.google) {
+      console.log('MapView: Google Maps not yet available, waiting...');
+      return;
+    }
+
+    if (!mapRef.current) {
+      console.log('MapView: Map reference not yet available, waiting...');
+      return;
+    }
+
+    console.log('MapView: All requirements met, creating user location marker', {
+      hasMap: !!mapRef.current,
+      hasLocation: !!userLocation,
+      hasGoogle: !!window.google,
+      isLoaded
     });
-  }, [userLocation]);
+
+    try {
+      const { AdvancedMarkerElement } = window.google.maps.marker;
+      if (!AdvancedMarkerElement) {
+        console.error('AdvancedMarkerElement not available');
+        return;
+      }
+
+      // Clean up existing marker
+      if (userMarkerRef.current) {
+        userMarkerRef.current.map = null;
+        userMarkerRef.current = null;
+      }
+
+      const userPinElement = document.createElement('div');
+      userPinElement.style.position = 'relative';
+      userPinElement.style.width = '20px';
+      userPinElement.style.height = '20px';
+
+      // Inner circle (blue dot)
+      const innerCircle = document.createElement('div');
+      innerCircle.style.width = '20px';
+      innerCircle.style.height = '20px';
+      innerCircle.style.borderRadius = '50%';
+      innerCircle.style.backgroundColor = '#4285F4';
+      innerCircle.style.border = '3px solid white';
+      innerCircle.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      userPinElement.appendChild(innerCircle);
+
+      // Outer circle (pulse effect)
+      const outerCircle = document.createElement('div');
+      outerCircle.style.position = 'absolute';
+      outerCircle.style.top = '-5px';
+      outerCircle.style.left = '-5px';
+      outerCircle.style.width = '30px';
+      outerCircle.style.height = '30px';
+      outerCircle.style.borderRadius = '50%';
+      outerCircle.style.backgroundColor = 'rgba(66, 133, 244, 0.2)';
+      outerCircle.style.animation = 'pulse 2s infinite';
+      userPinElement.appendChild(outerCircle);
+
+      // Add the pulse animation if it doesn't exist
+      if (!document.getElementById('pulse-animation')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-animation';
+        style.textContent = `
+          @keyframes pulse {
+            0% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(2);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      userMarkerRef.current = new AdvancedMarkerElement({
+        map: mapRef.current,
+        position: userLocation,
+        content: userPinElement,
+        title: 'Your Location'
+      });
+
+      console.log('MapView: Successfully created user location marker');
+    } catch (error) {
+      console.error('Error creating user location marker:', error);
+    }
+  }, [userLocation, isLoaded]);
+
+  // Effect to create/update markers when garage sales change
+  useEffect(() => {
+    if (!isLoaded) {
+      console.log('MapView: Map not loaded yet, waiting to create markers...');
+      return;
+    }
+
+    if (!garageSales?.length) {
+      console.log('MapView: No garage sales data yet, waiting...');
+      return;
+    }
+
+    if (!window.google) {
+      console.log('MapView: Google Maps not available yet, waiting...');
+      return;
+    }
+
+    if (!mapRef.current) {
+      console.log('MapView: Map reference not available yet, waiting...');
+      return;
+    }
+
+    console.log('MapView: All requirements met, creating', garageSales.length, 'markers');
+    createMarkers();
+  }, [isLoaded, garageSales, createMarkers]);
+
+  const onLoad = useCallback((map) => {
+    console.log('MapView: Map loaded, setting reference and loaded state');
+    mapRef.current = map;
+    setIsLoaded(true);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    console.log('MapView: Map unmounting, cleaning up');
+    cleanupMarkers();
+    mapRef.current = null;
+    setIsLoaded(false);
+  }, [cleanupMarkers]);
+
+  const combinedMapOptions = useMemo(() => ({
+    ...mapOptions,
+    zoomControl: true,
+    mapTypeControl: true,
+  }), [mapOptions]);
+
+  // Loading and error states
+  if (loading) {
+    return <div>Loading garage sales...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading garage sales: {error}</div>;
+  }
 
   return (
     <>
@@ -269,28 +293,24 @@ function MapView({ mapContainerStyle, mapOptions }) {
         mapContainerStyle={mapContainerStyle}
         center={center}
         zoom={11}
-        options={combinedMapOptions}
         onLoad={onLoad}
         onUnmount={onUnmount}
-        onBoundsChanged={onBoundsChanged}
+        options={combinedMapOptions}
       >
-        {selectedSale && selectedSale.position && (
+        {selectedSale && (
           <InfoWindow
             position={selectedSale.position}
             onCloseClick={() => setSelectedSale(null)}
           >
             <div>
               <h3>{selectedSale.address}</h3>
-              <p>{selectedSale.description || ''}</p>
+              <p>{selectedSale.description}</p>
             </div>
           </InfoWindow>
         )}
       </GoogleMap>
-      {loading && <div>Loading...</div>}
-      {error && <div>Error: {error}</div>}
-      {!loading && !error && (!displayedSales || displayedSales.length === 0) && <div>No addresses to display</div>}
     </>
   );
 }
 
-export default React.memo(MapView);
+export default MapView;

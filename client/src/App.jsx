@@ -26,14 +26,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Define libraries as a static constant
-const libraries = ['marker'];
-
 function App() {
-  const mapContainerStyle = {
+  // Google Maps libraries
+  const libraries = useMemo(() => ['places', 'marker'], []);
+
+  // Map container style
+  const mapContainerStyle = useMemo(() => ({
     width: '100%',
     height: '100vh'
-  };
+  }), []);
 
   const mapOptions = useMemo(() => ({
     disableDefaultUI: false,
