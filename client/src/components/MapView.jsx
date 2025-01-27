@@ -48,26 +48,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
     
     console.log('MapView: Checking for garage sales data');
     
-    const selectedSalesData = localStorage.getItem('selectedSaleIds');
     const cachedGarageSales = localStorage.getItem('garageSales');
     
     const loadData = async () => {
-      if (selectedSalesData) {
-        console.log('MapView: Found selected sales in localStorage');
-        const parsedSelectedSales = JSON.parse(selectedSalesData);
-        if (parsedSelectedSales.length > 0) {
-          // First ensure we have the full garage sales data
-          if (garageSales.length === 0) {
-            console.log('MapView: Fetching all garage sales first');
-            await fetchGarageSales();
-          }
-          // Then filter for selected sales
-          console.log('MapView: Filtering for selected sales');
-          setGarageSales(prevSales => 
-            prevSales.filter(sale => parsedSelectedSales.includes(sale.id))
-          );
-        }
-      } else if (!cachedGarageSales || garageSales.length === 0) {
+      if (!cachedGarageSales || garageSales.length === 0) {
         console.log('MapView: No garage sales data found, triggering fetch');
         await fetchGarageSales();
       }
@@ -79,11 +63,18 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
   }, [fetchGarageSales, garageSales.length]);
 
-  // Memoize callbacks
-  const onMapLoad = useCallback((map) => {
-    console.log('MapView: Map loaded and ref set');
+  // Handle map load
+  const onLoad = useCallback((map) => {
+    console.log('MapView: Map loaded');
     mapRef.current = map;
     setIsLoaded(true);
+  }, []);
+
+  // Handle map unmount
+  const onUnmount = useCallback(() => {
+    console.log('MapView: Map unmounted');
+    mapRef.current = null;
+    setIsLoaded(false);
   }, []);
 
   // Create markers function
@@ -219,87 +210,101 @@ function MapView({ mapContainerStyle, mapOptions }) {
   }, [createMarkers]);
 
   // Memoize map options
-  const finalMapOptions = useMemo(() => ({
+  const combinedMapOptions = useMemo(() => ({
     ...mapOptions,
     zoomControl: true,
     streetViewControl: true,
     mapTypeControl: true,
   }), [mapOptions]);
 
-  // Handle user location tracking
+  // Get user's location
   useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
+    if (!isLoaded || !mapRef.current || !window.google || initialLocationSetRef.current) {
+      return;
+    }
 
-    const updateUserLocation = (position) => {
-      const { latitude, longitude } = position.coords;
-      const newLocation = { lat: latitude, lng: longitude };
-      setUserLocation(newLocation);
-
-      // Create or update user location marker
-      if (!userMarkerRef.current) {
-        const markerElement = document.createElement('div');
-        markerElement.className = 'user-location-marker';
-        markerElement.style.cssText = `
-          background-color: #4285F4;
-          border: 2px solid #FFFFFF;
-          border-radius: 50%;
-          width: 16px;
-          height: 16px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        `;
-
-        userMarkerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
-          position: newLocation,
-          content: markerElement,
-          map: mapRef.current,
-          title: 'Your Location'
-        });
-      } else {
-        userMarkerRef.current.position = newLocation;
+    const getUserLocation = () => {
+      if (!navigator.geolocation) {
+        console.warn('Geolocation is not supported by this browser.');
+        handleLocationError();
+        return;
       }
 
-      // Center map on user location if it's the first time
-      if (!initialLocationSetRef.current) {
-        mapRef.current.panTo(newLocation);
-        initialLocationSetRef.current = true;
-      }
-    };
-
-    const handleError = (error) => {
-      console.error('Error getting user location:', error);
-    };
-
-    // Start watching user location
-    const watchId = navigator.geolocation.watchPosition(
-      updateUserLocation,
-      handleError,
-      {
+      const options = {
         enableHighAccuracy: true,
-        timeout: 5000,
+        timeout: 10000,
         maximumAge: 0
-      }
-    );
+      };
 
-    // Cleanup function
-    return () => {
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-      if (userMarkerRef.current) {
-        userMarkerRef.current.map = null;
-        userMarkerRef.current = null;
+      const handleLocationError = () => {
+        console.log('MapView: Using default location');
+        const defaultPos = center;
+        if (mapRef.current) {
+          mapRef.current.panTo(defaultPos);
+          mapRef.current.setZoom(11);
+        }
+      };
+
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            if (!mapRef.current) return;
+
+            const pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            setUserLocation(pos);
+            mapRef.current.panTo(pos);
+            mapRef.current.setZoom(13);
+
+            // Create user location marker
+            if (userMarkerRef.current) {
+              userMarkerRef.current.setMap(null);
+            }
+
+            if (window.google && mapRef.current) {
+              userMarkerRef.current = new window.google.maps.Marker({
+                position: pos,
+                map: mapRef.current,
+                title: 'Your Location',
+                icon: {
+                  path: window.google.maps.SymbolPath.CIRCLE,
+                  scale: 10,
+                  fillColor: '#4285F4',
+                  fillOpacity: 1,
+                  strokeColor: '#ffffff',
+                  strokeWeight: 2,
+                },
+              });
+            }
+          },
+          (error) => {
+            console.warn('Error getting location:', error);
+            handleLocationError();
+          },
+          options
+        );
+      } catch (error) {
+        console.error('Error in geolocation:', error);
+        handleLocationError();
       }
     };
-  }, [isLoaded]);
+
+    initialLocationSetRef.current = true;
+    getUserLocation();
+
+  }, [isLoaded, center]);
 
   return (
     <>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={center}
-        zoom={12}
-        options={finalMapOptions}
-        onLoad={onMapLoad}
+        zoom={11}
+        options={combinedMapOptions}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
         onBoundsChanged={onBoundsChanged}
       >
         {selectedSale && selectedSale.position && (
