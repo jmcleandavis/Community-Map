@@ -6,6 +6,7 @@ import Settings from './menuItems/Settings';
 import Help from './menuItems/Help';
 import DisplayMode from './menuItems/DisplayMode';
 import { useAuth } from '../context/AuthContext';
+import { useLocation as useMapLocation } from '../context/LocationContext';
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,7 @@ const HamburgerMenu = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { centerOnUserLocation } = useMapLocation();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -32,7 +34,7 @@ const HamburgerMenu = () => {
   };
 
   const handleMyLocation = () => {
-    navigate('/my-location');
+    centerOnUserLocation();
     setIsOpen(false);
   };
 
