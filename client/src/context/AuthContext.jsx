@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error;
     }
-  };
+  };o?<Mncx22QN4>fpD
 
   const logout = async () => {
     try {
