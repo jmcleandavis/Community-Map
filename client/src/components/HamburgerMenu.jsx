@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HamburgerMenu.css';
-import GarageSalesMenuItem from './menuItems/GarageSales';
-import MyLocation from './menuItems/MyLocation';
-import MapSettings from './menuItems/MapSettings';
 import Auth from './menuItems/Auth';
 import Settings from './menuItems/Settings';
 import Help from './menuItems/Help';
+import DisplayMode from './menuItems/DisplayMode';
 import { useAuth } from '../context/AuthContext';
 
 const HamburgerMenu = () => {
@@ -48,31 +46,6 @@ const HamburgerMenu = () => {
     }
   };
 
-  const menuItems = [
-    { id: 'map', label: 'Map', path: '/' },
-    { id: 'garage-sales', label: 'Garage Sales', path: '/sales' },
-    ...(isAuthenticated && isAdmin ? [{ id: 'admin-sales', label: 'Manage Sales', path: '/admin/sales' }] : []),
-    { id: 'my-location', label: 'My Location', onClick: handleMyLocation },
-    { id: 'map-settings', label: 'Map Settings', onClick: () => console.log('Map Settings clicked') },
-    isAuthenticated
-      ? { id: 'logout', label: 'Logout', onClick: handleLogout }
-      : { id: 'auth', label: 'Login/Signup', path: '/login' },
-    { id: 'settings', label: 'Settings', path: '/settings' },
-    { id: 'help', label: 'Help', path: '/help' },
-    { id: 'about', label: 'About', path: '/info' }
-  ];
-
-  const handleItemClick = (item) => {
-    if (item.onClick) {
-      item.onClick();
-    } else if (item.path) {
-      navigate(item.path);
-      setIsOpen(false);
-    } else {
-      setActiveItem(activeItem === item.id ? null : item.id);
-    }
-  };
-
   return (
     <div className="hamburger-container">
       <button className="hamburger-button" onClick={toggleMenu}>
@@ -82,26 +55,59 @@ const HamburgerMenu = () => {
           <span></span>
         </div>
       </button>
-      
       {isOpen && (
-        <div className="menu-content">
-          <ul>
-            {menuItems.map((item) => (
-              <li 
-                key={item.id}
-                onClick={() => handleItemClick(item)}
-                className={activeItem === item.id ? 'active' : ''}
-              >
-                {item.label}
-              </li>
-            ))}
-          </ul>
-          {activeItem && !menuItems.find(item => item.id === activeItem)?.path && (
-            <div className="menu-item-content">
-              {(() => {
-                const Component = menuItems.find(item => item.id === activeItem)?.component;
-                return Component ? <Component /> : null;
-              })()}
+        <div className="menu-items">
+          <div className="menu-item" onClick={handleMapClick}>
+            <span className="menu-icon">🗺️</span>
+            <span className="menu-text">Map</span>
+          </div>
+          <DisplayMode onSelect={() => setIsOpen(false)} />
+          <div className="menu-item" onClick={() => {
+            navigate('/sales');
+            setIsOpen(false);
+          }}>
+            <span className="menu-icon">🏷️</span>
+            <span className="menu-text">Garage Sales</span>
+          </div>
+          {isAuthenticated && isAdmin && (
+            <div className="menu-item" onClick={() => {
+              navigate('/admin/sales');
+              setIsOpen(false);
+            }}>
+              <span className="menu-icon">⚙️</span>
+              <span className="menu-text">Manage Sales</span>
+            </div>
+          )}
+          <div className="menu-item" onClick={handleMyLocation}>
+            <span className="menu-icon">📍</span>
+            <span className="menu-text">My Location</span>
+          </div>
+          <div className="menu-item" onClick={() => {
+            console.log('Map Settings clicked');
+            setIsOpen(false);
+          }}>
+            <span className="menu-icon">⚙️</span>
+            <span className="menu-text">Map Settings</span>
+          </div>
+          <div className="menu-item" onClick={() => {
+            navigate('/help');
+            setIsOpen(false);
+          }}>
+            <span className="menu-icon">❓</span>
+            <span className="menu-text">Help</span>
+          </div>
+          {isAuthenticated ? (
+            <div className="menu-item" onClick={handleLogout}>
+              <span className="menu-icon">🚪</span>
+              <span className="menu-text">Logout</span>
+            </div>
+          ) : (
+            <div className="menu-item" onClick={() => {
+              navigate('/login');
+              setIsOpen(false);
+            }}>
+              <span className="menu-icon">🔑</span>
+              <span className="menu-text">Login</span>
             </div>
           )}
         </div>

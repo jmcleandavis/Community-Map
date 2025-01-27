@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
+import { useDisplay } from '../context/DisplayContext';
 
 function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
@@ -17,6 +18,21 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const initialLocationSetRef = useRef(false);
   const initialLoadRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error, setGarageSales } = useGarageSales();
+  const { showOnlySelected } = useDisplay();
+
+  // Get selected sale IDs from localStorage
+  const selectedSaleIds = useMemo(() => {
+    const data = localStorage.getItem('selectedSaleIds');
+    return data ? JSON.parse(data) : [];
+  }, []);
+
+  // Filter sales based on display mode
+  const displayedSales = useMemo(() => {
+    if (showOnlySelected) {
+      return garageSales.filter(sale => selectedSaleIds.includes(sale.id));
+    }
+    return garageSales;
+  }, [garageSales, showOnlySelected, selectedSaleIds]);
 
   // Cleanup function for markers
   const cleanupMarkers = useCallback(() => {
@@ -84,18 +100,15 @@ function MapView({ mapContainerStyle, mapOptions }) {
       return;
     }
 
-    if (!garageSales?.length) {
+    if (!displayedSales?.length) {
       console.log('MapView: Cannot create markers - no garage sales data');
       return;
     }
 
-    console.log('MapView: Creating markers for sales:', garageSales.length);
+    console.log('MapView: Creating markers for sales:', displayedSales.length);
     cleanupMarkers();
 
-    // Get selected sale IDs from localStorage
-    const selectedSaleIds = JSON.parse(localStorage.getItem('selectedSaleIds') || '[]');
-
-    garageSales.forEach(sale => {
+    displayedSales.forEach(sale => {
       if (!sale?.position?.lat || !sale?.position?.lng) {
         console.warn('MapView: Sale missing position data:', sale);
         return;
@@ -171,14 +184,14 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     console.log('MapView: Created markers:', markersRef.current.length);
-  }, [garageSales, cleanupMarkers]);
+  }, [displayedSales, cleanupMarkers]);
 
   // Effect to manage markers
   useEffect(() => {
     console.log('MapView: Marker effect running with conditions:', {
       isLoaded,
       hasMap: !!mapRef.current,
-      salesCount: garageSales?.length,
+      salesCount: displayedSales?.length,
       hasGoogle: !!window.google
     });
 
@@ -187,7 +200,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       return;
     }
 
-    if (!garageSales?.length) {
+    if (!displayedSales?.length) {
       console.log('MapView: Skipping marker creation - no garage sales data');
       return;
     }
@@ -200,7 +213,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       clearTimeout(timeoutId);
       cleanupMarkers();
     };
-  }, [isLoaded, createMarkers, cleanupMarkers, garageSales]);
+  }, [isLoaded, createMarkers, cleanupMarkers, displayedSales]);
 
   // Handle map bounds update
   const onBoundsChanged = useCallback(() => {
@@ -321,7 +334,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       </GoogleMap>
       {loading && <div>Loading...</div>}
       {error && <div>Error: {error}</div>}
-      {!loading && !error && (!garageSales || garageSales.length === 0) && <div>No addresses to display</div>}
+      {!loading && !error && (!displayedSales || displayedSales.length === 0) && <div>No addresses to display</div>}
     </>
   );
 }
