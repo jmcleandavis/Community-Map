@@ -130,6 +130,7 @@ export function GarageSalesProvider({ children }) {
     loading,
     error,
     fetchGarageSales,
+    setGarageSales
   };
 
   return (
