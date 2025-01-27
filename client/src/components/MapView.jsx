@@ -101,6 +101,9 @@ function MapView({ mapContainerStyle, mapOptions }) {
     console.log('MapView: Creating markers for sales:', garageSales.length);
     cleanupMarkers();
 
+    // Get selected sale IDs from localStorage
+    const selectedSaleIds = JSON.parse(localStorage.getItem('selectedSaleIds') || '[]');
+
     garageSales.forEach(sale => {
       if (!sale?.position?.lat || !sale?.position?.lng) {
         console.warn('MapView: Sale missing position data:', sale);
@@ -110,8 +113,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
       try {
         const markerElement = document.createElement('div');
         markerElement.className = 'garage-sale-marker';
+        // Set color based on whether the sale is selected
+        const markerColor = selectedSaleIds.includes(sale.id) ? '#4CAF50' : '#FF0000';
         markerElement.style.cssText = `
-          background-color: #FF0000;
+          background-color: ${markerColor};
           border-radius: 50%;
           border: 2px solid #FFFFFF;
           width: 12px;
