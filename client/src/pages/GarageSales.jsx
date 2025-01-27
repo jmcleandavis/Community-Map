@@ -99,20 +99,21 @@ const GarageSales = () => {
         </div>
 
         <div className="selection-controls">
-          <button 
-            className="select-all-button"
-            onClick={() => handleSelectAll(filteredSales)}
-          >
-            {selectedSales.size === filteredSales.length ? 'Unselect All' : 'Select All'}
-          </button>
-          
           {selectedSales.size > 0 && (
-            <button 
-              className="view-selected-button"
-              onClick={handleViewSelected}
-            >
-              View Selected ({selectedSales.size})
-            </button>
+            <>
+              <button 
+                className="select-all-button"
+                onClick={() => handleSelectAll(filteredSales)}
+              >
+                Deselect All
+              </button>
+              <button 
+                className="view-selected-button"
+                onClick={handleViewSelected}
+              >
+                View Selected ({selectedSales.size})
+              </button>
+            </>
           )}
         </div>
       </div>
