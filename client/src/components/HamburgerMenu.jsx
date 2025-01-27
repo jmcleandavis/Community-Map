@@ -96,6 +96,13 @@ const HamburgerMenu = () => {
             <span className="menu-icon">❓</span>
             <span className="menu-text">Help</span>
           </div>
+          <div className="menu-item" onClick={() => {
+            navigate('/info');
+            setIsOpen(false);
+          }}>
+            <span className="menu-icon">ℹ️</span>
+            <span className="menu-text">Info</span>
+          </div>
           {isAuthenticated ? (
             <div className="menu-item" onClick={handleLogout}>
               <span className="menu-icon">🚪</span>
