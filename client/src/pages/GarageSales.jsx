@@ -15,7 +15,7 @@ const GarageSales = () => {
   } = useGarageSales();
   
   const { searchTerm, handleSearchChange } = useSearch();
-  const { selectedSales, handleCheckboxChange, handleSelectAll } = useSelection();
+  const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
   
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -103,7 +103,7 @@ const GarageSales = () => {
             <>
               <button 
                 className="select-all-button"
-                onClick={() => handleSelectAll(filteredSales)}
+                onClick={() => handleDeselectAll(filteredSales)}
               >
                 Deselect All
               </button>

@@ -26,18 +26,14 @@ export function SelectionProvider({ children }) {
     });
   };
 
-  const handleSelectAll = (filteredSales) => {
-    if (selectedSales.size === filteredSales.length) {
-      setSelectedSales(new Set());
-    } else {
-      setSelectedSales(new Set(filteredSales.map(sale => sale.id)));
-    }
+  const handleDeselectAll = (filteredSales) => {
+    setSelectedSales(new Set());
   };
 
   const value = {
     selectedSales,
     handleCheckboxChange,
-    handleSelectAll,
+    handleDeselectAll,
   };
 
   return (
