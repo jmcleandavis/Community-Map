@@ -15,6 +15,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const initialLocationSetRef = useRef(false);
+  const initialLoadRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error, setGarageSales } = useGarageSales();
 
   // Cleanup function for markers
@@ -43,31 +44,40 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Load garage sales data
   useEffect(() => {
+    if (initialLoadRef.current) return;
+    
     console.log('MapView: Checking for garage sales data');
     
-    const selectedSalesData = localStorage.getItem('selectedSales');
+    const selectedSalesData = localStorage.getItem('selectedSaleIds');
     const cachedGarageSales = localStorage.getItem('garageSales');
     
-    if (selectedSalesData) {
-      console.log('MapView: Found selected sales in localStorage');
-      const parsedSelectedSales = JSON.parse(selectedSalesData);
-      if (parsedSelectedSales.length > 0) {
-        // Filter the garage sales to only show selected ones
-        const selectedSaleIds = new Set(parsedSelectedSales);
-        const filteredSales = garageSales.filter(sale => selectedSaleIds.has(sale.id));
-        if (filteredSales.length > 0) {
-          console.log('MapView: Displaying selected sales:', filteredSales.length);
-          setGarageSales(filteredSales);
-        } else {
-          console.log('MapView: No matching selected sales found, fetching all sales');
-          fetchGarageSales();
+    const loadData = async () => {
+      if (selectedSalesData) {
+        console.log('MapView: Found selected sales in localStorage');
+        const parsedSelectedSales = JSON.parse(selectedSalesData);
+        if (parsedSelectedSales.length > 0) {
+          // First ensure we have the full garage sales data
+          if (garageSales.length === 0) {
+            console.log('MapView: Fetching all garage sales first');
+            await fetchGarageSales();
+          }
+          // Then filter for selected sales
+          console.log('MapView: Filtering for selected sales');
+          setGarageSales(prevSales => 
+            prevSales.filter(sale => parsedSelectedSales.includes(sale.id))
+          );
         }
+      } else if (!cachedGarageSales || garageSales.length === 0) {
+        console.log('MapView: No garage sales data found, triggering fetch');
+        await fetchGarageSales();
       }
-    } else if (!cachedGarageSales || garageSales.length === 0) {
-      console.log('MapView: No garage sales data found, triggering fetch');
-      fetchGarageSales();
-    }
-  }, [fetchGarageSales, garageSales, setGarageSales]);
+      initialLoadRef.current = true;
+    };
+
+    loadData().catch(err => {
+      console.error('MapView: Error loading garage sales:', err);
+    });
+  }, [fetchGarageSales, garageSales.length]);
 
   // Memoize callbacks
   const onMapLoad = useCallback((map) => {
@@ -78,8 +88,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Create markers function
   const createMarkers = useCallback(() => {
-    if (!mapRef.current || !garageSales?.length || !window.google) {
-      console.log('MapView: Cannot create markers - missing dependencies');
+    if (!mapRef.current || !window.google) {
+      console.log('MapView: Cannot create markers - map or google not ready');
+      return;
+    }
+
+    if (!garageSales?.length) {
+      console.log('MapView: Cannot create markers - no garage sales data');
       return;
     }
 
@@ -160,7 +175,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     console.log('MapView: Created markers:', markersRef.current.length);
-  }, [garageSales]);
+  }, [garageSales, cleanupMarkers]);
 
   // Effect to manage markers
   useEffect(() => {
@@ -171,17 +186,25 @@ function MapView({ mapContainerStyle, mapOptions }) {
       hasGoogle: !!window.google
     });
 
-    if (!isLoaded) return;
+    if (!isLoaded || !mapRef.current || !window.google) {
+      console.log('MapView: Skipping marker creation - map not ready');
+      return;
+    }
 
-    // Small delay to ensure map is fully loaded
+    if (!garageSales?.length) {
+      console.log('MapView: Skipping marker creation - no garage sales data');
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       createMarkers();
-    }, 100);
+    }, 500); // Give a bit more time for everything to be ready
 
     return () => {
       clearTimeout(timeoutId);
+      cleanupMarkers();
     };
-  }, [isLoaded, createMarkers]);
+  }, [isLoaded, createMarkers, cleanupMarkers, garageSales]);
 
   // Handle map bounds update
   const onBoundsChanged = useCallback(() => {
@@ -190,7 +213,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
   }, [createMarkers]);
 
-  // Memorize map options
+  // Memoize map options
   const finalMapOptions = useMemo(() => ({
     ...mapOptions,
     zoomControl: true,
