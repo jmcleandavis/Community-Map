@@ -245,8 +245,15 @@ const login = async (email, password) => {
         user: response.data.user,
         sessionId: sessionId
       });
-      localStorage.setItem('sessionId', sessionId);
-      return response.data;
+      
+      // Return the structured data needed by AuthContext
+      return {
+        data: {
+          sessionId: sessionId,
+          userId: response.data.userId || email, // Use email as userId if not provided by API
+          userType: response.data.userType || 'user' // Default to 'user' if not provided
+        }
+      };
     }
     throw new Error('Invalid login response');
   } catch (error) {
