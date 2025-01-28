@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const AutoResizeTextArea = ({ value, onChange, ...props }) => {
+const AutoResizeTextArea = ({ value, onChange, minRows = 3, ...props }) => {
   const textareaRef = useRef(null);
 
   const adjustHeight = () => {
@@ -9,7 +9,9 @@ const AutoResizeTextArea = ({ value, onChange, ...props }) => {
       // Reset height to auto to get the correct scrollHeight
       textarea.style.height = 'auto';
       // Set the height to match the content
-      textarea.style.height = `${textarea.scrollHeight}px`;
+      const minHeight = minRows * parseFloat(getComputedStyle(textarea).lineHeight);
+      const newHeight = Math.max(minHeight, textarea.scrollHeight);
+      textarea.style.height = `${newHeight}px`;
     }
   };
 
@@ -19,16 +21,27 @@ const AutoResizeTextArea = ({ value, onChange, ...props }) => {
   }, [value]);
 
   const handleChange = (e) => {
-    onChange(e);
+    const { name, value } = e.target;
+    // Create a synthetic event that matches what the parent component expects
+    onChange({
+      target: {
+        name,
+        value
+      }
+    });
     adjustHeight();
   };
 
   return (
     <textarea
       ref={textareaRef}
-      value={value}
+      value={value || ''}
       onChange={handleChange}
-      style={{ overflow: 'hidden' }} 
+      style={{ 
+        overflow: 'hidden',
+        resize: 'none',
+        minHeight: `${minRows * 1.5}em`
+      }}
       {...props}
     />
   );

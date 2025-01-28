@@ -9,16 +9,12 @@ const GarageSalesAdmin = () => {
     garageSales,
     loading,
     error,
-    searchTerm,
-    selectedSales,
     fetchGarageSales,
-    handleSearchChange,
-    handleCheckboxChange,
-    handleSelectAll,
   } = useGarageSales();
   
   const navigate = useNavigate();
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [newSale, setNewSale] = useState({
     Address: '',
     Description: ''
@@ -42,6 +38,10 @@ const GarageSalesAdmin = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleSubmit = async (e) => {
@@ -79,10 +79,13 @@ const GarageSalesAdmin = () => {
     navigate('/');
   };
 
-  const filteredSales = garageSales.filter(sale => 
-    (sale.Address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (sale.Description || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSales = (garageSales || []).filter(sale => {
+    const currentSearchTerm = searchTerm.toLowerCase();
+    const address = (sale?.Address || '').toLowerCase();
+    const description = (sale?.Description || '').toLowerCase();
+    
+    return address.includes(currentSearchTerm) || description.includes(currentSearchTerm);
+  });
 
   if (loading) {
     return (
@@ -133,8 +136,6 @@ const GarageSalesAdmin = () => {
                 name="Description"
                 value={newSale.Description}
                 onChange={handleInputChange}
-                required
-                className="description-input"
                 placeholder="Enter garage sale description..."
                 minRows={3}
               />
