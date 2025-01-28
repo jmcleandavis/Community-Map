@@ -4,7 +4,7 @@ import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useLocation } from '../context/LocationContext';
 
-function MapView({ mapContainerStyle, mapOptions }) {
+function MapView({ mapContainerStyle }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [center] = useState({
@@ -283,11 +283,29 @@ function MapView({ mapContainerStyle, mapOptions }) {
     setIsLoaded(false);
   }, [cleanupMarkers]);
 
-  const combinedMapOptions = useMemo(() => ({
-    ...mapOptions,
+  const mapOptions = useMemo(() => ({
     zoomControl: true,
     mapTypeControl: true,
-  }), [mapOptions]);
+    mapTypeControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
+      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR,
+      mapTypeIds: [
+        'roadmap',
+        'satellite',
+        'hybrid',
+        'terrain'
+      ]
+    },
+    streetViewControl: true,
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
+    },
+    zoomControlOptions: {
+      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
+    },
+    mapId: import.meta.env.VITE_GOOGLE_MAPS_ID
+  }), []);
 
   // Loading and error states
   if (loading) {
@@ -306,7 +324,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
         zoom={11}
         onLoad={onLoad}
         onUnmount={onUnmount}
-        options={combinedMapOptions}
+        options={mapOptions}
       >
         {selectedSale && (
           <InfoWindow

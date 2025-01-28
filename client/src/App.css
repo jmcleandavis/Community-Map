@@ -56,52 +56,17 @@
   height: 100vh;
 }
 
-/* Ensure buttons stay horizontal */
+/* Map control styles */
 .gm-style-mtc {
   display: inline-block !important;
 }
 
-/* Add some spacing between the buttons */
-.gm-style-mtc:not(:first-child) {
-  margin-left: 0 !important;
-}
-
-/* Ensure map controls are above other elements */
 .gm-style-mtc div {
   z-index: 1001 !important;
 }
 
-/* Adjust map controls positioning */
-.gm-style .gm-style-mtc {
-  margin-right: 0 !important;
-}
-
-.gm-style .gm-fullscreen-control {
-  margin-left: 0 !important;
-}
-
-/* Position map controls */
-.gm-style > .gmnoprint:has(.gm-style-mtc),
-.gm-style > .gm-fullscreen-control {
-  right: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.gm-style > .gmnoprint:has(.gm-style-mtc) {
-  right: 40px !important;  /* Adjust this value based on the fullscreen button width */
-}
-
-.gm-style-mtc,
 .gm-fullscreen-control {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.gm-style-mtc button,
-.gm-fullscreen-control button {
-  margin: 0 !important;
-  padding: 0 8px !important;
+  margin-left: 5px !important;
 }
 
 .garage-sale-marker {
