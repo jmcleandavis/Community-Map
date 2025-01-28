@@ -104,3 +104,22 @@
 .logout-button:hover {
   background: #d32f2f;
 }
+
+.menu-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.menu-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
