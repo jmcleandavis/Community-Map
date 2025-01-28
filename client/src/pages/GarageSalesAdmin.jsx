@@ -14,26 +14,42 @@ const GarageSalesAdmin = () => {
   
   const navigate = useNavigate();
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newSale, setNewSale] = useState({
+  const [editingSale, setEditingSale] = useState(null);
+  const [formData, setFormData] = useState({
     address: '',
     description: ''
   });
 
   const handleAddNew = () => {
-    setIsAddingNew(true);
-  };
-
-  const handleCancelAdd = () => {
-    setIsAddingNew(false);
-    setNewSale({
+    setEditingSale(null);
+    setFormData({
       address: '',
       description: ''
     });
+    setIsAddingNew(true);
+  };
+
+  const handleEdit = (sale) => {
+    setIsAddingNew(false);
+    setEditingSale(sale);
+    setFormData({
+      address: sale.address,
+      description: sale.description
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSale(null);
+    setFormData({
+      address: '',
+      description: ''
+    });
+    setIsAddingNew(false);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewSale(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -41,14 +57,20 @@ const GarageSalesAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement API call to add new garage sale
-    console.log('Adding new garage sale:', newSale);
+    if (editingSale) {
+      // TODO: Implement API call to update garage sale
+      console.log('Updating garage sale:', editingSale.id, formData);
+    } else {
+      // TODO: Implement API call to add new garage sale
+      console.log('Adding new garage sale:', formData);
+    }
     setIsAddingNew(false);
-    setNewSale({
+    setEditingSale(null);
+    setFormData({
       address: '',
       description: ''
     });
-    // Refresh the list after adding
+    // Refresh the list after adding/editing
     fetchGarageSales();
   };
 
@@ -96,21 +118,21 @@ const GarageSalesAdmin = () => {
       <h1>Garage Sales Administration</h1>
       
       <div className="admin-controls">
-        {!isAddingNew && (
+        {!isAddingNew && !editingSale && (
           <button onClick={handleAddNew}>Add New Garage Sale</button>
         )}
       </div>
 
-      {isAddingNew && (
+      {(isAddingNew || editingSale) && (
         <div className="add-sale-form">
-          <h2>Add New Garage Sale</h2>
+          <h2>{editingSale ? 'Edit Garage Sale' : 'Add New Garage Sale'}</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Address:</label>
               <input
                 type="text"
                 name="address"
-                value={newSale.address}
+                value={formData.address}
                 onChange={handleInputChange}
                 required
               />
@@ -119,15 +141,19 @@ const GarageSalesAdmin = () => {
               <label>Description:</label>
               <AutoResizeTextArea
                 name="description"
-                value={newSale.description}
+                value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Enter garage sale description..."
                 minRows={3}
               />
             </div>
             <div className="form-buttons">
-              <button type="submit">Save</button>
-              <button type="button" onClick={handleCancelAdd}>Cancel</button>
+              <button type="submit">
+                {editingSale ? 'Save Changes' : 'Save'}
+              </button>
+              <button type="button" onClick={handleCancelEdit}>
+                Cancel
+              </button>
             </div>
           </form>
         </div>
@@ -145,6 +171,12 @@ const GarageSalesAdmin = () => {
                   onClick={() => handleViewOnMap(sale)}
                 >
                   View on Map
+                </button>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEdit(sale)}
+                >
+                  Edit
                 </button>
                 <button
                   className="delete-button"
