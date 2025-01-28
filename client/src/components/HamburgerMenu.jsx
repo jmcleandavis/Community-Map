@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../context/LocationContext';
@@ -10,6 +10,24 @@ const HamburgerMenu = () => {
   const navigate = useNavigate();
   const { isAuthenticated, userId, userType, logout } = useAuth();
   const { centerOnUserLocation } = useLocation();
+  const menuRef = useRef(null);
+
+  // Function to check if a click is outside the menu
+  const handleClickOutside = (event) => {
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setIsOpen(false); // Close the menu
+    }
+  };
+
+  // Add event listener when component mounts
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup function to remove event listener when component unmounts
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleMapClick = () => {
     navigate('/');
@@ -37,7 +55,7 @@ const HamburgerMenu = () => {
         </div>
       </button>
 
-      <div className={`menu-items ${isOpen ? 'open' : ''}`}>
+      <div className={`menu-items ${isOpen ? 'open' : ''}`} ref={menuRef}>
         <div className="menu-item" onClick={handleMapClick}>
           <span className="menu-icon">🗺️</span>
           <span className="menu-text">Map</span>
