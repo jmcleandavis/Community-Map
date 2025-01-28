@@ -15,6 +15,7 @@ function MapContainer() {
       <div className="map-container">
         <LoadScript
           googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          mapIds={[import.meta.env.VITE_GOOGLE_MAPS_ID]}
           libraries={libraries}
           onLoad={() => {
             console.log('Google Maps script loaded');
