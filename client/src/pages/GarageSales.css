@@ -2,7 +2,6 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  min-height: 100vh;
   background-color: white;
 }
 
@@ -10,14 +9,17 @@
   color: #333;
   margin-bottom: 30px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .controls-container {
   margin-bottom: 30px;
+  flex-shrink: 0;
 }
 
 .search-container {
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -38,6 +40,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .select-all-button,
