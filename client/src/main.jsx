@@ -8,15 +8,13 @@ import { SelectionProvider } from './context/SelectionContext'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <GarageSalesProvider>
-      <SearchProvider>
-        <SelectionProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </SelectionProvider>
-      </SearchProvider>
-    </GarageSalesProvider>
-  </React.StrictMode>
+  <GarageSalesProvider>
+    <SearchProvider>
+      <SelectionProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </SelectionProvider>
+    </SearchProvider>
+  </GarageSalesProvider>
 )
