@@ -112,6 +112,7 @@ h1 {
 }
 
 .view-map-button,
+.edit-button,
 .delete-button {
   flex: 1;
   padding: 8px 16px;
@@ -119,6 +120,7 @@ h1 {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
 }
 
 .view-map-button {
@@ -128,6 +130,15 @@ h1 {
 
 .view-map-button:hover {
   background-color: #1976D2;
+}
+
+.edit-button {
+  background-color: #FFA000;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #FF8F00;
 }
 
 .delete-button {
