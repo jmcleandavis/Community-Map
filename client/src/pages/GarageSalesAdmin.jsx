@@ -14,10 +14,9 @@ const GarageSalesAdmin = () => {
   
   const navigate = useNavigate();
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [newSale, setNewSale] = useState({
-    Address: '',
-    Description: ''
+    address: '',
+    description: ''
   });
 
   const handleAddNew = () => {
@@ -27,8 +26,8 @@ const GarageSalesAdmin = () => {
   const handleCancelAdd = () => {
     setIsAddingNew(false);
     setNewSale({
-      Address: '',
-      Description: ''
+      address: '',
+      description: ''
     });
   };
 
@@ -40,18 +39,14 @@ const GarageSalesAdmin = () => {
     }));
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     // TODO: Implement API call to add new garage sale
     console.log('Adding new garage sale:', newSale);
     setIsAddingNew(false);
     setNewSale({
-      Address: '',
-      Description: ''
+      address: '',
+      description: ''
     });
     // Refresh the list after adding
     fetchGarageSales();
@@ -70,22 +65,12 @@ const GarageSalesAdmin = () => {
     const saleToView = {
       ...sale,
       lat: sale.position.lat,
-      lng: sale.position.lng,
-      address: sale.Address,
-      description: sale.Description
+      lng: sale.position.lng
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
     navigate('/');
   };
-
-  const filteredSales = (garageSales || []).filter(sale => {
-    const currentSearchTerm = searchTerm.toLowerCase();
-    const address = (sale?.Address || '').toLowerCase();
-    const description = (sale?.Description || '').toLowerCase();
-    
-    return address.includes(currentSearchTerm) || description.includes(currentSearchTerm);
-  });
 
   if (loading) {
     return (
@@ -124,8 +109,8 @@ const GarageSalesAdmin = () => {
               <label>Address:</label>
               <input
                 type="text"
-                name="Address"
-                value={newSale.Address}
+                name="address"
+                value={newSale.address}
                 onChange={handleInputChange}
                 required
               />
@@ -133,8 +118,8 @@ const GarageSalesAdmin = () => {
             <div className="form-group">
               <label>Description:</label>
               <AutoResizeTextArea
-                name="Description"
-                value={newSale.Description}
+                name="description"
+                value={newSale.description}
                 onChange={handleInputChange}
                 placeholder="Enter garage sale description..."
                 minRows={3}
@@ -147,45 +132,33 @@ const GarageSalesAdmin = () => {
           </form>
         </div>
       )}
-      
-      <div className="controls-container">
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search by address or description..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-        </div>
-      </div>
 
       <div className="garage-sales-list">
-        {filteredSales.length === 0 ? (
+        {!garageSales || garageSales.length === 0 ? (
           <div className="no-results">No garage sales found</div>
         ) : (
-          filteredSales.map(sale => (
-            <div key={sale.id} className="garage-sale-item">
-              <div className="sale-info">
-                <h3>{sale.Address}</h3>
-                <p>{sale.Description}</p>
+          <div className="sales-container">
+            {garageSales.map(sale => (
+              <div key={sale.id} className="sale-item">
+                <h3>{sale.address}</h3>
+                <p>{sale.description}</p>
+                <div className="sale-actions">
+                  <button
+                    className="view-map-button"
+                    onClick={() => handleViewOnMap(sale)}
+                  >
+                    View on Map
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDelete(sale.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="sale-actions">
-                <button
-                  className="view-map-button"
-                  onClick={() => handleViewOnMap(sale)}
-                >
-                  View on Map
-                </button>
-                <button
-                  className="delete-button"
-                  onClick={() => handleDelete(sale.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
