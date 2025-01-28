@@ -3,20 +3,20 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
   padding: 20px;
+  background-color: #f5f5f5;
 }
 
 .login-box {
   background: white;
-  padding: 40px;
+  padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
 }
 
-.login-box h1 {
+.login-box h2 {
   margin: 0 0 30px;
   text-align: center;
   color: #333;
@@ -39,58 +39,53 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
-  transition: border-color 0.3s ease;
 }
 
 .form-group input:focus {
+  border-color: #2196F3;
   outline: none;
-  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.error-message {
+  color: #f44336;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .submit-button {
   width: 100%;
   padding: 12px;
-  background-color: #4285f4;
+  background-color: #2196F3;
   color: white;
   border: none;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  margin-bottom: 15px;
 }
 
 .submit-button:hover {
-  background-color: #3367d6;
-}
-
-.error-message {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.toggle-form {
-  margin-top: 20px;
-  text-align: center;
-  color: #666;
+  background-color: #1976D2;
 }
 
 .toggle-button {
-  background: none;
-  border: none;
-  color: #4285f4;
+  width: 100%;
+  padding: 12px;
+  background-color: transparent;
+  color: #2196F3;
+  border: 1px solid #2196F3;
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
-  font-size: inherit;
-  padding: 0;
-  margin: 0;
-  text-decoration: underline;
+  transition: all 0.3s ease;
 }
 
 .toggle-button:hover {
-  color: #3367d6;
+  background-color: #e3f2fd;
 }
 
 @media (max-width: 480px) {

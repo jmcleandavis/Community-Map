@@ -6,11 +6,12 @@ import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: ''
   });
   const [error, setError] = useState('');
@@ -21,28 +22,41 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
+    // Validate passwords match for signup
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        // Redirect to home page or dashboard after successful login
-        navigate('/');
       } else {
-        // Handle registration
-        await api.register(formData.email, formData.password, formData.name);
-        // After successful registration, automatically log them in
-        await login(formData.email, formData.password);
-        navigate('/');
+        await signup(formData.email, formData.password, formData.name);
       }
-    } catch (error) {
-      console.error('Auth error:', error);
-      setError(error.message || 'An error occurred during authentication');
+      navigate('/');
+    } catch (err) {
+      setError(err.message || `Failed to ${isLogin ? 'log in' : 'sign up'}`);
     }
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      name: ''
+    });
   };
 
   return (
@@ -86,19 +100,26 @@ const Login = () => {
               required
             />
           </div>
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password:</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                required={!isLogin}
+              />
+            </div>
+          )}
           <button type="submit" className="submit-button">
             {isLogin ? 'Login' : 'Sign Up'}
           </button>
-        </form>
-        <p className="toggle-form">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="toggle-button"
-          >
-            {isLogin ? 'Sign Up' : 'Login'}
+          <button type="button" className="toggle-button" onClick={toggleMode}>
+            {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Login'}
           </button>
-        </p>
+        </form>
       </div>
     </div>
   );
