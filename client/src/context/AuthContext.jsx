@@ -6,8 +6,8 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [sessionId, setSessionId] = useState(localStorage.getItem('sessionId') || null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [userType, setUserType] = useState(null);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -18,12 +18,12 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('sessionId', session.sessionID);
       } else {
         setIsAuthenticated(true);
-        const userRole = localStorage.getItem('userRole');
-        setIsAdmin(userRole === 'admin');
         // Restore user data if available
-        const userData = localStorage.getItem('userData');
-        if (userData) {
-          setUser(JSON.parse(userData));
+        const storedUserId = localStorage.getItem('userId');
+        const storedUserType = localStorage.getItem('userType');
+        if (storedUserId && storedUserType) {
+          setUserId(storedUserId);
+          setUserType(storedUserType);
         }
       }
     };
@@ -34,44 +34,39 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.login(email, password);
-      const { sessionId, userRole, userData } = response.data;
+      const { sessionId: newSessionId, userId: newUserId, userType: newUserType } = response.data;
       
       setIsAuthenticated(true);
-      setIsAdmin(userRole === 'admin');
-      setUser(userData);
+      setUserId(newUserId);
+      setUserType(newUserType);
       
-      localStorage.setItem('sessionId', sessionId);
-      localStorage.setItem('userRole', userRole);
-      localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem('sessionId', newSessionId);
+      localStorage.setItem('userId', newUserId);
+      localStorage.setItem('userType', newUserType);
       return response;
     } catch (error) {
       throw error;
     }
   };
 
-  const logout = async () => {
-    try {
-      await api.logout();
-      setIsAuthenticated(false);
-      setIsAdmin(false);
-      setUser(null);
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userData');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear local state even if API call fails
-      setIsAuthenticated(false);
-      setIsAdmin(false);
-      setUser(null);
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userData');
-    }
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUserId(null);
+    setUserType(null);
+    localStorage.removeItem('sessionId');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userType');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isAdmin, user, login, logout }}>
+    <AuthContext.Provider value={{
+      isAuthenticated,
+      userId,
+      userType,
+      login,
+      logout,
+      isAdmin: userType === 'admin'
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -67,3 +67,5 @@ export function useLocation() {
   }
   return context;
 }
+
+export default LocationContext;

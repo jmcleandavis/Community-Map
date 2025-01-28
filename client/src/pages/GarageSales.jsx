@@ -18,7 +18,7 @@ const GarageSales = () => {
   const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
   
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, userId } = useAuth();
 
   useEffect(() => {
     fetchGarageSales();
@@ -83,8 +83,8 @@ const GarageSales = () => {
   return (
     <div className="garage-sales-container">
       <h1>Garage Sales</h1>
-      {isAuthenticated && user?.data?.email && (
-        <div className="user-email">Logged in as: {user.data.email}</div>
+      {isAuthenticated && (
+        <div className="user-email">Logged in as: {userId}</div>
       )}
       
       <div className="controls-container">
