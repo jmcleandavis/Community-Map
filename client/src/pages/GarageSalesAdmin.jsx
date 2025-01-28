@@ -133,32 +133,30 @@ const GarageSalesAdmin = () => {
         </div>
       )}
 
-      <div className="garage-sales-list">
-        {!garageSales || garageSales.length === 0 ? (
-          <div className="no-results">No garage sales found</div>
-        ) : (
-          <div className="sales-container">
-            {garageSales.map(sale => (
-              <div key={sale.id} className="sale-item">
-                <h3>{sale.address}</h3>
-                <p>{sale.description}</p>
-                <div className="sale-actions">
-                  <button
-                    className="view-map-button"
-                    onClick={() => handleViewOnMap(sale)}
-                  >
-                    View on Map
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDelete(sale.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+      <div className="sales-grid">
+        {garageSales && garageSales.length > 0 ? (
+          garageSales.map(sale => (
+            <div key={sale.id} className="sale-card">
+              <h3>{sale.address}</h3>
+              <p>{sale.description}</p>
+              <div className="sale-actions">
+                <button
+                  className="view-map-button"
+                  onClick={() => handleViewOnMap(sale)}
+                >
+                  View on Map
+                </button>
+                <button
+                  className="delete-button"
+                  onClick={() => handleDelete(sale.id)}
+                >
+                  Delete
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
+        ) : (
+          <div className="no-results">No garage sales found</div>
         )}
       </div>
     </div>
