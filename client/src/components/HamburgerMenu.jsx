@@ -14,7 +14,8 @@ const HamburgerMenu = () => {
 
   // Function to check if a click is outside the menu
   const handleClickOutside = (event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
+    if (menuRef.current && !menuRef.current.contains(event.target) && 
+        !event.target.closest('.hamburger-button')) {
       setIsOpen(false); // Close the menu
     }
   };
