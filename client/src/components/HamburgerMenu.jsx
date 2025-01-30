@@ -56,6 +56,8 @@ const HamburgerMenu = () => {
       </button>
 
       <div className={`menu-items ${isOpen ? 'open' : ''}`} ref={menuRef}>
+        <div className="menu-close" onClick={() => setIsOpen(false)}>✕</div>
+        
         <div className="menu-item" onClick={handleMapClick}>
           <span className="menu-icon">🗺️</span>
           <span className="menu-text">Map</span>
