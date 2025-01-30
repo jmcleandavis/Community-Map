@@ -59,7 +59,7 @@ const GarageSalesAdmin = () => {
   const handleAddressSelect = (selected) => {
     setFormData(prev => ({
       ...prev,
-      address: selected.label
+      address: selected ? selected.label : ''
     }));
   };
 
@@ -143,6 +143,21 @@ const GarageSalesAdmin = () => {
                   value: { label: formData.address, value: formData.address },
                   onChange: handleAddressSelect,
                   placeholder: 'Enter address...',
+                  isClearable: true,
+                  styles: {
+                    control: (provided) => ({
+                      ...provided,
+                      borderRadius: '4px',
+                      borderColor: '#ccc',
+                    }),
+                    clearIndicator: (provided) => ({
+                      ...provided,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: '#666',
+                      },
+                    }),
+                  },
                 }}
               />
             </div>
