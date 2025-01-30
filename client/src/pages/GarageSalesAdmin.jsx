@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './GarageSalesAdmin.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import './GarageSalesAdmin.css';
 
 const GarageSalesAdmin = () => {
   const {
@@ -52,6 +53,13 @@ const GarageSalesAdmin = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleAddressSelect = (selected) => {
+    setFormData(prev => ({
+      ...prev,
+      address: selected.label
     }));
   };
 
@@ -129,12 +137,13 @@ const GarageSalesAdmin = () => {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Address:</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
+              <GooglePlacesAutocomplete
+                apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                selectProps={{
+                  value: { label: formData.address, value: formData.address },
+                  onChange: handleAddressSelect,
+                  placeholder: 'Enter address...',
+                }}
               />
             </div>
             <div className="form-group">
