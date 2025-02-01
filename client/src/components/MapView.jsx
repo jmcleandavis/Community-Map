@@ -307,6 +307,21 @@ function MapView({ mapContainerStyle }) {
     mapId: import.meta.env.VITE_GOOGLE_MAPS_ID
   }), []);
 
+  const titleStyle = {
+    textAlign: 'center',
+    padding: '15px',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    position: 'absolute',
+    top: '10px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 1,
+    borderRadius: '5px'
+  };
+
   // Loading and error states
   if (loading) {
     return <div>Loading garage sales...</div>;
@@ -317,7 +332,10 @@ function MapView({ mapContainerStyle }) {
   }
 
   return (
-    <>
+    <div style={{ position: 'relative' }}>
+      <div style={titleStyle}>
+        BAY RIDGES COMMUNITY GARAGE SALE 2025
+      </div>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={center}
@@ -338,7 +356,7 @@ function MapView({ mapContainerStyle }) {
           </InfoWindow>
         )}
       </GoogleMap>
-    </>
+    </div>
   );
 }
 
