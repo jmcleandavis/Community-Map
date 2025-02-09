@@ -11,7 +11,8 @@ const Login = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    name: ''
+    firstName: '',
+    lastName: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,10 +40,10 @@ const Login = () => {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
-        if (!formData.name) {
-          throw new Error('Name is required');
+        if (!formData.firstName || !formData.lastName) {
+          throw new Error('First name and last name are required');
         }
-        await register(formData.email, formData.password, formData.name);
+        await register(formData.email, formData.password, `${formData.firstName} ${formData.lastName}`);
       }
       navigate('/');
     } catch (err) {
@@ -59,17 +60,30 @@ const Login = () => {
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           {!isLogin && (
-            <div className="form-group">
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required={!isLogin}
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required={!isLogin}
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required={!isLogin}
+                />
+              </div>
+            </>
           )}
           <div className="form-group">
             <input
@@ -123,7 +137,8 @@ const Login = () => {
               email: '',
               password: '',
               confirmPassword: '',
-              name: ''
+              firstName: '',
+              lastName: ''
             });
           }}
           disabled={loading}
