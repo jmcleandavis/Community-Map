@@ -231,7 +231,7 @@ const login = async (email, password) => {
     const formData = new URLSearchParams();
     formData.append('username', email);
     formData.append('password', password);
-    formData.append('type', 'username');
+    formData.append('type', 'EMAIL');
 
     const response = await authApi.post('/login', formData, {
       headers: {
