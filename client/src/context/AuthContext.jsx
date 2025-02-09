@@ -49,6 +49,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (email, password, name) => {
+    try {
+      const response = await api.register(email, password, name);
+      const { sessionId: newSessionId, userId: newUserId, userType: newUserType } = response;
+      
+      setIsAuthenticated(true);
+      setUserId(newUserId);
+      setUserType(newUserType);
+      
+      localStorage.setItem('sessionId', newSessionId);
+      localStorage.setItem('userId', newUserId);
+      localStorage.setItem('userType', newUserType);
+      
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const logout = () => {
     setIsAuthenticated(false);
     setUserId(null);
@@ -65,6 +84,7 @@ export const AuthProvider = ({ children }) => {
       userType,
       login,
       logout,
+      register,
       isAdmin: userType === 'admin'
     }}>
       {children}

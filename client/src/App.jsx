@@ -13,18 +13,6 @@ import { GarageSalesProvider } from './context/GarageSalesContext';
 import { AuthProvider } from './context/AuthContext';
 import { DisplayProvider } from './context/DisplayContext';
 import { LocationProvider } from './context/LocationContext';
-import { useAuth } from './context/AuthContext';
-
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  
-  if (!isAuthenticated || !isAdmin) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-};
 
 function App() {
   // Google Maps libraries
@@ -103,12 +91,12 @@ function App() {
                     </>
                   } />
                   <Route path="/admin/sales" element={
-                    <ProtectedRoute>
+                    <ProtectedRouteWrapper>
                       <>
                         <HamburgerMenu />
                         <GarageSalesAdmin />
                       </>
-                    </ProtectedRoute>
+                    </ProtectedRouteWrapper>
                   } />
                 </Routes>
               </div>
@@ -119,5 +107,17 @@ function App() {
     </AuthProvider>
   );
 }
+
+// Move ProtectedRoute inside App to avoid circular dependency
+const ProtectedRouteWrapper = ({ children }) => {
+  const { useAuth } = require('./context/AuthContext');
+  const { isAuthenticated, isAdmin } = useAuth();
+  
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 export default App;

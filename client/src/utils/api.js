@@ -297,11 +297,11 @@ const logout = async () => {
 const api = {
   createSession,
   getSessionId,
-  verifySession,
   getAddresses,
-  login,
   register,
-  logout
+  login,
+  logout,
+  verifySession
 };
 
 export default api;
