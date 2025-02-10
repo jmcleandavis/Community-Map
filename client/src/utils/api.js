@@ -33,6 +33,17 @@ const authApi = axios.create({
   }
 });
 
+// User Information API configuration
+const userInformationApi = axios.create({
+  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL/',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'app-name': 'postman-call',
+    'app-key': import.meta.env.VITE_APP_API_KEY
+  }
+});
+
 // Add response interceptor to handle errors
 const errorInterceptor = error => {
   console.error('API Error Details:', {
@@ -49,6 +60,7 @@ const errorInterceptor = error => {
 sessionApi.interceptors.response.use(response => response, errorInterceptor);
 authApi.interceptors.response.use(response => response, errorInterceptor);
 mapsApi.interceptors.response.use(response => response, errorInterceptor);
+userInformationApi.interceptors.response.use(response => response, errorInterceptor);
 
 // Add sessionId to request headers if available
 const addSessionInterceptor = async (config) => {
@@ -175,6 +187,17 @@ const getAddresses = async () => {
   }
 };
 
+// Get user information by email
+async function getUserInfo(email) {
+  try {
+    const response = await userInformationApi.get(email);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user information:', error);
+    throw error;
+  }
+}
+
 // Authentication methods
 const register = async (email, password, name) => {
   try {
@@ -239,28 +262,18 @@ const login = async (email, password) => {
       }
     });
     
-    // Detailed logging of the login response
-    console.log('Full login response:', {
-      status: response.status,
-      headers: response.headers,
-      data: response.data,
-      userType: response.data?.userType,
-      userId: response.data?.userId
-    });
-    
-    if (response.data) {
-      console.log('Login response data:', {
-        fullResponse: response.data,
-        user: response.data.user,
-        sessionId: sessionId
-      });
+    // Check if login was successful
+    if (response.data === true) {
+      // If login successful, fetch user information
+      const userInfo = await getUserInfo(email);
       
       // Return the structured data needed by AuthContext
       return {
         data: {
           sessionId: sessionId,
-          userId: response.data.userId || email, // Use email as userId if not provided by API
-          userType: response.data.userType || 'user' // Default to 'user' if not provided
+          userId: userInfo.userId,
+          userType: userInfo.userType,
+          userInfo: userInfo // Include full user info
         }
       };
     }
@@ -307,6 +320,7 @@ const api = {
   createSession,
   getSessionId,
   getAddresses,
+  getUserInfo,
   register,
   login,
   logout,
