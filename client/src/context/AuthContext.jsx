@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userType, setUserType] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -21,9 +22,13 @@ export const AuthProvider = ({ children }) => {
         // Restore user data if available
         const storedUserId = localStorage.getItem('userId');
         const storedUserType = localStorage.getItem('userType');
+        const storedUserInfo = localStorage.getItem('userInfo');
         if (storedUserId && storedUserType) {
           setUserId(storedUserId);
           setUserType(storedUserType);
+          if (storedUserInfo) {
+            setUserInfo(JSON.parse(storedUserInfo));
+          }
         }
       }
     };
@@ -34,15 +39,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.login(email, password);
-      const { sessionId: newSessionId, userId: newUserId, userType: newUserType } = response.data;
+      const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response.data;
       
       setIsAuthenticated(true);
       setUserId(newUserId);
       setUserType(newUserType);
+      setUserInfo(newUserInfo);
       
       localStorage.setItem('sessionId', newSessionId);
       localStorage.setItem('userId', newUserId);
       localStorage.setItem('userType', newUserType);
+      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
       return response;
     } catch (error) {
       throw error;
@@ -52,15 +59,17 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, name) => {
     try {
       const response = await api.register(email, password, name);
-      const { sessionId: newSessionId, userId: newUserId, userType: newUserType } = response;
+      const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response;
       
       setIsAuthenticated(true);
       setUserId(newUserId);
       setUserType(newUserType);
+      setUserInfo(newUserInfo);
       
       localStorage.setItem('sessionId', newSessionId);
       localStorage.setItem('userId', newUserId);
       localStorage.setItem('userType', newUserType);
+      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
       
       return response;
     } catch (error) {
@@ -72,9 +81,11 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setUserId(null);
     setUserType(null);
+    setUserInfo(null);
     localStorage.removeItem('sessionId');
     localStorage.removeItem('userId');
     localStorage.removeItem('userType');
+    localStorage.removeItem('userInfo');
   };
 
   return (
@@ -82,6 +93,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       userId,
       userType,
+      userInfo,
       login,
       logout,
       register,
