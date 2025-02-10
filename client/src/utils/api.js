@@ -239,6 +239,15 @@ const login = async (email, password) => {
       }
     });
     
+    // Detailed logging of the login response
+    console.log('Full login response:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+      userType: response.data?.userType,
+      userId: response.data?.userId
+    });
+    
     if (response.data) {
       console.log('Login response data:', {
         fullResponse: response.data,
