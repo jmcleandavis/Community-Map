@@ -12,24 +12,35 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const loadSession = async () => {
+      // Restore user data if available
+      const storedUserId = localStorage.getItem('userId');
+      const storedUserType = localStorage.getItem('userType');
+      const storedUserInfo = localStorage.getItem('userInfo');
+
+      if (storedUserId) {
+        // If we have a userId, user is logged in
+        setIsAuthenticated(true);
+        setUserId(storedUserId);
+        if (storedUserType) {
+          setUserType(storedUserType);
+        }
+        if (storedUserInfo) {
+          setUserInfo(JSON.parse(storedUserInfo));
+        }
+      } else {
+        // No userId means not logged in
+        setIsAuthenticated(false);
+        setUserId(null);
+        setUserType(null);
+        setUserInfo(null);
+      }
+
+      // Handle session separately
       if (sessionId == null) {
-        // get a session
+        // get a session if we don't have one
         const session = await api.createSession();
         setSessionId(session.sessionID);
         localStorage.setItem('sessionId', session.sessionID);
-      } else {
-        setIsAuthenticated(true);
-        // Restore user data if available
-        const storedUserId = localStorage.getItem('userId');
-        const storedUserType = localStorage.getItem('userType');
-        const storedUserInfo = localStorage.getItem('userInfo');
-        if (storedUserId && storedUserType) {
-          setUserId(storedUserId);
-          setUserType(storedUserType);
-          if (storedUserInfo) {
-            setUserInfo(JSON.parse(storedUserInfo));
-          }
-        }
       }
     };
 
