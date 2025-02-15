@@ -81,6 +81,7 @@ const addSessionInterceptor = async (config) => {
 
 // Add request interceptors to automatically include sessionId
 mapsApi.interceptors.request.use(addSessionInterceptor);
+userInformationApi.interceptors.request.use(addSessionInterceptor);
 
 // Create a new session
 const createSession = async () => {
