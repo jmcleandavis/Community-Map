@@ -35,12 +35,14 @@ const authApi = axios.create({
 
 // User Information API configuration
 const userInformationApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL/',
+  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail',
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'postman-call',
-    'app-key': import.meta.env.VITE_APP_API_KEY
+    'app-key': import.meta.env.VITE_APP_API_KEY,
+    'type': 'EMAIL'
   }
 });
 
