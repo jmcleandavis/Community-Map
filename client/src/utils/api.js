@@ -28,21 +28,20 @@ const authApi = axios.create({
   timeout: 30000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'app-name': 'postman-call',
+    'app-name': 'web-service',
     'app-key': import.meta.env.VITE_APP_API_KEY
   }
 });
 
 // User Information API configuration
 const userInformationApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail',
+  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
   timeout: 30000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'app-name': 'postman-call',
-    'app-key': import.meta.env.VITE_APP_API_KEY,
-    'type': 'EMAIL'
+    'app-name': 'web-service',
+    'app-key': import.meta.env.VITE_APP_API_KEY
   }
 });
 
