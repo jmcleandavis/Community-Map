@@ -3,8 +3,8 @@ useEffect(() => {
       if (sessionId == null) {
         // get a session
         const session = await api.createSession();
-        setSessionId(session.sessionID);
-        localStorage.setItem('sessionId', session.sessionID);
+        setSessionId(session.sessionId);
+        localStorage.setItem('sessionId', session.sessionId);
       } else {
         setIsAuthenticated(true);
         const userRole = localStorage.getItem('userRole');
@@ -19,7 +19,3 @@ useEffect(() => {
 
     loadSession();
   }, []);
-
-
-
-  

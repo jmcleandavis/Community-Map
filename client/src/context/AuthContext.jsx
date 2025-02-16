@@ -39,8 +39,8 @@ export const AuthProvider = ({ children }) => {
       if (sessionId == null) {
         // get a session if we don't have one
         const session = await api.createSession();
-        setSessionId(session.sessionID);
-        localStorage.setItem('sessionId', session.sessionID);
+        setSessionId(session.sessionId);
+        localStorage.setItem('sessionId', session.sessionId);
       }
     };
 

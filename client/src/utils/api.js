@@ -126,7 +126,7 @@ const createSession = async () => {
       throw new Error('No session data in response');
     }
 
-    const sessionId = sessionData.sessionId || sessionData.sessionID;
+    const sessionId = sessionData.sessionId || sessionData.sessionId;
     
     if (!sessionId) {
       console.error('Invalid session data structure:', sessionData);
