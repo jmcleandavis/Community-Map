@@ -77,11 +77,15 @@ userInformationApi.interceptors.response.use(response => response, errorIntercep
 const addSessionInterceptor = async (config) => {
   try {
     const sessionId = localStorage.getItem('sessionId');
+    console.log('Session Interceptor - Retrieved sessionId:', sessionId);
     if (sessionId) {
       config.headers = {
         ...config.headers,
         'sessionId': sessionId
       };
+      console.log('Session Interceptor - Added sessionId to headers');
+    } else {
+      console.log('Session Interceptor - No sessionId found in localStorage');
     }
     return config;
   } catch (error) {
@@ -117,6 +121,7 @@ userInformationApi.interceptors.request.use(requestInterceptor);
 const createSession = async () => {
   try {
     console.log('Creating new session...');
+    console.log('Previous sessionId in localStorage:', localStorage.getItem('sessionId'));
     const response = await sessionApi.post('/createSession');
     console.log('Create session raw response:', response);
     
@@ -139,7 +144,8 @@ const createSession = async () => {
       throw new Error('No sessionId in response data');
     }
 
-    console.log('Session data:', sessionData);
+    console.log('New session data:', sessionData);
+    console.log('Setting new sessionId in localStorage:', sessionId);
     localStorage.setItem('sessionId', sessionId);
     return sessionId;
   } catch (error) {
