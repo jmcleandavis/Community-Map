@@ -53,8 +53,18 @@ const errorInterceptor = error => {
     headers: error.config?.headers,
     data: error.config?.data,
     status: error.response?.status,
-    response: error.response?.data
+    response: error.response?.data,
+    fullConfig: error.config
   });
+  
+  // Log the request headers that were actually sent
+  console.log('Request Headers:', {
+    contentType: error.config?.headers['Content-Type'],
+    appName: error.config?.headers['app-name'],
+    appKey: error.config?.headers['app-key'] ? '[PRESENT]' : '[MISSING]',
+    sessionId: error.config?.headers['sessionId']
+  });
+  
   return Promise.reject(error);
 };
 
@@ -80,9 +90,28 @@ const addSessionInterceptor = async (config) => {
   }
 };
 
+// Add request interceptor to log headers
+const requestInterceptor = config => {
+  console.log('Outgoing Request Headers:', {
+    url: config.url,
+    method: config.method,
+    headers: {
+      contentType: config.headers['Content-Type'],
+      appName: config.headers['app-name'],
+      appKey: config.headers['app-key'] ? '[PRESENT]' : '[MISSING]',
+      sessionId: config.headers['sessionId']
+    }
+  });
+  return config;
+};
+
 // Add request interceptors to automatically include sessionId
 mapsApi.interceptors.request.use(addSessionInterceptor);
 userInformationApi.interceptors.request.use(addSessionInterceptor);
+
+// Add interceptors to APIs
+authApi.interceptors.request.use(requestInterceptor);
+userInformationApi.interceptors.request.use(requestInterceptor);
 
 // Create a new session
 const createSession = async () => {
