@@ -68,35 +68,23 @@ const errorInterceptor = error => {
   return Promise.reject(error);
 };
 
-sessionApi.interceptors.response.use(response => response, errorInterceptor);
-authApi.interceptors.response.use(response => response, errorInterceptor);
-mapsApi.interceptors.response.use(response => response, errorInterceptor);
-userInformationApi.interceptors.response.use(response => response, errorInterceptor);
-
-// Add sessionId to request headers if available
-const addSessionInterceptor = async (config) => {
-  try {
-    const sessionId = localStorage.getItem('sessionId');
-    console.log('Session Interceptor - Retrieved sessionId:', sessionId);
-    if (sessionId) {
-      config.headers = {
-        ...config.headers,
-        'sessionId': sessionId
-      };
-      console.log('Session Interceptor - Added sessionId to headers');
-    } else {
-      console.log('Session Interceptor - No sessionId found in localStorage');
-    }
-    return config;
-  } catch (error) {
-    console.error('Error in session interceptor:', error);
-    return config;
-  }
-};
-
 // Add request interceptor to log headers
-const requestInterceptor = config => {
-  console.log('Outgoing Request Headers:', {
+const requestInterceptor = async config => {
+  const currentSessionId = localStorage.getItem('sessionId');
+  console.log('Current session ID before request:', currentSessionId);
+  
+  // Ensure headers object exists
+  config.headers = config.headers || {};
+  
+  // Add session ID if it exists
+  if (currentSessionId) {
+    config.headers['sessionId'] = currentSessionId;
+    console.log('Added session ID to request headers');
+  } else {
+    console.log('No session ID available for request');
+  }
+  
+  console.log('Final request config:', {
     url: config.url,
     method: config.method,
     headers: {
@@ -106,14 +94,15 @@ const requestInterceptor = config => {
       sessionId: config.headers['sessionId']
     }
   });
+  
   return config;
 };
 
-// Add request interceptors to automatically include sessionId
-mapsApi.interceptors.request.use(addSessionInterceptor);
-userInformationApi.interceptors.request.use(addSessionInterceptor);
+sessionApi.interceptors.response.use(response => response, errorInterceptor);
+authApi.interceptors.response.use(response => response, errorInterceptor);
+mapsApi.interceptors.response.use(response => response, errorInterceptor);
+userInformationApi.interceptors.response.use(response => response, errorInterceptor);
 
-// Add interceptors to APIs
 authApi.interceptors.request.use(requestInterceptor);
 userInformationApi.interceptors.request.use(requestInterceptor);
 
@@ -227,7 +216,17 @@ const getAddresses = async () => {
 // Get user information by email
 async function getUserInfo(email) {
   try {
+    console.log('Getting user info for email:', email);
+    
+    // Ensure we have a valid session
+    const sessionId = await getSessionId();
+    console.log('Using session ID for user info request:', sessionId);
+    
+    // Make the request
+    console.log('Making user info request...');
     const response = await userInformationApi.get(email);
+    console.log('User info response:', response);
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching user information:', error);
@@ -284,8 +283,9 @@ const register = async (email, password, name) => {
 
 const login = async (email, password) => {
   try {
-    // First create a session
-    const sessionId = await getSessionId();
+    // First ensure we have a valid session
+    const sessionId = await createSession();
+    console.log('Created/Retrieved session for login:', sessionId);
     
     // Create form data
     const formData = new URLSearchParams();
@@ -293,14 +293,12 @@ const login = async (email, password) => {
     formData.append('password', password);
     formData.append('type', 'EMAIL');
 
-    const response = await authApi.post('/login', formData, {
-      headers: {
-        'sessionId': sessionId
-      }
-    });
+    console.log('Sending login request with sessionId:', sessionId);
+    const response = await authApi.post('/login', formData);
     
     // Check if login was successful
     if (response.data === true) {
+      console.log('Login successful, fetching user info');
       // If login successful, fetch user information
       const userInfo = await getUserInfo(email);
       
