@@ -48,18 +48,35 @@ const userInformationApi = axios.create({
 
 // Add response interceptor to handle errors
 const errorInterceptor = error => {
-  console.error('API Error Details:', {
-    url: error.config?.url,
-    method: error.config?.method,
-    headers: error.config?.headers,
-    data: error.config?.data,
-    status: error.response?.status,
-    response: error.response?.data,
-    fullConfig: error.config
+  console.error('🔴 API Error Details:', {
+    // Request details
+    request: {
+      url: error.config?.url,
+      method: error.config?.method,
+      baseURL: error.config?.baseURL,
+      headers: {
+        ...error.config?.headers,
+        'app-key': error.config?.headers['app-key'] ? '[PRESENT]' : '[MISSING]'
+      },
+      data: error.config?.data
+    },
+    // Response details
+    response: {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers
+    },
+    // Error specific details
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    }
   });
   
   // Log the request headers that were actually sent
-  console.log('Request Headers:', {
+  console.log('📨 Request Headers:', {
     contentType: error.config?.headers['Content-Type'],
     appName: error.config?.headers['app-name'],
     appKey: error.config?.headers['app-key'] ? '[PRESENT]' : '[MISSING]',
