@@ -17,7 +17,7 @@ const mapsApi = axios.create({
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-    'app-key': import.meta.env.VITE_APP_API_KEY,
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY,
     'app-name': 'web-service'
   },
   withCredentials: false
@@ -30,7 +30,7 @@ const authApi = axios.create({
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_API_KEY
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY //used incorrect key
   }
 });
 
@@ -38,11 +38,11 @@ const authApi = axios.create({
 const userInformationApi = axios.create({
   baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
   timeout: 30000,
-  withCredentials: true,
+  // withCredentials: true, //flagged with true when it should be false
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_API_KEY
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY //used incorrect key
   }
 });
 
@@ -88,7 +88,7 @@ const errorInterceptor = error => {
 
 // Add request interceptor to log headers
 const requestInterceptor = async config => {
-  const currentSessionId = localStorage.getItem('sessionId');
+  const currentSessionId = await sessionStorage.getItem('sessionId');
   console.log('Current session ID before request:', currentSessionId);
   
   // Ensure headers object exists
@@ -145,7 +145,7 @@ const createSession = async () => {
       throw new Error('No session data in response');
     }
 
-    const sessionId = sessionData.sessionId || sessionData.sessionId;
+    const sessionId = sessionData.sessionId || sessionData.sessionID; //updated the OR to include ID rahter than Id again (was duplicated)
     
     if (!sessionId) {
       console.error('Invalid session data structure:', sessionData);
@@ -154,7 +154,7 @@ const createSession = async () => {
 
     console.log('New session data:', sessionData);
     console.log('Setting new sessionId in localStorage:', sessionId);
-    localStorage.setItem('sessionId', sessionId);
+    sessionStorage.setItem('sessionId', sessionId);
     return sessionId;
   } catch (error) {
     console.error('Error creating session:', {
@@ -187,7 +187,7 @@ const verifySession = async (sessionId) => {
 
 // Get or create session ID
 const getSessionId = async () => {
-  const storedSessionId = localStorage.getItem('sessionId');
+  const storedSessionId = sessionStorage.getItem('sessionId');
   if (storedSessionId) {
     console.log('Found stored session:', storedSessionId);
     const isValid = await verifySession(storedSessionId);
@@ -303,7 +303,8 @@ const register = async (email, password, name) => {
 const login = async (email, password) => {
   try {
     // First ensure we have a valid session
-    const sessionId = await createSession();
+      // const sessionId = await createSession();
+      const sessionId = await getSessionId();
     console.log('Created/Retrieved session for login:', sessionId);
     
     // Create form data
@@ -353,7 +354,7 @@ const login = async (email, password) => {
 
 const logout = async () => {
   try {
-    const sessionId = localStorage.getItem('sessionId');
+    const sessionId = sessionStorage.getItem('sessionId');
     if (sessionId) {
       await authApi.post('/auth/logout', { 
         sessionId,
