@@ -4,6 +4,7 @@ import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useSearch } from '../context/SearchContext';
 import { useSelection } from '../context/SelectionContext';
+import { useDisplay } from '../context/DisplayContext';
 import { useAuth } from '../context/AuthContext';
 
 const GarageSales = () => {
@@ -16,6 +17,7 @@ const GarageSales = () => {
   
   const { searchTerm, handleSearchChange } = useSearch();
   const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
+  const { showOnlySelected, toggleDisplayMode } = useDisplay();
   
   const navigate = useNavigate();
   const { isAuthenticated, userEmail } = useAuth();
@@ -50,6 +52,10 @@ const GarageSales = () => {
 
     if (selectedSalesData.length > 0) {
       localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
+      // If not already showing only selected sales, turn it on
+      if (!showOnlySelected) {
+        toggleDisplayMode();
+      }
       navigate('/');
     } else {
       alert('Please select at least one garage sale to view on the map.');
