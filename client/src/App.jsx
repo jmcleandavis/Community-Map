@@ -10,7 +10,7 @@ import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { DisplayProvider } from './context/DisplayContext';
 import { LocationProvider } from './context/LocationContext';
 
@@ -110,7 +110,6 @@ function App() {
 
 // Move ProtectedRoute inside App to avoid circular dependency
 const ProtectedRouteWrapper = ({ children }) => {
-  const { useAuth } = require('./context/AuthContext');
   const { isAuthenticated, isAdmin } = useAuth();
   
   if (!isAuthenticated || !isAdmin) {

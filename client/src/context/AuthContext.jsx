@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
       register,
-      isAdmin: userType === 'admin'
+      isAdmin: userType === 'ADMIN'
     }}>
       {children}
     </AuthContext.Provider>
