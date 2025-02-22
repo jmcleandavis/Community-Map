@@ -214,7 +214,6 @@ const getAddresses = async () => {
     console.log('API: Making request to /getAddressList...');
     const response = await mapsApi.get('/v1/getAddressByCommunity/d31a9eec-0dda-469d-8565-692ef9ad55c2');
     
-    console.log('API: Raw response data:', JSON.stringify(response.data, null, 2));
     console.log('API: Successful response from backend:', response);
     return response;
   } catch (error) {

@@ -8,7 +8,7 @@ import './HamburgerMenu.css';
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, userId, userType, logout } = useAuth();
+  const { isAuthenticated, userId, userType, logout, userEmail } = useAuth();
   const { centerOnUserLocation } = useLocation();
   const menuRef = useRef(null);
 
@@ -72,7 +72,7 @@ const HamburgerMenu = () => {
           <span className="menu-text">Garage Sales</span>
         </div>
 
-        {userType === 'admin' && (
+        {userType === 'ADMIN' && (
           <div className="menu-item" onClick={() => {
             navigate('/admin/sales');
             setIsOpen(false);
@@ -114,7 +114,7 @@ const HamburgerMenu = () => {
         {isAuthenticated ? (
           <div className="menu-item" onClick={handleLogout}>
             <span className="menu-icon">🚪</span>
-            <span className="menu-text">Logout ({userId})</span>
+            <span className="menu-text">Logout ({userEmail})</span>
           </div>
         ) : (
           <div className="menu-item" onClick={() => {
