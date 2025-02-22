@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [userType, setUserType] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || null);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -16,6 +17,7 @@ export const AuthProvider = ({ children }) => {
       const storedUserId = localStorage.getItem('userId');
       const storedUserType = localStorage.getItem('userType');
       const storedUserInfo = localStorage.getItem('userInfo');
+      const storedUserEmail = localStorage.getItem('userEmail');
 
       if (storedUserId) {
         // If we have a userId, user is logged in
@@ -27,12 +29,16 @@ export const AuthProvider = ({ children }) => {
         if (storedUserInfo) {
           setUserInfo(JSON.parse(storedUserInfo));
         }
+        if (storedUserEmail) {
+          setUserEmail(storedUserEmail);
+        }
       } else {
         // No userId means not logged in
         setIsAuthenticated(false);
         setUserId(null);
         setUserType(null);
         setUserInfo(null);
+        setUserEmail(null);
       }
 
       // Handle session separately
@@ -47,19 +53,21 @@ export const AuthProvider = ({ children }) => {
     loadSession();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (userEmail, password) => {
     try {
-      const response = await api.login(email, password);
+      const response = await api.login(userEmail, password);
       const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response.data;
       
       setIsAuthenticated(true);
       setUserId(newUserId);
       setUserType(newUserType);
       setUserInfo(newUserInfo);
+      setUserEmail(userEmail);
       
       localStorage.setItem('sessionId', newSessionId);
       localStorage.setItem('userId', newUserId);
       localStorage.setItem('userType', newUserType);
+      localStorage.setItem('userEmail', userEmail);
       localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
       return response;
     } catch (error) {
@@ -67,9 +75,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, name) => {
+  const register = async (userEmail, password, name) => {
     try {
-      const response = await api.register(email, password, name);
+      const response = await api.register(userEmail, password, name);
       const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response;
       
       setIsAuthenticated(true);
@@ -93,10 +101,12 @@ export const AuthProvider = ({ children }) => {
     setUserId(null);
     setUserType(null);
     setUserInfo(null);
+    setUserEmail(null);
     localStorage.removeItem('sessionId');
     localStorage.removeItem('userId');
     localStorage.removeItem('userType');
     localStorage.removeItem('userInfo');
+    localStorage.removeItem('userEmail');
   };
 
   return (
@@ -105,6 +115,7 @@ export const AuthProvider = ({ children }) => {
       userId,
       userType,
       userInfo,
+      userEmail,
       login,
       logout,
       register,
