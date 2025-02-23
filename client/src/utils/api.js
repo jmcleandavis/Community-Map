@@ -39,7 +39,7 @@ const createCustomerApi = axios.create({
   baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/json',
     'app-name': 'web-service',
     'app-key': import.meta.env.VITE_APP_SESSION_KEY
   }
@@ -304,32 +304,33 @@ const register = async (userEmail, password, firstName, lastName) => {
     const sessionResponse = await createSession();
     console.log('Current session ID before request:', sessionResponse);
     
-    // Prepare the request body
+    // Prepare the request body to match the exact format from curl
     const requestBody = {
-      requesting_application: 'web-service',
-      sessionId: sessionResponse,
-      userData: {
-        fName: firstName,
-        lName: lastName,
-        email: userEmail,  
-        password,
-        regType: "MANUAL",
-        userType: "USER"
-      },
-      sessionStart: new Date().toISOString(),
-      userId: "N/A"
+      fName: firstName,
+      lName: lastName,
+      userEmail: userEmail,
+      password: password,
+      regType: "MANUAL",
+      userType: "USER"
     };
 
     // Log complete request details
     console.log('Registration Request Details:', {
       method: 'POST',
       url: createCustomerApi.defaults.baseURL + '/v1/createCustomer',
-      headers: createCustomerApi.defaults.headers,
+      headers: {
+        ...createCustomerApi.defaults.headers,
+        'sessionId': sessionResponse
+      },
       body: requestBody
     });
 
     // Make the registration request
-    const response = await createCustomerApi.post('/v1/createCustomer', requestBody);
+    const response = await createCustomerApi.post('/v1/createCustomer', requestBody, {
+      headers: {
+        'sessionId': sessionResponse
+      }
+    });
     
     console.log('Registration Response Details:', {
       status: response.status,
