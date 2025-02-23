@@ -23,9 +23,20 @@ const mapsApi = axios.create({
   withCredentials: false
 });
 
-// Auth API configuration
+// Auth (Logging in) API configuration
 const authApi = axios.create({
   baseURL: 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'app-name': 'web-service',
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY
+  }
+});
+
+// Create Customer/user API configuration
+const createCustomerApi = axios.create({
+  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -300,7 +311,7 @@ const register = async (userEmail, password, firstName, lastName) => {
       userData: {
         fName: firstName,
         lName: lastName,
-        userEmail,
+        email: userEmail,  
         password,
         regType: "MANUAL",
         userType: "USER"
@@ -312,20 +323,13 @@ const register = async (userEmail, password, firstName, lastName) => {
     // Log complete request details
     console.log('Registration Request Details:', {
       method: 'POST',
-      url: authApi.defaults.baseURL + '/createUser',
-      headers: {
-        ...authApi.defaults.headers,
-        'Content-Type': 'application/json' // Override content type just for registration
-      },
-      body: JSON.stringify(requestBody, null, 2)
+      url: createCustomerApi.defaults.baseURL + '/v1/createCustomer',
+      headers: createCustomerApi.defaults.headers,
+      body: requestBody
     });
 
-    // Make the registration request with JSON content type
-    const response = await authApi.post('/createUser', requestBody, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Make the registration request
+    const response = await createCustomerApi.post('/v1/createCustomer', requestBody);
     
     console.log('Registration Response Details:', {
       status: response.status,
