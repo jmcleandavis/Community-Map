@@ -39,6 +39,7 @@ export function GarageSalesProvider({ children }) {
 
       const response = await api.getAddresses();
       console.log('GarageSalesContext: Raw API response:', response);
+      console.log('GarageSalesContext: Response data structure:', JSON.stringify(response.data?.[0], null, 2));
 
       if (response && response.data) {
         const processedData = response.data.map(sale => {
@@ -46,14 +47,23 @@ export function GarageSalesProvider({ children }) {
             `${sale.address.streetNum} ${sale.address.street}` : 
             'Address not available';
 
+          // Extract position data, ensuring we have valid numbers
+          const position = {
+            lat: parseFloat(sale.address?.latitude) || parseFloat(sale.address?.lat) || 0,
+            lng: parseFloat(sale.address?.longitude) || parseFloat(sale.address?.long) || 0
+          };
+
+          // Log position data for debugging
+          console.log('Processing sale position:', {
+            originalAddress: sale.address,
+            processedPosition: position
+          });
+
           return {
             id: sale.id,
             address: address,
             description: sale.description || 'No description available',
-            position: {
-              lat: sale.address.lat,
-              lng: sale.address.long // Note: API uses 'long', we convert to 'lng' for Google Maps
-            },
+            position: position,
             highlightedItems: sale.highlightedItems || []
           };
         });
