@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import api from '../utils/api';
 import './GarageSalesAdmin.css';
 
 const GarageSalesAdmin = () => {
@@ -20,6 +21,22 @@ const GarageSalesAdmin = () => {
     address: '',
     description: ''
   });
+  const [submitError, setSubmitError] = useState('');
+
+  const parseAddress = (addressString) => {
+    // Example: "727 Balaton Ave, Pickering, ON"
+    const parts = addressString.split(',').map(part => part.trim());
+    const streetParts = parts[0].split(' ');
+    
+    return {
+      streetNumber: streetParts[0],
+      street: streetParts.slice(1).join(' '),
+      city: parts[1] || '',
+      state: parts[2] || '',
+      postalCode: '',
+      unit: ''
+    };
+  };
 
   const handleAddNew = () => {
     setEditingSale(null);
@@ -28,6 +45,7 @@ const GarageSalesAdmin = () => {
       description: ''
     });
     setIsAddingNew(true);
+    setSubmitError('');
   };
 
   const handleEdit = (sale) => {
@@ -65,21 +83,33 @@ const GarageSalesAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingSale) {
-      // TODO: Implement API call to update garage sale
-      console.log('Updating garage sale:', editingSale.id, formData);
-    } else {
-      // TODO: Implement API call to add new garage sale
-      console.log('Adding new garage sale:', formData);
+    try {
+      if (editingSale) {
+        // TODO: Implement API call to update garage sale
+        console.log('Updating garage sale:', editingSale.id, formData);
+      } else {
+        // Create new garage sale
+        const addressData = parseAddress(formData.address);
+        await api.createGarageSale(
+          addressData,
+          formData.description,
+          "Garage Sale", // Default name
+          [] // Empty highlighted items
+        );
+      }
+      
+      setIsAddingNew(false);
+      setEditingSale(null);
+      setFormData({
+        address: '',
+        description: ''
+      });
+      // Refresh the list after adding/editing
+      await fetchGarageSales();
+    } catch (error) {
+      console.error('Error submitting garage sale:', error);
+      alert('Failed to save garage sale. Please try again.');
     }
-    setIsAddingNew(false);
-    setEditingSale(null);
-    setFormData({
-      address: '',
-      description: ''
-    });
-    // Refresh the list after adding/editing
-    fetchGarageSales();
   };
 
   const handleDelete = async (saleId) => {
@@ -87,7 +117,7 @@ const GarageSalesAdmin = () => {
       // TODO: Implement API call to delete garage sale
       console.log('Deleting garage sale:', saleId);
       // Refresh the list after deleting
-      fetchGarageSales();
+      await fetchGarageSales();
     }
   };
 
@@ -126,61 +156,47 @@ const GarageSalesAdmin = () => {
       <h1>Garage Sales Administration</h1>
       
       <div className="admin-controls">
-        {!isAddingNew && !editingSale && (
-          <button onClick={handleAddNew}>Add New Garage Sale</button>
-        )}
+        <button 
+          className="add-new-button"
+          onClick={handleAddNew}
+          disabled={isAddingNew}
+        >
+          Add New Garage Sale
+        </button>
       </div>
 
       {(isAddingNew || editingSale) && (
-        <div className="add-sale-form">
-          <h2>{editingSale ? 'Edit Garage Sale' : 'Add New Garage Sale'}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Address:</label>
-              <GooglePlacesAutocomplete
-                apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-                selectProps={{
-                  value: { label: formData.address, value: formData.address },
-                  onChange: handleAddressSelect,
-                  placeholder: 'Enter address...',
-                  isClearable: true,
-                  styles: {
-                    control: (provided) => ({
-                      ...provided,
-                      borderRadius: '4px',
-                      borderColor: '#ccc',
-                    }),
-                    clearIndicator: (provided) => ({
-                      ...provided,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        color: '#666',
-                      },
-                    }),
-                  },
-                }}
-              />
-            </div>
-            <div className="form-group">
-              <label>Description:</label>
-              <AutoResizeTextArea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Enter garage sale description..."
-                minRows={3}
-              />
-            </div>
-            <div className="form-buttons">
-              <button type="submit">
-                {editingSale ? 'Save Changes' : 'Save'}
-              </button>
-              <button type="button" onClick={handleCancelEdit}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handleSubmit} className="garage-sale-form">
+          <div className="form-group">
+            <label>Address:</label>
+            <GooglePlacesAutocomplete
+              selectProps={{
+                value: { label: formData.address, value: formData.address },
+                onChange: (selected) => handleAddressSelect(selected),
+                placeholder: "Enter address..."
+              }}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description:</label>
+            <AutoResizeTextArea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Enter description..."
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="save-button">
+              {editingSale ? 'Save Changes' : 'Create Garage Sale'}
+            </button>
+            <button type="button" className="cancel-button" onClick={handleCancelEdit}>
+              Cancel
+            </button>
+          </div>
+        </form>
       )}
 
       <div className="sales-grid">
