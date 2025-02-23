@@ -28,9 +28,9 @@ const authApi = axios.create({
   baseURL: 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/json',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_SESSION_KEY //used incorrect key
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY
   }
 });
 
@@ -254,27 +254,63 @@ async function getUserInfo(email) {
 }
 
 // Authentication methods
-const register = async (email, password, name) => {
+const register = async (userEmail, password, firstName, lastName) => {
   try {
     // First create a session
     const sessionResponse = await createSession();
-    console.log('Created session for registration:', sessionResponse);
+    console.log('Current session ID before request:', sessionResponse);
     
-    // Then register with the session
-    const response = await authApi.post('/createUser', {
+    // Prepare the request body
+    const requestBody = {
       requesting_application: 'web-service',
       sessionId: sessionResponse,
       userData: {
-        email,
+        fName: firstName,
+        lName: lastName,
+        userEmail,
         password,
-        name,
-        validLogin: false
+        regType: "MANUAL",
+        userType: "USER"
       },
       sessionStart: new Date().toISOString(),
-      userId: 'N/A'
+      userId: "N/A"
+    };
+
+    // Log complete request details
+    console.log('Registration Request Details:', {
+      method: 'POST',
+      url: authApi.defaults.baseURL + '/createUser',
+      headers: {
+        ...authApi.defaults.headers,
+        'Content-Type': 'application/json',
+        'app-name': 'web-service'
+      },
+      body: JSON.stringify(requestBody, null, 2)
     });
+
+    // Validate request body
+    if (!requestBody.sessionId) {
+      throw new Error('Missing sessionId in request');
+    }
+    if (!requestBody.userData.fName || !requestBody.userData.lName) {
+      throw new Error('Missing first name or last name');
+    }
+    if (!requestBody.userData.userEmail) {
+      throw new Error('Missing email');
+    }
+    if (!requestBody.userData.password) {
+      throw new Error('Missing password');
+    }
     
-    console.log('Registration response:', response);
+    // Then register with the session
+    const response = await authApi.post('/createUser', requestBody);
+    
+    console.log('Registration Response Details:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      data: response.data
+    });
     
     if (response.data && response.data.sessionId) {
       localStorage.setItem('sessionId', response.data.sessionId);
@@ -282,17 +318,27 @@ const register = async (email, password, name) => {
     }
     throw new Error('Invalid registration response');
   } catch (error) {
-    console.error('Registration error:', {
+    // Enhanced error logging
+    console.error('Registration Error Details:', {
+      name: error.name,
       message: error.message,
       status: error.response?.status,
-      data: error.response?.data,
-      config: {
+      statusText: error.response?.statusText,
+      responseData: error.response?.data,
+      request: {
         url: error.config?.url,
         method: error.config?.method,
-        headers: error.config?.headers,
-        data: JSON.parse(error.config?.data || '{}')
-      }
+        headers: {
+          ...error.config?.headers,
+          'app-key': '[HIDDEN]'
+        },
+        data: typeof error.config?.data === 'string' 
+          ? JSON.parse(error.config?.data) 
+          : error.config?.data
+      },
+      stack: error.stack
     });
+
     if (error.response?.status === 404) {
       throw new Error('Registration endpoint not found. Please check the API configuration.');
     }
@@ -337,6 +383,7 @@ const login = async (email, password) => {
     console.error('Login error:', {
       message: error.message,
       status: error.response?.status,
+      statusText: error.response?.statusText,
       data: error.response?.data,
       config: {
         url: error.config?.url,
