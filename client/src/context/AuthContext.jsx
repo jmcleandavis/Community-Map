@@ -78,17 +78,25 @@ export const AuthProvider = ({ children }) => {
   const register = async (userEmail, password, firstName, lastName) => {
     try {
       const response = await api.register(userEmail, password, firstName, lastName);
-      const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response;
       
+      // Create user info from registration data
+      const userInfo = {
+        email: userEmail,
+        firstName: firstName,
+        lastName: lastName
+      };
+
       setIsAuthenticated(true);
-      setUserId(newUserId);
-      setUserType(newUserType);
-      setUserInfo(newUserInfo);
+      setUserInfo(userInfo);
+      setUserEmail(userEmail);
       
-      localStorage.setItem('sessionId', newSessionId);
-      localStorage.setItem('userId', newUserId);
-      localStorage.setItem('userType', newUserType);
-      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+      // Store user information
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      localStorage.setItem('userEmail', userEmail);
+      
+      // After registration, automatically log in the user
+      await login(userEmail, password);
       
       return response;
     } catch (error) {
@@ -110,17 +118,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      isAuthenticated,
-      userId,
-      userType,
-      userInfo,
-      userEmail,
-      login,
-      logout,
-      register,
-      isAdmin: userType === 'ADMIN'
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        userInfo,
+        userEmail,
+        userId,
+        userType,
+        login,
+        logout,
+        register
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
