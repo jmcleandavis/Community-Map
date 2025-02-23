@@ -75,9 +75,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userEmail, password, name) => {
+  const register = async (userEmail, password, firstName, lastName) => {
     try {
-      const response = await api.register(userEmail, password, name);
+      const response = await api.register(userEmail, password, firstName, lastName);
       const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo } = response;
       
       setIsAuthenticated(true);

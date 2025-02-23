@@ -43,7 +43,12 @@ const Login = () => {
         if (!formData.firstName || !formData.lastName) {
           throw new Error('First name and last name are required');
         }
-        await register(formData.email, formData.password, `${formData.firstName} ${formData.lastName}`);
+        await register(
+          formData.email,
+          formData.password,
+          formData.firstName,
+          formData.lastName
+        );
       }
       navigate('/');
     } catch (err) {
