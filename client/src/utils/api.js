@@ -253,6 +253,35 @@ async function getUserInfo(email) {
   }
 }
 
+// Create a new garage sale
+const createGarageSale = async (addressData, description, name, highlightedItems) => {
+  try {
+    const currentSessionId = await getSessionId();
+    const response = await mapsApi.post('/v1/createAddress', {
+      address: {
+        postalZipCode: addressData.postalCode || "",
+        street: addressData.street || "",
+        streetNum: addressData.streetNumber || "",
+        city: addressData.city || "",
+        provState: addressData.state || "",
+        unit: addressData.unit || ""
+      },
+      description: description,
+      highlightedItems: highlightedItems || [],
+      name: name || "Garage Sale",
+      community: "d31a9eec-0dda-469d-8565-692ef9ad55c2"
+    }, {
+      headers: {
+        'sessionId': currentSessionId
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create garage sale error:', error);
+    throw error;
+  }
+};
+
 // Authentication methods
 const register = async (userEmail, password, firstName, lastName) => {
   try {
@@ -404,6 +433,7 @@ const api = {
   register,
   login,
   logout,
+  createGarageSale,
   verifySession
 };
 
