@@ -28,7 +28,7 @@ const authApi = axios.create({
   baseURL: 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
     'app-key': import.meta.env.VITE_APP_SESSION_KEY
   }
@@ -282,28 +282,17 @@ const register = async (userEmail, password, firstName, lastName) => {
       url: authApi.defaults.baseURL + '/createUser',
       headers: {
         ...authApi.defaults.headers,
-        'Content-Type': 'application/json',
-        'app-name': 'web-service'
+        'Content-Type': 'application/json' // Override content type just for registration
       },
       body: JSON.stringify(requestBody, null, 2)
     });
 
-    // Validate request body
-    if (!requestBody.sessionId) {
-      throw new Error('Missing sessionId in request');
-    }
-    if (!requestBody.userData.fName || !requestBody.userData.lName) {
-      throw new Error('Missing first name or last name');
-    }
-    if (!requestBody.userData.userEmail) {
-      throw new Error('Missing email');
-    }
-    if (!requestBody.userData.password) {
-      throw new Error('Missing password');
-    }
-    
-    // Then register with the session
-    const response = await authApi.post('/createUser', requestBody);
+    // Make the registration request with JSON content type
+    const response = await authApi.post('/createUser', requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     
     console.log('Registration Response Details:', {
       status: response.status,
@@ -318,7 +307,6 @@ const register = async (userEmail, password, firstName, lastName) => {
     }
     throw new Error('Invalid registration response');
   } catch (error) {
-    // Enhanced error logging
     console.error('Registration Error Details:', {
       name: error.name,
       message: error.message,
@@ -328,21 +316,11 @@ const register = async (userEmail, password, firstName, lastName) => {
       request: {
         url: error.config?.url,
         method: error.config?.method,
-        headers: {
-          ...error.config?.headers,
-          'app-key': '[HIDDEN]'
-        },
-        data: typeof error.config?.data === 'string' 
-          ? JSON.parse(error.config?.data) 
-          : error.config?.data
-      },
-      stack: error.stack
+        headers: error.config?.headers,
+        data: error.config?.data
+      }
     });
-
-    if (error.response?.status === 404) {
-      throw new Error('Registration endpoint not found. Please check the API configuration.');
-    }
-    throw new Error(error.response?.data?.message || 'Registration failed. Please try again.');
+    throw error;
   }
 };
 
