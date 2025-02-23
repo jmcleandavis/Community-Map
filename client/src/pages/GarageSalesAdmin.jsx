@@ -108,7 +108,11 @@ const GarageSalesAdmin = () => {
       await fetchGarageSales();
     } catch (error) {
       console.error('Error submitting garage sale:', error);
-      alert('Failed to save garage sale. Please try again.');
+      if (error.message === 'A garage sale already exists at this address') {
+        window.alert('A garage sale already exists at this address');
+      } else {
+        window.alert('Failed to save garage sale. Please try again.');
+      }
     }
   };
 

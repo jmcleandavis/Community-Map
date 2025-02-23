@@ -278,6 +278,10 @@ const createGarageSale = async (addressData, description, name, highlightedItems
     return response.data;
   } catch (error) {
     console.error('Create garage sale error:', error);
+    if (error.response?.data?.code === 'ERR_MAPS001' && 
+        error.response?.data?.errorMsg === 'Existing Address') {
+      throw new Error('A garage sale already exists at this address');
+    }
     throw error;
   }
 };
