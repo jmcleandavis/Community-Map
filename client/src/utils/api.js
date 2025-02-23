@@ -339,11 +339,14 @@ const register = async (userEmail, password, firstName, lastName) => {
       data: response.data
     });
     
-    if (response.data && response.data.sessionId) {
-      localStorage.setItem('sessionId', response.data.sessionId);
+    if (response.status === 200) {
+      // Store sessionId if it exists in the response
+      if (response.data?.sessionId) {
+        localStorage.setItem('sessionId', response.data.sessionId);
+      }
       return response.data;
     }
-    throw new Error('Invalid registration response');
+    throw new Error('Registration failed: ' + response.statusText);
   } catch (error) {
     console.error('Registration Error Details:', {
       name: error.name,
