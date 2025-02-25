@@ -4,6 +4,10 @@ import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useLocation } from '../context/LocationContext';
 
+const COMMUNITY_NAME = 'BAY RIDGES';
+const EVENT_NAME = 'COMMUNITY GARAGE SALE';
+const currentYear = new Date().getFullYear();
+
 function MapView({ mapContainerStyle }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -334,7 +338,7 @@ function MapView({ mapContainerStyle }) {
   return (
     <div style={{ position: 'relative' }}>
       <div style={titleStyle}>
-        BAY RIDGES COMMUNITY GARAGE SALE 2025
+        {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
       </div>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
