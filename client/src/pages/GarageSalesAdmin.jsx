@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
+import { useAuth } from '../context/AuthContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import api from '../utils/api';
@@ -15,6 +16,7 @@ const GarageSalesAdmin = () => {
   } = useGarageSales();
   
   const navigate = useNavigate();
+  const { isAuthenticated, userEmail, userInfo } = useAuth();
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editingSale, setEditingSale] = useState(null);
   const [formData, setFormData] = useState({
@@ -158,6 +160,10 @@ const GarageSalesAdmin = () => {
   return (
     <div className="garage-sales-admin">
       <h1>Garage Sales Administration</h1>
+      <div className="user-info">
+        <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
+        <div className="user-email">{userEmail}</div>
+      </div>
       
       <div className="admin-controls">
         <button 
@@ -210,12 +216,12 @@ const GarageSalesAdmin = () => {
               <h3>{sale.address}</h3>
               <p>{sale.description}</p>
               <div className="sale-actions">
-                <button
+                {/* <button
                   className="view-map-button"
                   onClick={() => handleViewOnMap(sale)}
                 >
                   View on Map
-                </button>
+                </button> */}
                 <button
                   className="edit-button"
                   onClick={() => handleEdit(sale)}
