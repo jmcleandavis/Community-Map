@@ -5,7 +5,7 @@ import { useDisplay } from '../context/DisplayContext';
 import { useLocation } from '../context/LocationContext';
 
 const COMMUNITY_NAME = 'BAY RIDGES';
-const EVENT_NAME = 'COMMUNITY GARAGE SALE';
+const EVENT_NAME = 'COMMUNITY SALE DAY';
 const currentYear = new Date().getFullYear();
 const communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
