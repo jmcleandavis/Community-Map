@@ -20,7 +20,7 @@ const GarageSales = () => {
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
   
   const navigate = useNavigate();
-  const { isAuthenticated, userEmail } = useAuth();
+  const { isAuthenticated, userEmail, userInfo } = useAuth();
 
   useEffect(() => {
     fetchGarageSales();
@@ -90,7 +90,10 @@ const GarageSales = () => {
     <div className="garage-sales-container">
       <h1>Garage Sales</h1>
       {isAuthenticated && (
-        <div className="user-email">Logged in as: {userEmail}</div>
+        <div className="user-info">
+          <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
+          <div className="user-email">{userEmail}</div>
+        </div>
       )}
       
       <div className="controls-container">
