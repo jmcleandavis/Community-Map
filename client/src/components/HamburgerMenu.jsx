@@ -60,7 +60,7 @@ const HamburgerMenu = () => {
         {isAuthenticated && (
           <div className="menu-header">
             <span className="menu-icon">👤</span>
-            <span className="menu-user">{userInfo?.firstName} {userInfo?.lastName}</span>
+            <span className="menu-user">{userInfo?.fName} {userInfo?.lName}</span>
           </div>
         )}
 
