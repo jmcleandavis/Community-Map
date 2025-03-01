@@ -123,7 +123,7 @@ function MapView({ mapContainerStyle }) {
           title: sale.address
         });
 
-        marker.addListener('click', () => {
+        marker.addListener('gmp-click', () => {
           setSelectedSale(sale);
         });
 
