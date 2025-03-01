@@ -38,6 +38,11 @@ const HamburgerMenu = () => {
   const handleMyLocation = () => {
     centerOnUserLocation();
     setIsOpen(false);
+    
+    // Check if we're not already on the main map page (URL path is '/')
+    if (window.location.pathname !== '/') {
+      navigate('/');
+    }
   };
 
   const handleLogout = () => {
