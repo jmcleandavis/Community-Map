@@ -7,6 +7,7 @@ import { useLocation } from '../context/LocationContext';
 const COMMUNITY_NAME = 'BAY RIDGES';
 const EVENT_NAME = 'COMMUNITY GARAGE SALE';
 const currentYear = new Date().getFullYear();
+const communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
 function MapView({ mapContainerStyle }) {
   const [selectedSale, setSelectedSale] = useState(null);
