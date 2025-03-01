@@ -149,12 +149,12 @@ const GarageSales = () => {
                 <h3>{sale.address || 'No Address Available'}</h3>
                 <p>{sale.description || 'No Description Available'}</p>
               </div>
-              <button 
+              {/* <button 
                 className="view-map-button"
                 onClick={() => handleViewOnMap(sale)}
               >
                 View on Map
-              </button>
+              </button> */}
             </div>
           ))}
         </div>
