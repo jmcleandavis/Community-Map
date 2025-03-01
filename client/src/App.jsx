@@ -110,9 +110,9 @@ function App() {
 
 // Move ProtectedRoute inside App to avoid circular dependency
 const ProtectedRouteWrapper = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, userType } = useAuth();
   
-  if (!isAuthenticated || !isAdmin) {
+  if (!isAuthenticated || userType !== 'ADMIN') {
     return <Navigate to="/login" replace />;
   }
   
