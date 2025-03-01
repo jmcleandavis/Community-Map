@@ -67,6 +67,26 @@
   display: block;
 }
 
+.menu-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #f9f9f9;
+  border-radius: 4px 4px 0 0;
+}
+
+.menu-user {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin-left: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-item {
   display: flex;
   align-items: center;
