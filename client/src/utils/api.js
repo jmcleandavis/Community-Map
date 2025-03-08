@@ -326,25 +326,36 @@ const register = async (userEmail, password, firstName, lastName) => {
     });
 
     // Make the registration request
-    const response = await createCustomerApi.post('/v1/createCustomer', requestBody, {
-      headers: {
-        'sessionId': sessionResponse
-      }
-    });
+    try {
+      const response = await createCustomerApi.post('/v1/createCustomer', requestBody, {
+        headers: {
+          'sessionId': sessionResponse
+        }
+      });
     
-    console.log('Registration Response Details:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-      data: response.data
-    });
-    
-    if (response.status === 200) {
-      // Store sessionId if it exists in the response
-      if (response.data?.sessionId) {
-        localStorage.setItem('sessionId', response.data.sessionId);
+      console.log('Registration Response Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data
+      });
+      
+      if (response.status === 200) {
+        // Store sessionId if it exists in the response
+        if (response.data?.sessionId) {
+          localStorage.setItem('sessionId', response.data.sessionId);
+        }
+        return response.data;
       }
-      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+
+      if (error.response?.status === 400) {
+        // display a modal with the error message
+        throw new Error(error.response?.data?.errorMsg);
+      }
+
+      throw error;
     }
     throw new Error('Registration failed: ' + response.statusText);
   } catch (error) {
@@ -414,7 +425,10 @@ const login = async (email, password) => {
     if (error.response?.status === 404) {
       throw new Error('Login endpoint not found. Please check the API configuration.');
     }
+    // if response status is 401 throw error "please check credentials"
     throw new Error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    // otherwise
+    // throw error "Server is down. Please try again."
   }
 };
 

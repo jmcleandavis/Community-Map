@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { GoogleMap, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useLocation } from '../context/LocationContext';
@@ -9,12 +9,53 @@ const EVENT_NAME = 'COMMUNITY SALE DAY';
 const currentYear = new Date().getFullYear();
 const communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
+// Fallback component when map fails to load
+const MapLoadError = ({ error }) => {
+  return (
+    <div style={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: '#f8f9fa',
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+      padding: '20px'
+    }}>
+      <h3 style={{ color: '#dc3545' }}>Google Maps failed to load</h3>
+      <p>{error || 'Please check your internet connection and try again.'}</p>
+      <button 
+        style={{
+          padding: '8px 16px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginTop: '10px'
+        }}
+        onClick={() => window.location.reload()}
+      >
+        Reload Page
+      </button>
+    </div>
+  );
+};
+
 function MapView({ mapContainerStyle }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [center] = useState({
     lat: 43.8384,
     lng: -79.0868
+  });
+  
+  // Use the useJsApiLoader hook to track Google Maps loading status
+  const { isLoaded: mapsApiLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    mapIds: [import.meta.env.VITE_GOOGLE_MAPS_ID]
   });
   
   const mapRef = useRef(null);
@@ -326,8 +367,18 @@ function MapView({ mapContainerStyle }) {
     zIndex: 1,
     borderRadius: '5px'
   };
+  // Check for Google Maps loading error first
+  if (loadError) {
+    console.error('Error loading Google Maps API:', loadError);
+    return <MapLoadError error={loadError.message} />;
+  }
 
-  // Loading and error states
+  // If Maps API is not loaded yet, show loading indicator
+  if (!mapsApiLoaded) {
+    return <div>Loading Google Maps...</div>;
+  }
+
+  // Loading and error states for garage sales data
   if (loading) {
     return <div>Loading garage sales...</div>;
   }
@@ -335,6 +386,9 @@ function MapView({ mapContainerStyle }) {
   if (error) {
     return <div>Error loading garage sales: {error}</div>;
   }
+
+  // Log when rendering the map
+  console.log('MapView: Rendering Google Map component');
 
   return (
     <div style={{ position: 'relative' }}>
@@ -348,6 +402,10 @@ function MapView({ mapContainerStyle }) {
         onLoad={onLoad}
         onUnmount={onUnmount}
         options={mapOptions}
+        onError={(e) => {
+          console.error('Google Maps error:', e);
+          // You can set an error state here if needed
+        }}
       >
         {selectedSale && (
           <InfoWindow
