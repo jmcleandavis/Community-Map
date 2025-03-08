@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build-and-serve": "vite build && npx serve dist",
-    "serve": "vite build && npx serve dist"
+    "serve": "npx serve dist"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
