@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
-import { useSelection } from '../context/SelectionContext';
 import { useDisplay } from '../context/DisplayContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
@@ -19,7 +18,10 @@ const GarageSalesAdmin = () => {
   
   const navigate = useNavigate();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
-  const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
+  
+  // Create a separate state for admin selections
+  const [adminSelectedSales, setAdminSelectedSales] = useState(new Set());
+  
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editingSale, setEditingSale] = useState(null);
@@ -28,6 +30,23 @@ const GarageSalesAdmin = () => {
     description: ''
   });
   const [submitError, setSubmitError] = useState('');
+
+  // Load any previously saved admin selections
+  useEffect(() => {
+    const savedAdminSelections = localStorage.getItem('adminSelectedSaleIds');
+    if (savedAdminSelections) {
+      try {
+        setAdminSelectedSales(new Set(JSON.parse(savedAdminSelections)));
+      } catch (error) {
+        console.error('Error parsing admin selections:', error);
+      }
+    }
+  }, []);
+
+  // Save admin selections to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('adminSelectedSaleIds', JSON.stringify([...adminSelectedSales]));
+  }, [adminSelectedSales]);
 
   const parseAddress = (addressString) => {
     // Example: "727 Balaton Ave, Pickering, ON"
@@ -133,8 +152,24 @@ const GarageSalesAdmin = () => {
     }
   };
 
+  const handleAdminCheckboxChange = (saleId) => {
+    setAdminSelectedSales(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(saleId)) {
+        newSelected.delete(saleId);
+      } else {
+        newSelected.add(saleId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleAdminDeselectAll = () => {
+    setAdminSelectedSales(new Set());
+  };
+
   const handleDeleteSelected = async () => {
-    const selectedIds = [...selectedSales];
+    const selectedIds = [...adminSelectedSales];
     
     if (selectedIds.length === 0) {
       alert('Please select at least one garage sale to delete.');
@@ -150,7 +185,7 @@ const GarageSalesAdmin = () => {
         
         // Refresh the list and clear selections
         fetchGarageSales();
-        handleDeselectAll();
+        handleAdminDeselectAll();
       } catch (error) {
         console.error('Error deleting selected garage sales:', error);
         alert('An error occurred while deleting selected garage sales.');
@@ -171,7 +206,7 @@ const GarageSalesAdmin = () => {
 
   const handleViewSelected = () => {
     const selectedSalesData = garageSales
-      .filter(sale => selectedSales.has(sale.id))
+      .filter(sale => adminSelectedSales.has(sale.id))
       .map(sale => ({
         ...sale,
         lat: sale.position.lat,
@@ -228,11 +263,11 @@ const GarageSalesAdmin = () => {
           Add New Garage Sale
         </button>
         
-        {selectedSales.size > 0 && (
+        {adminSelectedSales.size > 0 && (
           <>
             <button 
               className="select-all-button"
-              onClick={() => handleDeselectAll()}
+              onClick={handleAdminDeselectAll}
             >
               Deselect All
             </button>
@@ -240,7 +275,7 @@ const GarageSalesAdmin = () => {
               className="delete-selected-button"
               onClick={handleDeleteSelected}
             >
-              Delete Selected ({selectedSales.size})
+              Delete Selected ({adminSelectedSales.size})
             </button>
           </>
         )}
@@ -288,8 +323,8 @@ const GarageSalesAdmin = () => {
                 <label className="checkbox-container">
                   <input
                     type="checkbox"
-                    checked={selectedSales.has(sale.id)}
-                    onChange={() => handleCheckboxChange(sale.id)}
+                    checked={adminSelectedSales.has(sale.id)}
+                    onChange={() => handleAdminCheckboxChange(sale.id)}
                   />
                   <span className="checkmark"></span>
                 </label>
