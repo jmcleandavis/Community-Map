@@ -8,8 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build-and-serve": "vite build && npx serve dist --listen 8080",
-    "serve": "npx serve dist"
+    "build-and-serve": "vite build && npx serve dist",
+    "serve": "vite build && npx serve dist"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
