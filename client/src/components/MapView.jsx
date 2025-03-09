@@ -173,6 +173,17 @@ function MapView({ mapContainerStyle, mapOptions }) {
     console.log('MapView: Successfully created', markersCreated, 'markers');
   }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers]);
 
+  // Watch for when both map and data are ready and create markers
+  useEffect(() => {
+    // Only proceed if we have all necessary data
+    if (mapRef.current && garageSales?.length && window.google) {
+      console.log("DIRECT EFFECT: Map and data both ready, creating markers now!");
+      if (markersRef.current.length === 0) { // Only create if not already created
+        createMarkers();
+      }
+    }
+  }, [mapRef.current, garageSales, createMarkers]);
+
   // Effect to handle centering on user location
   useEffect(() => {
     if (shouldCenterOnUser && userLocation && mapRef.current) {
@@ -285,7 +296,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
   }, [userLocation, isLoaded]);
 
-  // Effect to create/update markers when garage sales change
+  // Effect to create markers when map is loaded and sales data is available
   useEffect(() => {
     if (!isLoaded) {
       console.log('MapView: Map not loaded yet, waiting to create markers...');
@@ -357,7 +368,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
         onLoad={(map) => {
           console.log("Map component loaded");
           mapRef.current = map;
-          setIsLoaded(true);
           
           // Explicitly set map type control position
           if (map && window.google) {
@@ -376,6 +386,15 @@ function MapView({ mapContainerStyle, mapOptions }) {
                 position: window.google.maps.ControlPosition.TOP_RIGHT
               }
             });
+          }
+          
+          // Set loaded state after configuring the map
+          setIsLoaded(true);
+          
+          // Directly create markers if garage sales data is available
+          if (garageSales?.length && window.google) {
+            console.log("Map loaded with data available, creating markers immediately");
+            setTimeout(() => createMarkers(), 100); // Small timeout to ensure state is updated
           }
         }}
         onUnmount={(map) => {
