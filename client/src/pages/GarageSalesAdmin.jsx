@@ -145,7 +145,9 @@ const GarageSalesAdmin = () => {
     if (window.confirm('Are you sure you want to delete this garage sale?')) {
       try {
         await api.deleteGarageSale(saleId);
-        fetchGarageSales();
+        
+        // Force refresh the garage sales list to update the UI
+        await fetchGarageSales(true);
       } catch (error) {
         console.error('Error deleting garage sale:', error);
       }
@@ -181,8 +183,8 @@ const GarageSalesAdmin = () => {
         // Use bulk deletion instead of deleting one by one
         await api.deleteGarageSale(selectedIds);
         
-        // Refresh the list and clear selections
-        fetchGarageSales();
+        // Force refresh the garage sales list to update the UI
+        await fetchGarageSales(true);
         handleAdminDeselectAll();
       } catch (error) {
         console.error('Error deleting selected garage sales:', error);
