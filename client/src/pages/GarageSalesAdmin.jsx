@@ -169,19 +169,17 @@ const GarageSalesAdmin = () => {
   };
 
   const handleDeleteSelected = async () => {
-    const selectedIds = [...adminSelectedSales];
+    const selectedIds = Array.from(adminSelectedSales);
     
     if (selectedIds.length === 0) {
-      alert('Please select at least one garage sale to delete.');
+      alert('Please select garage sales to delete');
       return;
     }
     
     if (window.confirm(`Are you sure you want to delete ${selectedIds.length} selected garage sales?`)) {
       try {
-        // Delete each selected sale sequentially
-        for (const saleId of selectedIds) {
-          await api.deleteGarageSale(saleId);
-        }
+        // Use bulk deletion instead of deleting one by one
+        await api.deleteGarageSale(selectedIds);
         
         // Refresh the list and clear selections
         fetchGarageSales();
