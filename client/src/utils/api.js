@@ -328,6 +328,25 @@ const deleteGarageSale = async (saleIds) => {
   }
 };
 
+// Update a garage sale
+const updateGarageSale = async (saleId, updateData) => {
+  try {
+    const sessionId = await getSessionId();
+    
+    const response = await mapsApi.patch(`/v1/updateAddress/${saleId}`, updateData, {
+      headers: {
+        'sessionId': sessionId
+      }
+    });
+    
+    console.log('Updated garage sale:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating garage sale:', error);
+    throw error;
+  }
+};
+
 // Authentication methods
 const register = async (userEmail, password, firstName, lastName) => {
   try {
@@ -492,6 +511,7 @@ const api = {
   logout,
   createGarageSale,
   deleteGarageSale,
+  updateGarageSale,
   verifySession
 };
 
