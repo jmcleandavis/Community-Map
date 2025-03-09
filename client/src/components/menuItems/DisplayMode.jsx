@@ -20,9 +20,8 @@ const DisplayMode = ({ onSelect }) => {
   }
 
   const handleClick = () => {
-    // If we're showing the "Show Selected Sales" option
     if (!showOnlySelected) {
-      // Get the selected sales data, similar to handleViewSelected in GarageSales.jsx
+      // "Show Selected Sales" option is clicked
       const selectedSalesData = garageSales
         .filter(sale => selectedSales.has(sale.id))
         .map(sale => ({
@@ -48,8 +47,15 @@ const DisplayMode = ({ onSelect }) => {
         alert('Please select at least one garage sale to view on the map.');
       }
     } else {
-      // Just toggle the mode if we're already showing selected sales
+      // "Show All Sales" option is clicked
+      // Clear any selected sales data in localStorage
+      localStorage.removeItem('selectedSales');
+      
+      // Toggle the display mode
       toggleDisplayMode();
+      
+      // Always navigate to the map page for consistency
+      navigate('/');
     }
 
     // Call the onSelect callback to close the menu
