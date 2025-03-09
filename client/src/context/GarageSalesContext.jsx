@@ -20,14 +20,14 @@ export function GarageSalesProvider({ children }) {
     };
   }, []);
 
-  const fetchGarageSales = useCallback(async () => {
+  const fetchGarageSales = useCallback(async (forceRefresh = false) => {
     if (fetchInProgressRef.current) {
       console.log('GarageSalesContext: Fetch already in progress');
       return;
     }
 
-    if (initialFetchDoneRef.current) {
-      console.log('GarageSalesContext: Initial fetch already done');
+    if (initialFetchDoneRef.current && !forceRefresh) {
+      console.log('GarageSalesContext: Initial fetch already done, skipping (not forced)');
       return;
     }
 
