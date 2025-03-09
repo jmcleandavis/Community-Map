@@ -19,6 +19,7 @@ export function LocationProvider({ children }) {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
+        console.log('User location obtained:', pos);
         setUserLocation(pos);
         setShouldCenterOnUser(true);
         setError(null);
