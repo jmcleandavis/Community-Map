@@ -297,6 +297,37 @@ const createGarageSale = async (addressData, description, name, highlightedItems
   }
 };
 
+// Delete a garage sale
+const deleteGarageSale = async (saleIds) => {
+  try {
+    const currentSessionId = await getSessionId();
+    
+    // Handle both single ID and array of IDs
+    const idsToDelete = Array.isArray(saleIds) ? saleIds : [saleIds];
+    
+    console.log('API: Deleting garage sales with IDs:', idsToDelete);
+    
+    const response = await mapsApi.delete('/v1/deleteAddress', {
+      headers: {
+        'sessionId': currentSessionId,
+        'Content-Type': 'application/json'
+      },
+      data: idsToDelete
+    });
+    
+    console.log('API: Delete response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Delete garage sale error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    throw error;
+  }
+};
+
 // Authentication methods
 const register = async (userEmail, password, firstName, lastName) => {
   try {
@@ -460,6 +491,7 @@ const api = {
   login,
   logout,
   createGarageSale,
+  deleteGarageSale,
   verifySession
 };
 
