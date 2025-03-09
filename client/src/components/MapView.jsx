@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { GoogleMap, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useLocation } from '../context/LocationContext';
@@ -43,7 +43,7 @@ const MapLoadError = ({ error }) => {
   );
 };
 
-function MapView({ mapContainerStyle }) {
+function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [center] = useState({
@@ -51,13 +51,8 @@ function MapView({ mapContainerStyle }) {
     lng: -79.0868
   });
   
-  // Use the useJsApiLoader hook to track Google Maps loading status
-  const { isLoaded: mapsApiLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    mapIds: [import.meta.env.VITE_GOOGLE_MAPS_ID]
-  });
-  
+  // Google Maps is already loaded by LoadScript in App.jsx
+  // We assume it's loaded when this component mounts
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
@@ -316,43 +311,6 @@ function MapView({ mapContainerStyle }) {
     createMarkers();
   }, [isLoaded, garageSales, createMarkers]);
 
-  const onLoad = useCallback((map) => {
-    console.log('MapView: Map loaded, setting reference and loaded state');
-    mapRef.current = map;
-    setIsLoaded(true);
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    console.log('MapView: Map unmounting, cleaning up');
-    cleanupMarkers();
-    mapRef.current = null;
-    setIsLoaded(false);
-  }, [cleanupMarkers]);
-
-  const mapOptions = useMemo(() => ({
-    zoomControl: true,
-    mapTypeControl: true,
-    mapTypeControlOptions: {
-      position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
-      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR,
-      mapTypeIds: [
-        'roadmap',
-        'satellite',
-        'hybrid',
-        'terrain'
-      ]
-    },
-    streetViewControl: true,
-    fullscreenControl: true,
-    fullscreenControlOptions: {
-      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
-    },
-    zoomControlOptions: {
-      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
-    },
-    mapId: import.meta.env.VITE_GOOGLE_MAPS_ID
-  }), []);
-
   const titleStyle = {
     textAlign: 'center',
     padding: '15px',
@@ -367,15 +325,14 @@ function MapView({ mapContainerStyle }) {
     zIndex: 1,
     borderRadius: '5px'
   };
-  // Check for Google Maps loading error first
-  if (loadError) {
-    console.error('Error loading Google Maps API:', loadError);
-    return <MapLoadError error={loadError.message} />;
-  }
 
-  // If Maps API is not loaded yet, show loading indicator
-  if (!mapsApiLoaded) {
-    return <div>Loading Google Maps...</div>;
+  // Log when rendering the map
+  console.log('MapView: Rendering Google Map component');
+
+  // Check if window.google is available (maps script is loaded)
+  if (!window.google) {
+    console.error('Google Maps API not loaded yet');
+    return <MapLoadError error="Google Maps not loaded yet. Please try refreshing the page." />;
   }
 
   // Loading and error states for garage sales data
@@ -387,25 +344,45 @@ function MapView({ mapContainerStyle }) {
     return <div>Error loading garage sales: {error}</div>;
   }
 
-  // Log when rendering the map
-  console.log('MapView: Rendering Google Map component');
-
   return (
     <div style={{ position: 'relative' }}>
       <div style={titleStyle}>
         {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
       </div>
+
       <GoogleMap
-        mapContainerStyle={mapContainerStyle}
+        mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
         center={center}
-        zoom={11}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={mapOptions}
-        onError={(e) => {
-          console.error('Google Maps error:', e);
-          // You can set an error state here if needed
+        zoom={13}
+        onLoad={(map) => {
+          console.log("Map component loaded");
+          mapRef.current = map;
+          setIsLoaded(true);
+          
+          // Explicitly set map type control position
+          if (map && window.google) {
+            map.setOptions({
+              mapTypeControl: true,
+              mapTypeControlOptions: {
+                position: window.google.maps.ControlPosition.TOP_RIGHT,
+                style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+              },
+              zoomControl: true,
+              zoomControlOptions: {
+                position: window.google.maps.ControlPosition.RIGHT_CENTER
+              },
+              fullscreenControl: true,
+              fullscreenControlOptions: {
+                position: window.google.maps.ControlPosition.TOP_RIGHT
+              }
+            });
+          }
         }}
+        onUnmount={(map) => {
+          console.log("Map component unmounted");
+          mapRef.current = null;
+        }}
+        options={mapOptions}
       >
         {selectedSale && (
           <InfoWindow
