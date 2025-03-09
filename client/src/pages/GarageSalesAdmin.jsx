@@ -129,8 +129,8 @@ const GarageSalesAdmin = () => {
         address: '',
         description: ''
       });
-      // Refresh the list after adding/editing
-      await fetchGarageSales();
+      // Force refresh the list after adding/editing
+      await fetchGarageSales(true);
     } catch (error) {
       console.error('Error submitting garage sale:', error);
       if (error.message === 'A garage sale already exists at this address') {
