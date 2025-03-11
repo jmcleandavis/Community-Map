@@ -59,7 +59,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const initialLoadRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
-  const { userLocation, shouldCenterOnUser, clearCenterOnUser } = useLocation();
+  const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -394,7 +394,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
           // Directly create markers if garage sales data is available
           if (garageSales?.length && window.google) {
             console.log("Map loaded with data available, creating markers immediately");
-            setTimeout(() => createMarkers(), 100); // Small timeout to ensure state is updated
+            setTimeout(() => {createMarkers(); centerOnUserLocation();}, 100); // Small timeout to ensure state is updated
           }
         }}
         onUnmount={(map) => {
