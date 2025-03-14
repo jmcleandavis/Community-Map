@@ -80,6 +80,8 @@ const GarageSalesAdmin = () => {
       address: sale.address,
       description: sale.description
     });
+    // Scroll to the top of the page to make the form visible
+    window.scrollTo(0, 0);
   };
 
   const handleCancelEdit = () => {
@@ -110,8 +112,32 @@ const GarageSalesAdmin = () => {
     e.preventDefault();
     try {
       if (editingSale) {
-        // TODO: Implement API call to update garage sale
-        console.log('Updating garage sale:', editingSale.id, formData);
+        // Prepare the update data based on what changed
+        const updateData = {};
+        
+        // Check if address was updated
+        if (formData.address !== editingSale.address) {
+          // Parse address components
+          const addressParts = parseAddress(formData.address);
+          updateData.address = {
+            street: addressParts.street,
+            streetNum: addressParts.streetNumber,
+            city: addressParts.city,
+            provState: addressParts.state,
+            postalZipCode: '',
+            unit: ''
+          };
+        }
+        
+        // Check if description was updated
+        if (formData.description !== editingSale.description) {
+          updateData.description = formData.description;
+        }
+        
+        // Only make the API call if there are changes to update
+        if (Object.keys(updateData).length > 0) {
+          await api.updateGarageSale(editingSale.id, updateData);
+        }
       } else {
         // Create new garage sale
         const addressData = parseAddress(formData.address);
