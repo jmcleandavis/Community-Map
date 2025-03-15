@@ -504,15 +504,37 @@ const logout = async () => {
 const api = {
   createSession,
   getSessionId,
+  verifySession,
   getAddresses,
   getUserInfo,
-  register,
-  login,
-  logout,
   createGarageSale,
   deleteGarageSale,
   updateGarageSale,
-  verifySession
+  register,
+  login,
+  logout,
+  
+  // Google SSO login
+  googleLogin: async () => {
+    try {
+      const response = await authApi.get('/auth/google');
+      return response.data;
+    } catch (error) {
+      console.error('Google login error:', error);
+      throw error;
+    }
+  },
+  
+  // Handle Google SSO callback
+  handleGoogleCallback: async (token) => {
+    try {
+      const response = await authApi.post('/auth/google/callback', { token });
+      return response.data;
+    } catch (error) {
+      console.error('Google callback error:', error);
+      throw error;
+    }
+  }
 };
 
 export default api;
