@@ -108,6 +108,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const requestPasswordReset = async (email) => {
+    try {
+      const response = await api.requestPasswordReset(email);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const verifyResetToken = async (token) => {
+    try {
+      const response = await api.verifyResetToken(token);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    try {
+      const response = await api.resetPassword(token, newPassword);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const register = async (userEmail, password, firstName, lastName) => {
     try {
       const response = await api.register(userEmail, password, firstName, lastName);
@@ -162,7 +189,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         register,
         googleLogin,
-        handleGoogleCallback
+        handleGoogleCallback,
+        requestPasswordReset,
+        verifyResetToken,
+        resetPassword
       }}
     >
       {children}

@@ -136,6 +136,43 @@
   margin-right: 10px;
 }
 
+.forgot-password {
+  display: block;
+  text-align: right;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #2196F3;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.password-reset-container {
+  margin-top: 20px;
+}
+
+.password-reset-title {
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.back-button {
+  color: #2196F3;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 15px;
+  display: inline-block;
+}
+
 @media (max-width: 480px) {
   .login-box {
     padding: 20px;
