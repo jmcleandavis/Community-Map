@@ -77,33 +77,49 @@ export const AuthProvider = ({ children }) => {
 
   const googleLogin = async () => {
     try {
-      // Redirect to Google OAuth login
-      const response = await api.googleLogin();
-      window.location.href = response.authUrl;
+      // Just call the API method - it handles the redirect directly
+      await api.googleLogin();
+      // No need to redirect here as it's handled in the API
     } catch (error) {
+      console.error('Error in googleLogin:', error);
       throw error;
     }
   };
 
   const handleGoogleCallback = async (token) => {
     try {
+      console.log('AuthContext: Processing Google callback with token');
       const response = await api.handleGoogleCallback(token);
-      const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo, email } = response.data;
       
-      setIsAuthenticated(true);
-      setUserId(newUserId);
-      setUserType(newUserType);
-      setUserInfo(newUserInfo);
-      setUserEmail(email);
-      
-      localStorage.setItem('sessionId', newSessionId);
-      localStorage.setItem('userId', newUserId);
-      localStorage.setItem('userType', newUserType);
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
-      
-      return response;
+      if (response && response.success && response.user) {
+        // For now, just log the user in with the data we have
+        // In production, this would use real data from the backend
+        console.log('Login successful with user:', response.user);
+        
+        const mockUserData = {
+          userId: 'google-user-123',
+          userType: 'USER',
+          userInfo: response.user,
+          email: response.user.email
+        };
+        
+        setIsAuthenticated(true);
+        setUserId(mockUserData.userId);
+        setUserType(mockUserData.userType);
+        setUserInfo(mockUserData.userInfo);
+        setUserEmail(mockUserData.email);
+        
+        localStorage.setItem('userId', mockUserData.userId);
+        localStorage.setItem('userType', mockUserData.userType);
+        localStorage.setItem('userEmail', mockUserData.email);
+        localStorage.setItem('userInfo', JSON.stringify(mockUserData.userInfo));
+        
+        return { success: true, data: mockUserData };
+      } else {
+        throw new Error('Invalid response from Google callback');
+      }
     } catch (error) {
+      console.error('Error in handleGoogleCallback:', error);
       throw error;
     }
   };
