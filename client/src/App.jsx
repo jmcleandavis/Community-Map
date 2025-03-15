@@ -6,6 +6,7 @@ import HamburgerMenu from './components/HamburgerMenu';
 import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
+import LoginRedirect from './pages/LoginRedirect';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import MapView from './components/MapView';
@@ -55,6 +56,7 @@ function App() {
             <LocationProvider>
               <div className="app">
                 <Routes>
+                  <Route path="/loginRedirect" element={<LoginRedirect />} />
                   <Route path="/info" element={
                     <>
                       <HamburgerMenu />
