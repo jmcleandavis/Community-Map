@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
+import { useSearch } from '../context/SearchContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import api from '../utils/api';
@@ -18,6 +19,7 @@ const GarageSalesAdmin = () => {
   
   const navigate = useNavigate();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
+  const { searchTerm, handleSearchChange } = useSearch();
   
   // Create a separate state for admin selections
   const [adminSelectedSales, setAdminSelectedSales] = useState(new Set());
@@ -231,7 +233,7 @@ const GarageSalesAdmin = () => {
   };
 
   const handleViewSelected = () => {
-    const selectedSalesData = garageSales
+    const selectedSalesData = filteredSales
       .filter(sale => adminSelectedSales.has(sale.id))
       .map(sale => ({
         ...sale,
@@ -252,6 +254,12 @@ const GarageSalesAdmin = () => {
       alert('Please select at least one garage sale to view on the map.');
     }
   };
+
+  // Filter garage sales based on search term
+  const filteredSales = garageSales.filter(sale => 
+    (sale.address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sale.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -288,6 +296,16 @@ const GarageSalesAdmin = () => {
         >
           Add New Garage Sale
         </button>
+        
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search by address or description..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+        </div>
         
         {adminSelectedSales.size > 0 && (
           <>
@@ -342,8 +360,8 @@ const GarageSalesAdmin = () => {
       )}
 
       <div className="sales-grid">
-        {garageSales && garageSales.length > 0 ? (
-          garageSales.map(sale => (
+        {filteredSales && filteredSales.length > 0 ? (
+          filteredSales.map(sale => (
             <div key={sale.id} className="sale-card">
               <div className="card-header">
                 <label className="checkbox-container">
@@ -382,6 +400,11 @@ const GarageSalesAdmin = () => {
         ) : (
           <div className="no-results">No garage sales found</div>
         )}
+      </div>
+      
+      <div className="total-count">
+        Showing {filteredSales.length} of {garageSales.length} garage sales
+        {adminSelectedSales.size > 0 && ` (${adminSelectedSales.size} selected)`}
       </div>
     </div>
   );
