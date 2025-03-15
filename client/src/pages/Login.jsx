@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const location = useLocation();
+  const { login, register, googleLogin, handleGoogleCallback } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -16,6 +17,28 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check for Google auth callback
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const token = searchParams.get('token');
+    
+    if (token) {
+      const handleCallback = async () => {
+        try {
+          setLoading(true);
+          await handleGoogleCallback(token);
+          navigate('/');
+        } catch (err) {
+          setError('Failed to authenticate with Google. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      handleCallback();
+    }
+  }, [location, handleGoogleCallback, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -58,11 +81,39 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      await googleLogin();
+      // No need to navigate here as googleLogin will redirect to Google OAuth
+    } catch (err) {
+      setError('Failed to initiate Google login. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="login-container">
       <div className="login-box">
         <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
         {error && <div className="error-message">{error}</div>}
+        
+        <button 
+          className="google-button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          <img 
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" 
+            alt="Google" 
+            className="google-icon" 
+          />
+          Sign in with Google
+        </button>
+        
+        <div className="or-divider">OR</div>
+        
         <form onSubmit={handleSubmit}>
           {!isLogin && (
             <>

@@ -75,6 +75,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async () => {
+    try {
+      // Redirect to Google OAuth login
+      const response = await api.googleLogin();
+      window.location.href = response.authUrl;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleGoogleCallback = async (token) => {
+    try {
+      const response = await api.handleGoogleCallback(token);
+      const { sessionId: newSessionId, userId: newUserId, userType: newUserType, userInfo: newUserInfo, email } = response.data;
+      
+      setIsAuthenticated(true);
+      setUserId(newUserId);
+      setUserType(newUserType);
+      setUserInfo(newUserInfo);
+      setUserEmail(email);
+      
+      localStorage.setItem('sessionId', newSessionId);
+      localStorage.setItem('userId', newUserId);
+      localStorage.setItem('userType', newUserType);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+      
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const register = async (userEmail, password, firstName, lastName) => {
     try {
       const response = await api.register(userEmail, password, firstName, lastName);
@@ -127,7 +160,9 @@ export const AuthProvider = ({ children }) => {
         userType,
         login,
         logout,
-        register
+        register,
+        googleLogin,
+        handleGoogleCallback
       }}
     >
       {children}
