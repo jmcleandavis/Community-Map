@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
@@ -18,6 +18,7 @@ const GarageSalesAdmin = () => {
   } = useGarageSales();
   
   const navigate = useNavigate();
+  const { communitySaleId } = useParams();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { searchTerm, handleSearchChange } = useSearch();
   
@@ -32,7 +33,9 @@ const GarageSalesAdmin = () => {
     description: ''
   });
   const [submitError, setSubmitError] = useState('');
-
+  const [communitySale, setCommunitySale] = useState(null);
+  const [associatedGarageSales, setAssociatedGarageSales] = useState([]);
+  
   // Load any previously saved admin selections
   useEffect(() => {
     const savedAdminSelections = localStorage.getItem('adminSelectedSaleIds');
@@ -49,6 +52,37 @@ const GarageSalesAdmin = () => {
   useEffect(() => {
     localStorage.setItem('adminSelectedSaleIds', JSON.stringify([...adminSelectedSales]));
   }, [adminSelectedSales]);
+
+  // Fetch community sale and associated garage sales when communitySaleId is available
+  useEffect(() => {
+    const fetchCommunitySaleData = async () => {
+      if (communitySaleId) {
+        try {
+          // Fetch the community sale details
+          const response = await api.getCommunitySaleById(communitySaleId);
+          setCommunitySale(response);
+          
+          // Fetch garage sales associated with this community sale
+          const associatedSales = await api.getGarageSalesByCommunitySale(communitySaleId);
+          setAssociatedGarageSales(associatedSales);
+          
+          // Pre-select the associated garage sales in the admin UI
+          const associatedIds = new Set(associatedSales.map(sale => sale.id));
+          setAdminSelectedSales(associatedIds);
+        } catch (error) {
+          console.error('Error fetching community sale data:', error);
+          setSubmitError('Failed to load community sale data. Please try again.');
+        }
+      }
+    };
+    
+    fetchCommunitySaleData();
+  }, [communitySaleId]);
+
+  // Refresh garage sales data when component mounts
+  useEffect(() => {
+    fetchGarageSales();
+  }, []);
 
   const parseAddress = (addressString) => {
     // Example: "727 Balaton Ave, Pickering, ON"
@@ -261,6 +295,60 @@ const GarageSalesAdmin = () => {
     (sale.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Handle selection of all sales
+  const handleSelectAll = () => {
+    const allIds = new Set(garageSales.map(sale => sale.id));
+    setAdminSelectedSales(allIds);
+  };
+
+  // Handle deselection of all sales
+  const handleDeselectAll = () => {
+    setAdminSelectedSales(new Set());
+  };
+
+  // Handle associating selected garage sales with the community sale
+  const handleAssociateGarageSales = async () => {
+    if (!communitySaleId) return;
+    
+    try {
+      const selectedIds = Array.from(adminSelectedSales);
+      
+      // Get currently associated sale IDs
+      const currentlyAssociatedIds = associatedGarageSales.map(sale => sale.id);
+      
+      // Find sales to add (selected but not currently associated)
+      const salesToAdd = selectedIds.filter(id => !currentlyAssociatedIds.includes(id));
+      
+      // Find sales to remove (currently associated but not selected)
+      const salesToRemove = currentlyAssociatedIds.filter(id => !adminSelectedSales.has(id));
+      
+      // Add new associations
+      for (const saleId of salesToAdd) {
+        await api.addGarageSaleToCommunitySale(communitySaleId, saleId);
+      }
+      
+      // Remove old associations
+      for (const saleId of salesToRemove) {
+        await api.removeGarageSaleFromCommunitySale(communitySaleId, saleId);
+      }
+      
+      // Refresh associated garage sales
+      const updatedAssociatedSales = await api.getGarageSalesByCommunitySale(communitySaleId);
+      setAssociatedGarageSales(updatedAssociatedSales);
+      
+      // Show success message
+      alert(`Successfully updated garage sales for the community sale.`);
+    } catch (error) {
+      console.error('Error associating garage sales:', error);
+      setSubmitError('Failed to update community sale associations. Please try again.');
+    }
+  };
+
+  // Return to the community sales admin page
+  const handleBackToCommunitySales = () => {
+    navigate('/admin/community-sales');
+  };
+
   if (loading) {
     return (
       <div className="garage-sales-admin">
@@ -311,7 +399,13 @@ const GarageSalesAdmin = () => {
           <>
             <button 
               className="select-all-button"
-              onClick={handleAdminDeselectAll}
+              onClick={handleSelectAll}
+            >
+              Select All
+            </button>
+            <button 
+              className="deselect-all-button"
+              onClick={handleDeselectAll}
             >
               Deselect All
             </button>
@@ -321,8 +415,21 @@ const GarageSalesAdmin = () => {
             >
               Delete Selected ({adminSelectedSales.size})
             </button>
+            <button 
+              className="associate-button"
+              onClick={handleAssociateGarageSales}
+            >
+              Associate with Community Sale
+            </button>
           </>
         )}
+        
+        <button 
+          className="back-button"
+          onClick={handleBackToCommunitySales}
+        >
+          Back to Community Sales
+        </button>
       </div>
 
       {(isAddingNew || editingSale) && (

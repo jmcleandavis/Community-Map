@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import LoginRedirect from './pages/LoginRedirect';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
+import CommunitySalesAdmin from './pages/CommunitySalesAdmin';
 import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -92,11 +93,11 @@ function App() {
                       </div>
                     </>
                   } />
-                  <Route path="/admin/sales" element={
+                  <Route path="/admin/community-sales" element={
                     <ProtectedRouteWrapper>
                       <>
                         <HamburgerMenu />
-                        <GarageSalesAdmin />
+                        <CommunitySalesAdmin />
                       </>
                     </ProtectedRouteWrapper>
                   } />

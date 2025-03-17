@@ -94,6 +94,16 @@ const HamburgerMenu = () => {
           </div>
         )}
 
+        {userType === 'ADMIN' && (
+          <div className="menu-item" onClick={() => {
+            navigate('/admin/community-sales');
+            setIsOpen(false);
+          }}>
+            <span className="menu-icon">🏙️</span>
+            <span className="menu-text">Community Sales</span>
+          </div>
+        )}
+
         <div className="menu-item" onClick={handleMyLocation}>
           <span className="menu-icon">📍</span>
           <span className="menu-text">My Location</span>
