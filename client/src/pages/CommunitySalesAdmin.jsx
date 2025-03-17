@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './CommunitySalesAdmin.css';
 
 const CommunitySalesAdmin = () => {
+  const navigate = useNavigate();
   // Mock data for demonstration purposes
   const [communitySales, setCommunitySales] = useState([
     {
@@ -26,10 +28,10 @@ const CommunitySalesAdmin = () => {
       location: 'Riverside Community Park'
     },
     {
-      id: '4',
+      id: 'd31a9eec-0dda-469d-8565-692ef9ad55c2',
       name: 'Bay Ridges Community Sales Day',
       description: 'Annual community garage sale event for the Bay Ridges neighborhood. Residents can participate and sell items from their homes.',
-      date: '2025-06-21',
+      date: '2025-06-22',
       location: 'Bay Ridges Community, Pickering'
     }
   ]);
@@ -184,8 +186,13 @@ const CommunitySalesAdmin = () => {
 
   // Handle navigating to manage a specific community sale
   const handleManageSale = (sale) => {
-    alert(`Would navigate to manage garage sales for: ${sale.name}`);
-    // This would normally navigate to the garage sales admin page
+    if (sale.id === 'd31a9eec-0dda-469d-8565-692ef9ad55c2') {
+      // Only navigate to the garage sales admin page for Bay Ridges Community Sales
+      navigate(`/admin/sales`);
+    } else {
+      // For other sales, show an alert instead of navigating
+      alert(`Page not available for: ${sale.name}\nThis functionality is only implemented for Bay Ridges Community Sales Day.`);
+    }
   };
 
   // Filter community sales based on search term
