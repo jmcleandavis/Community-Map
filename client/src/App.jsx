@@ -10,6 +10,7 @@ import LoginRedirect from './pages/LoginRedirect';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import CommunitySalesAdmin from './pages/CommunitySalesAdmin';
+import LandingPage from './pages/LandingPage';
 import MapView from './components/MapView';
 import { GarageSalesProvider } from './context/GarageSalesContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -93,6 +94,7 @@ function App() {
                       </div>
                     </>
                   } />
+                  <Route path="/landing" element={<LandingPage />} />
                   <Route path="/admin/community-sales" element={
                     <ProtectedRouteWrapper>
                       <>
