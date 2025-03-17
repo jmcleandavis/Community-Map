@@ -86,21 +86,11 @@ const HamburgerMenu = () => {
 
         {userType === 'ADMIN' && (
           <div className="menu-item" onClick={() => {
-            navigate('/admin/sales');
-            setIsOpen(false);
-          }}>
-            <span className="menu-icon">⚙️</span>
-            <span className="menu-text">Manage Sales</span>
-          </div>
-        )}
-
-        {userType === 'ADMIN' && (
-          <div className="menu-item" onClick={() => {
             navigate('/admin/community-sales');
             setIsOpen(false);
           }}>
             <span className="menu-icon">🏙️</span>
-            <span className="menu-text">Community Sales</span>
+            <span className="menu-text">Community Sales Administration</span>
           </div>
         )}
 
