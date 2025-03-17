@@ -101,6 +101,14 @@ function App() {
                       </>
                     </ProtectedRouteWrapper>
                   } />
+                  <Route path="/admin/sales" element={
+                    <ProtectedRouteWrapper>
+                      <>
+                        <HamburgerMenu />
+                        <GarageSalesAdmin />
+                      </>
+                    </ProtectedRouteWrapper>
+                  } />
                 </Routes>
               </div>
             </LocationProvider>
