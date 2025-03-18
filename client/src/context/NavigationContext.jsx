@@ -13,14 +13,11 @@ export const NavigationProvider = ({ children }) => {
 
   // Check if the user is on the landing page or came from it
   useEffect(() => {
-    if (location.pathname === '/landing') {
+    if (location.pathname === '/landing' || location.pathname === '/about') {
       // If we're on the landing page, mark that future navigations will be from landing
       setFromLanding(true);
-    } else if (location.pathname === '/') {
-      // If we're on the map view, reset the flag
-      setFromLanding(false);
     }
-    // We don't reset the flag for other pages, so they maintain the "from landing" context
+    // We don't reset the flag anymore so they maintain the "from landing" context
   }, [location.pathname]);
 
   const value = {

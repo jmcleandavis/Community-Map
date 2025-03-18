@@ -8,13 +8,13 @@ const ConditionalMenu = () => {
   const { fromLanding } = useNavigation();
   const location = useLocation();
   
-  // Always use the MenuBar on the landing or about pages
-  if (location.pathname === '/landing' || location.pathname === '/about') {
+  // Always use the MenuBar on landing pages or if we came from landing
+  if (location.pathname === '/landing' || location.pathname === '/about' || fromLanding) {
     return <MenuBar />;
   }
   
-  // Use MenuBar if we came from landing, otherwise use HamburgerMenu
-  return fromLanding ? <MenuBar /> : <HamburgerMenu />;
+  // Use HamburgerMenu for all other cases
+  return <HamburgerMenu />;
 };
 
 export default ConditionalMenu;
