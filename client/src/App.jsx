@@ -62,7 +62,12 @@ function App() {
                 <div className="app">
                   <Routes>
                     <Route path="/loginRedirect" element={<LoginRedirect />} />
-                    <Route path="/about" element={<LandingPage />} />
+                    <Route path="/about" element={
+                      <>
+                        <ConditionalMenu />
+                        <LandingPage />
+                      </>
+                    } />
                     <Route path="/info" element={
                       <>
                         <ConditionalMenu />
@@ -98,7 +103,12 @@ function App() {
                         </div>
                       </>
                     } />
-                    <Route path="/landing" element={<LandingPage />} />
+                    <Route path="/landing" element={
+                      <>
+                        <ConditionalMenu />
+                        <LandingPage />
+                      </>
+                    } />
                     <Route path="/admin/community-sales" element={
                       <ProtectedRouteWrapper>
                         <>
