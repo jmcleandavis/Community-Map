@@ -123,6 +123,14 @@ const HamburgerMenu = () => {
           <span className="menu-text">Info</span>
         </div>
 
+        <div className="menu-item" onClick={() => {
+          navigate('/about');
+          setIsOpen(false);
+        }}>
+          <span className="menu-icon">📖</span>
+          <span className="menu-text">About</span>
+        </div>
+
         {isAuthenticated ? (
           <div className="menu-item" onClick={handleLogout}>
             <span className="menu-icon">🚪</span>

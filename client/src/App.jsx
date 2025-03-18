@@ -62,6 +62,7 @@ function App() {
                 <div className="app">
                   <Routes>
                     <Route path="/loginRedirect" element={<LoginRedirect />} />
+                    <Route path="/about" element={<LandingPage />} />
                     <Route path="/info" element={
                       <>
                         <ConditionalMenu />
