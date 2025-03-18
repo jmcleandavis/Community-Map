@@ -2,11 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 import communityMapImage from '../assets/community-map-example.jpg';
+import { useNavigation } from '../context/NavigationContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { setFromLanding } = useNavigation();
 
   const handleNavigation = (path) => {
+    setFromLanding(true); // Set that navigation came from landing page
     navigate(path);
   };
 
