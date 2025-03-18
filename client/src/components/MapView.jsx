@@ -65,6 +65,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const urlCommunityId = urlParams.get('communityId');
 
+  // Use this effect to update the communityId
+  useEffect(() => {
+    if(urlCommunityId) {
+      communityId = urlCommunityId;
+    }
+  }, [urlCommunityId]);
+
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
     const selectedSalesStr = localStorage.getItem('selectedSaleIds');
@@ -344,89 +351,87 @@ function MapView({ mapContainerStyle, mapOptions }) {
   // Log when rendering the map
   console.log('MapView: Rendering Google Map component');
 
+  // Prepare render content based on state
+  let renderContent;
+  
   // Check if window.google is available (maps script is loaded)
   if (!window.google) {
     console.error('Google Maps API not loaded yet');
-    return <MapLoadError error="Google Maps not loaded yet. Please try refreshing the page." />;
+    renderContent = <MapLoadError error="Google Maps not loaded yet. Please try refreshing the page." />;
   }
-
   // Loading and error states for garage sales data
-  if (loading) {
-    return <div>Loading garage sales...</div>;
+  else if (loading) {
+    renderContent = <div>Loading garage sales...</div>;
   }
-
-  if (error) {
-    return <div>Error loading garage sales: {error}</div>;
+  else if (error) {
+    renderContent = <div>Error loading garage sales: {error}</div>;
   }
+  else {
+    renderContent = (
+      <div style={{ position: 'relative' }}>
+        <div style={titleStyle}>
+          {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
+        </div>
 
-  useEffect(() => {
-    if(urlCommunityId) {
-      communityId = urlCommunityId;
-    }
-  }, [urlCommunityId]);
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <div style={titleStyle}>
-        {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
+          center={center}
+          zoom={13}
+          onLoad={(map) => {
+            console.log("Map component loaded");
+            mapRef.current = map;
+            
+            // Explicitly set map type control position
+            if (map && window.google) {
+              map.setOptions({
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                  position: window.google.maps.ControlPosition.TOP_RIGHT,
+                  style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+                },
+                zoomControl: true,
+                zoomControlOptions: {
+                  position: window.google.maps.ControlPosition.RIGHT_CENTER
+                },
+                fullscreenControl: true,
+                fullscreenControlOptions: {
+                  position: window.google.maps.ControlPosition.TOP_RIGHT
+                }
+              });
+            }
+            
+            // Set loaded state after configuring the map
+            setIsLoaded(true);
+            
+            // Directly create markers if garage sales data is available
+            if (garageSales?.length && window.google) {
+              console.log("Map loaded with data available, creating markers immediately");
+              setTimeout(() => {createMarkers(); centerOnUserLocation();}, 100); // Small timeout to ensure state is updated
+            }
+          }}
+          onUnmount={(map) => {
+            console.log("Map component unmounted");
+            mapRef.current = null;
+          }}
+          options={mapOptions}
+        >
+          {selectedSale && (
+            <InfoWindow
+              position={selectedSale.position}
+              onCloseClick={() => setSelectedSale(null)}
+            >
+              <div>
+                <h3>{selectedSale.address}</h3>
+                <p>{selectedSale.description}</p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
       </div>
+    );
+  }
 
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
-        center={center}
-        zoom={13}
-        onLoad={(map) => {
-          console.log("Map component loaded");
-          mapRef.current = map;
-          
-          // Explicitly set map type control position
-          if (map && window.google) {
-            map.setOptions({
-              mapTypeControl: true,
-              mapTypeControlOptions: {
-                position: window.google.maps.ControlPosition.TOP_RIGHT,
-                style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-              },
-              zoomControl: true,
-              zoomControlOptions: {
-                position: window.google.maps.ControlPosition.RIGHT_CENTER
-              },
-              fullscreenControl: true,
-              fullscreenControlOptions: {
-                position: window.google.maps.ControlPosition.TOP_RIGHT
-              }
-            });
-          }
-          
-          // Set loaded state after configuring the map
-          setIsLoaded(true);
-          
-          // Directly create markers if garage sales data is available
-          if (garageSales?.length && window.google) {
-            console.log("Map loaded with data available, creating markers immediately");
-            setTimeout(() => {createMarkers(); centerOnUserLocation();}, 100); // Small timeout to ensure state is updated
-          }
-        }}
-        onUnmount={(map) => {
-          console.log("Map component unmounted");
-          mapRef.current = null;
-        }}
-        options={mapOptions}
-      >
-        {selectedSale && (
-          <InfoWindow
-            position={selectedSale.position}
-            onCloseClick={() => setSelectedSale(null)}
-          >
-            <div>
-              <h3>{selectedSale.address}</h3>
-              <p>{selectedSale.description}</p>
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
-    </div>
-  );
+  return renderContent;
 }
 
 export default MapView;

@@ -1,18 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '../context/NavigationContext';
 import './MenuBar.css';
 
 const MenuBar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, userEmail } = useAuth();
+  const { setFromLanding } = useNavigation();
 
   const handleNavigation = (path) => {
+    setFromLanding(true); // Set that navigation came from landing/menu bar
     navigate(path);
   };
 
   const handleLogout = () => {
     logout();
+    setFromLanding(true); // Maintain the menu bar even after logout
     navigate('/');
   };
 
