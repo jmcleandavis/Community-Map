@@ -195,6 +195,17 @@ const CommunitySalesAdmin = () => {
     }
   };
 
+  // Handle viewing a community sale on the map
+  const handleViewOnMap = (sale) => {
+    if (sale.id === 'd31a9eec-0dda-469d-8565-692ef9ad55c2') {
+      // For Bay Ridges, navigate to the map with the specific community sale ID
+      navigate(`/?communityId=${sale.id}`);
+    } else {
+      // For sample sales, show an alert
+      alert(`Map view not available for: ${sale.name}\nThis functionality is only implemented for Bay Ridges Community Sales Day.`);
+    }
+  };
+
   // Filter community sales based on search term
   const filteredSales = communitySales.filter(sale => 
     (sale.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -358,6 +369,12 @@ const CommunitySalesAdmin = () => {
                   onClick={() => handleManageSale(sale)}
                 >
                   Manage Garage Sales
+                </button>
+                <button 
+                  className="view-on-map-button"
+                  onClick={() => handleViewOnMap(sale)}
+                >
+                  View the Map
                 </button>
               </div>
             </div>

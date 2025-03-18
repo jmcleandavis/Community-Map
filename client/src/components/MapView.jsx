@@ -2,12 +2,13 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
+import { useLocation as useRouterLocation } from 'react-router-dom';
 import { useLocation } from '../context/LocationContext';
 
 const COMMUNITY_NAME = 'BAY RIDGES';
 const EVENT_NAME = 'COMMUNITY SALE DAY';
 const currentYear = new Date().getFullYear();
-const communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
+let communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
 // Fallback component when map fails to load
 const MapLoadError = ({ error }) => {
@@ -60,6 +61,9 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
+  const location = useRouterLocation();
+  const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const urlCommunityId = urlParams.get('communityId');
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -354,6 +358,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
   if (error) {
     return <div>Error loading garage sales: {error}</div>;
   }
+
+  useEffect(() => {
+    if(urlCommunityId) {
+      communityId = urlCommunityId;
+    }
+  }, [urlCommunityId]);
 
   return (
     <div style={{ position: 'relative' }}>
