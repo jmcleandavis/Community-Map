@@ -5,7 +5,7 @@ const InfoPage = () => {
   return (
     <div className="info-page">
       <div className="info-container">
-        <h2>About</h2>
+        <h2>Info</h2>
         <div className="content">
           <div className="about-section">
             <h3>About Community Map</h3>
