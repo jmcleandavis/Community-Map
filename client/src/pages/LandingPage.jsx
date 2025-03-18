@@ -15,14 +15,6 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      {/* Top Menu */}
-      <nav className="landing-menu">
-        <div className="landing-menu-item" onClick={() => handleNavigation('/about')}>About</div>
-        <div className="landing-menu-item" onClick={() => handleNavigation('/info')}>Info</div>
-        <div className="landing-menu-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
-        <div className="landing-menu-item" onClick={() => handleNavigation('/login')}>Login</div>
-      </nav>
-
       {/* Header */}
       <header className="landing-header">
         <h1 className="landing-title">Community Garage Sale Events on Google Maps</h1>
