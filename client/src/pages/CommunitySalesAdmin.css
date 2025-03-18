@@ -321,6 +321,17 @@
   background-color: #3367d6;
 }
 
+.view-on-map-button {
+  background-color: #4CAF50;
+  color: white;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.view-on-map-button:hover {
+  background-color: #388E3C;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px;
