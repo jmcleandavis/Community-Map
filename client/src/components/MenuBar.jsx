@@ -1,11 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '../context/NavigationContext';
 import './MenuBar.css';
 
 const MenuBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, logout, userEmail } = useAuth();
   const { setFromLanding } = useNavigation();
 
@@ -17,7 +18,13 @@ const MenuBar = () => {
   const handleLogout = () => {
     logout();
     setFromLanding(true); // Maintain the menu bar even after logout
-    navigate('/');
+    
+    // When on landing/about page, stay there after logout
+    if (location.pathname === '/landing' || location.pathname === '/about') {
+      navigate(location.pathname); // Stay on the current page
+    } else {
+      navigate('/landing'); // Otherwise go to landing page
+    }
   };
 
   return (
@@ -28,7 +35,7 @@ const MenuBar = () => {
       {isAuthenticated ? (
         <div className="menu-bar-item" onClick={handleLogout}>Logout ({userEmail})</div>
       ) : (
-        <div className="menu-bar-item" onClick={() => handleNavigation('/login')}>Login</div>
+        <div className="menu-bar-item" onClick={() => handleNavigation('/login?from=landing')}>Login</div>
       )}
     </nav>
   );

@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLocation } from '../context/LocationContext';
+import { useLocation as useLocationContext } from '../context/LocationContext';
 import DisplayMode from './menuItems/DisplayMode';
 import './HamburgerMenu.css';
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, userId, userType, logout, userEmail, userInfo } = useAuth();
-  const { centerOnUserLocation } = useLocation();
+  const { centerOnUserLocation } = useLocationContext();
   const menuRef = useRef(null);
 
   // Function to check if a click is outside the menu
@@ -48,7 +49,13 @@ const HamburgerMenu = () => {
   const handleLogout = () => {
     logout();
     setIsOpen(false);
-    navigate('/');
+    
+    // When on map view, stay there after logout
+    if (location.pathname === '/') {
+      navigate('/'); // Stay on the map page
+    } else {
+      navigate('/landing'); // Otherwise go to landing page
+    }
   };
 
   return (
