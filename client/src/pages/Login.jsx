@@ -83,7 +83,17 @@ const Login = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        navigate('/');
+        
+        // Get the current path
+        const currentPath = location.pathname;
+        
+        // If we're logging in from the map view (/login without referrer), stay on map
+        // Otherwise redirect to landing page
+        if (currentPath === '/login' && !location.search.includes('from=landing')) {
+          navigate('/');
+        } else {
+          navigate('/landing');
+        }
       } else if (isForgotPassword) {
         // Handle forgot password form submission
         await requestPasswordReset(formData.email);
@@ -122,7 +132,17 @@ const Login = () => {
           formData.firstName,
           formData.lastName
         );
-        navigate('/');
+        
+        // Get the current path
+        const currentPath = location.pathname;
+        
+        // If we're logging in from the map view (/login without referrer), stay on map
+        // Otherwise redirect to landing page
+        if (currentPath === '/login' && !location.search.includes('from=landing')) {
+          navigate('/');
+        } else {
+          navigate('/landing');
+        }
       }
     } catch (err) {
       if (isForgotPassword) {
