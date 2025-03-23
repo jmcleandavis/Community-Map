@@ -127,8 +127,10 @@ export const AuthProvider = ({ children }) => {
   const requestPasswordReset = async (email) => {
     try {
       const response = await api.requestPasswordReset(email);
-      return response;
+      console.log('Password reset email sent successfully');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in requestPasswordReset:', error);
       throw error;
     }
   };
@@ -136,8 +138,10 @@ export const AuthProvider = ({ children }) => {
   const verifyResetToken = async (token) => {
     try {
       const response = await api.verifyResetToken(token);
-      return response;
+      console.log('Reset token verified successfully');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in verifyResetToken:', error);
       throw error;
     }
   };
@@ -145,8 +149,10 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (token, newPassword) => {
     try {
       const response = await api.resetPassword(token, newPassword);
-      return response;
+      console.log('Password reset successful');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in resetPassword:', error);
       throw error;
     }
   };

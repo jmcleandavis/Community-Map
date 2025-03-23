@@ -580,33 +580,66 @@ const api = {
   // Request password reset
   requestPasswordReset: async (email) => {
     try {
-      const response = await authApi.post('/requestPasswordReset', { email });
+      // Get or create session ID
+      const sessionId = await getSessionId();
+      console.log('Using session for password reset request:', sessionId);
+      
+      const response = await authApi.post('/requestPasswordReset', { 
+        email,
+        sessionId 
+      });
+      console.log('Password reset request successful');
       return response.data;
     } catch (error) {
       console.error('Password reset request error:', error);
-      throw error;
+      if (error.response && error.response.status === 404) {
+        throw new Error('Password reset service unavailable. Please try again later.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to send password reset email. Please try again.');
     }
   },
   
   // Verify reset token
   verifyResetToken: async (token) => {
     try {
-      const response = await authApi.get(`/verifyResetToken/${token}`);
+      // Get or create session ID
+      const sessionId = await getSessionId();
+      console.log('Using session for token verification:', sessionId);
+      
+      const response = await authApi.get(`/verifyResetToken/${token}`, {
+        params: { sessionId }
+      });
+      console.log('Token verification successful');
       return response.data;
     } catch (error) {
       console.error('Token verification error:', error);
-      throw error;
+      if (error.response && error.response.status === 400) {
+        throw new Error('Invalid or expired reset token. Please request a new reset link.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to verify reset token. Please try again.');
     }
   },
   
   // Reset password with token
   resetPassword: async (token, newPassword) => {
     try {
-      const response = await authApi.post('/resetPassword', { token, newPassword });
+      // Get or create session ID
+      const sessionId = await getSessionId();
+      console.log('Using session for password reset:', sessionId);
+      
+      const response = await authApi.post('/resetPassword', { 
+        token, 
+        newPassword,
+        sessionId 
+      });
+      console.log('Password reset successful');
       return response.data;
     } catch (error) {
       console.error('Password reset error:', error);
-      throw error;
+      if (error.response && error.response.status === 400) {
+        throw new Error('Invalid token or password requirements not met. Please try again.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to reset password. Please try again.');
     }
   }
 };
