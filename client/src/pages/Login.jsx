@@ -96,13 +96,33 @@ const Login = () => {
         }
       } else if (isForgotPassword) {
         // Handle forgot password form submission
-        await requestPasswordReset(formData.email);
-        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox.');
+        if (!formData.email) {
+          throw new Error('Please enter your email address');
+        }
+        
+        const response = await requestPasswordReset(formData.email);
+        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox and spam folder.');
+        
+        // Clear the email field after successful submission
+        setFormData({
+          ...formData,
+          email: ''
+        });
       } else if (isResetPassword) {
         // Handle password reset form submission
+        if (!formData.newPassword || !formData.confirmNewPassword) {
+          throw new Error('Please fill in all password fields');
+        }
+        
         if (formData.newPassword !== formData.confirmNewPassword) {
           throw new Error('Passwords do not match');
         }
+        
+        // Basic password validation
+        if (formData.newPassword.length < 8) {
+          throw new Error('Password must be at least 8 characters long');
+        }
+        
         await resetPassword(resetToken, formData.newPassword);
         setSuccessMessage('Your password has been reset successfully. You can now log in with your new password.');
         
