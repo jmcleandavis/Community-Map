@@ -27,18 +27,22 @@ const Login = () => {
   // Check for Google auth callback or password reset token
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const token = searchParams.get('token');
+    const code = searchParams.get('code'); // Google returns 'code' not 'token'
     const resetTokenParam = searchParams.get('reset');
+    const userEmailParam = searchParams.get('email');
     
-    if (token) {
+    if (code) {
       // Handle Google auth callback
       const handleCallback = async () => {
         try {
           setLoading(true);
-          await handleGoogleCallback(token);
+          setError('');
+          console.log('Processing Google authorization code');
+          await handleGoogleCallback(code);
           navigate('/');
         } catch (err) {
           setError('Failed to authenticate with Google. Please try again.');
+          console.error('Google authentication error:', err);
         } finally {
           setLoading(false);
         }
@@ -53,6 +57,14 @@ const Login = () => {
           await verifyResetToken(resetTokenParam);
           setIsResetPassword(true);
           setResetToken(resetTokenParam);
+          
+          // Save the email from the query parameter if available
+          if (userEmailParam) {
+            setFormData(prev => ({
+              ...prev,
+              email: userEmailParam
+            }));
+          }
         } catch (err) {
           setError('Invalid or expired password reset link. Please request a new one.');
         } finally {
@@ -101,7 +113,7 @@ const Login = () => {
         }
         
         const response = await requestPasswordReset(formData.email);
-        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox and spam folder.');
+        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox and spam folder. Due to email provider limitations, the email may appear in your spam folder.');
         
         // Clear the email field after successful submission
         setFormData({
@@ -123,7 +135,12 @@ const Login = () => {
           throw new Error('Password must be at least 8 characters long');
         }
         
-        await resetPassword(resetToken, formData.newPassword);
+        // Use the email that was saved from the URL or entered by the user
+        if (!formData.email) {
+          throw new Error('Email address is missing. Please contact support.');
+        }
+        
+        await resetPassword(resetToken, formData.newPassword, formData.email);
         setSuccessMessage('Your password has been reset successfully. You can now log in with your new password.');
         
         // Reset the form state after successful reset

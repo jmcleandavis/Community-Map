@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Session API configuration
 const sessionApi = axios.create({
-  baseURL: 'https://br-session-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_SESSION_API_URL || 'https://br-session-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ const sessionApi = axios.create({
 
 // Maps API configuration
 const mapsApi = axios.create({
-  baseURL: 'https://br-maps-mgt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_MAPS_API_URL || 'https://br-maps-mgt-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -25,18 +25,18 @@ const mapsApi = axios.create({
 
 // Auth (Logging in) API configuration
 const authApi = axios.create({
-  baseURL: 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_AUTH_API_URL || 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/json',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_SESSION_KEY
+    'app-key': import.meta.env.VITE_APP_API_KEY
   }
 });
 
 // Create Customer/user API configuration
 const createCustomerApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL || 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -47,13 +47,13 @@ const createCustomerApi = axios.create({
 
 // User Information API configuration
 const userInformationApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL ? `${import.meta.env.VITE_CUSTOMER_API_URL}/v1/getCustomerByEmail/EMAIL` : 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
   timeout: 30000,
   // withCredentials: true, //flagged with true when it should be false
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_SESSION_KEY //used incorrect key
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY
   }
 });
 
@@ -500,6 +500,72 @@ const logout = async () => {
   }
 };
 
+// Request password reset - send email to user
+const requestPasswordReset = async (email) => {
+  try {
+    // Get or create session ID
+    const sessionId = await getSessionId();
+    console.log('Using session for password reset request:', sessionId);
+    
+    const response = await authApi.post('/sendResetEmail', { 
+      userEmail: email
+    }, {
+      headers: {
+        sessionId: sessionId
+      }
+    });
+    console.log('Password reset email sent successfully');
+    return response.data;
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    if (error.response && error.response.status === 404) {
+      throw new Error('Password reset service unavailable. Please try again later.');
+    }
+    throw new Error(error.response?.data?.message || 'Failed to send password reset email. Please try again.');
+  }
+};
+
+// Verify reset token - no longer needed as a separate function
+// We'll use the token directly in resetPassword
+const verifyResetToken = async (token) => {
+  try {
+    // Just return success since verification happens when resetting the password
+    console.log('Token will be verified during password reset');
+    return { valid: true };
+  } catch (error) {
+    console.error('Token verification error:', error);
+    throw new Error('Failed to verify reset token. Please try again.');
+  }
+};
+
+// Reset password with token
+const resetPassword = async (token, newPassword, userEmail) => {
+  try {
+    // Get or create session ID
+    const sessionId = await getSessionId();
+    console.log('Using session for password reset:', sessionId);
+    
+    const response = await authApi.patch('/resetPassword', { 
+      token,
+      userEmail,
+      newPassword,
+      appCode: '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
+    }, {
+      headers: {
+        sessionId: sessionId
+      }
+    });
+    console.log('Password reset successful');
+    return response.data;
+  } catch (error) {
+    console.error('Password reset error:', error);
+    if (error.response && error.response.status === 400) {
+      throw new Error('Invalid token or password requirements not met. Please try again.');
+    }
+    throw new Error(error.response?.data?.message || 'Failed to reset password. Please try again.');
+  }
+};
+
 // Add the custom methods to the api object
 const api = {
   createSession,
@@ -518,14 +584,15 @@ const api = {
   googleLogin: async () => {
     try {
       // Google OAuth parameters
-      const clientId = '207215937730-v0mbhofpdv4rpglkdcfvk7dpudje5150.apps.googleusercontent.com';
-      const redirectUri = 'http://localhost:5173/loginRedirect';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_PLACEHOLDER';
+      const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect';
       const scope = 'email profile';
       // Use authorization code flow instead of implicit flow
       const responseType = 'code';
       
+      
       // Construct the Google OAuth URL
-      const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=${responseType}`;
+      const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=${encodeURIComponent(responseType)}`;
       
       console.log('Redirecting to Google OAuth:', authUrl);
       
@@ -540,108 +607,57 @@ const api = {
   },
   
   // Handle Google SSO callback
-  handleGoogleCallback: async (token) => {
+  handleGoogleCallback: async (code) => {
     try {
-      // In production, this would be sent to the backend
-      console.log('🔐 Google SSO token received:', token);
+      // Get or create session ID
+      const sessionId = await getSessionId();
+      console.log('Using session for Google SSO:', sessionId);
       
-      // This is where you would normally exchange the authorization code for a token
-      // and then decode the token to get user information
-      // But for demonstration, we'll just log the code/token
-
-      // For demo purposes, create a simulated user object
-      const simulatedUser = {
-        email: 'demo@example.com',
-        firstName: 'Demo',
-        lastName: 'User',
-      };
+      // Send the authorization code to the backend
+      console.log('🔐 Google authorization code received:', code);
+      console.log('Sending auth code to backend for token exchange');
       
-      // Create the payload expected by the backend according to neighbor's instructions
-      const backendPayload = {
-        username: simulatedUser.email,
-        token: token,
-        type: "G_SSO"
-      };
+      const response = await authApi.post('/googleLogin', {
+        code: code,
+        redirectUri: import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect', // Must match the original redirect URI
+        sessionId: sessionId
+      }, {
+        headers: {
+          sessionId: sessionId,
+          'app-name': 'postman-call',
+          'app-key': import.meta.env.VITE_APP_API_KEY
+        }
+      });
       
-      console.log('📤 Data to be sent to backend:', backendPayload);
-      console.log('In production, this would be sent to the login endpoint with type G_SSO');
+      // The backend should exchange the code for tokens and return user info
+      console.log('Google authentication successful');
       
-      // Return a simulated successful response
+      if (!response.data || !response.data.success) {
+        throw new Error('Invalid response from Google authentication');
+      }
+      
       return {
         success: true,
-        user: simulatedUser
+        user: response.data.user || {
+          email: response.data.email,
+          firstName: response.data.firstName || response.data.given_name,
+          lastName: response.data.lastName || response.data.family_name
+        }
       };
     } catch (error) {
       console.error('Error handling Google callback:', error);
-      throw error;
-    }
-  },
-  
-  // Request password reset
-  requestPasswordReset: async (email) => {
-    try {
-      // Get or create session ID
-      const sessionId = await getSessionId();
-      console.log('Using session for password reset request:', sessionId);
-      
-      const response = await authApi.post('/requestPasswordReset', { 
-        email,
-        sessionId 
-      });
-      console.log('Password reset request successful');
-      return response.data;
-    } catch (error) {
-      console.error('Password reset request error:', error);
-      if (error.response && error.response.status === 404) {
-        throw new Error('Password reset service unavailable. Please try again later.');
-      }
-      throw new Error(error.response?.data?.message || 'Failed to send password reset email. Please try again.');
-    }
-  },
-  
-  // Verify reset token
-  verifyResetToken: async (token) => {
-    try {
-      // Get or create session ID
-      const sessionId = await getSessionId();
-      console.log('Using session for token verification:', sessionId);
-      
-      const response = await authApi.get(`/verifyResetToken/${token}`, {
-        params: { sessionId }
-      });
-      console.log('Token verification successful');
-      return response.data;
-    } catch (error) {
-      console.error('Token verification error:', error);
       if (error.response && error.response.status === 400) {
-        throw new Error('Invalid or expired reset token. Please request a new reset link.');
+        throw new Error('Invalid authorization code. Please try logging in again.');
+      } else if (error.response && error.response.status === 404) {
+        throw new Error('Google login service unavailable. Please try again later.');
       }
-      throw new Error(error.response?.data?.message || 'Failed to verify reset token. Please try again.');
+      throw new Error(error.response?.data?.message || 'Failed to authenticate with Google. Please try again.');
     }
   },
   
-  // Reset password with token
-  resetPassword: async (token, newPassword) => {
-    try {
-      // Get or create session ID
-      const sessionId = await getSessionId();
-      console.log('Using session for password reset:', sessionId);
-      
-      const response = await authApi.post('/resetPassword', { 
-        token, 
-        newPassword,
-        sessionId 
-      });
-      console.log('Password reset successful');
-      return response.data;
-    } catch (error) {
-      console.error('Password reset error:', error);
-      if (error.response && error.response.status === 400) {
-        throw new Error('Invalid token or password requirements not met. Please try again.');
-      }
-      throw new Error(error.response?.data?.message || 'Failed to reset password. Please try again.');
-    }
-  }
+  requestPasswordReset,
+  verifyResetToken,
+  resetPassword
 };
 
 export default api;
