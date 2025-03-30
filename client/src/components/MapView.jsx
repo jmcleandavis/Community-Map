@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { GoogleMap, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
+import { useLocation as useRouterLocation } from 'react-router-dom';
 import { useLocation } from '../context/LocationContext';
 
 const COMMUNITY_NAME = 'BAY RIDGES';
 const EVENT_NAME = 'COMMUNITY SALE DAY';
 const currentYear = new Date().getFullYear();
-const communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
+let communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
 // Fallback component when map fails to load
 const MapLoadError = ({ error }) => {
@@ -43,7 +44,7 @@ const MapLoadError = ({ error }) => {
   );
 };
 
-function MapView({ mapContainerStyle }) {
+function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [center] = useState({
@@ -51,20 +52,25 @@ function MapView({ mapContainerStyle }) {
     lng: -79.0868
   });
   
-  // Use the useJsApiLoader hook to track Google Maps loading status
-  const { isLoaded: mapsApiLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    mapIds: [import.meta.env.VITE_GOOGLE_MAPS_ID]
-  });
-  
+  // Google Maps is already loaded by LoadScript in App.jsx
+  // We assume it's loaded when this component mounts
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const initialLoadRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
-  const { userLocation, shouldCenterOnUser, clearCenterOnUser } = useLocation();
+  const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
+  const location = useRouterLocation();
+  const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const urlCommunityId = urlParams.get('communityId');
+
+  // Use this effect to update the communityId
+  useEffect(() => {
+    if(urlCommunityId) {
+      communityId = urlCommunityId;
+    }
+  }, [urlCommunityId]);
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -178,6 +184,17 @@ function MapView({ mapContainerStyle }) {
     console.log('MapView: Successfully created', markersCreated, 'markers');
   }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers]);
 
+  // Watch for when both map and data are ready and create markers
+  useEffect(() => {
+    // Only proceed if we have all necessary data
+    if (mapRef.current && garageSales?.length && window.google) {
+      console.log("DIRECT EFFECT: Map and data both ready, creating markers now!");
+      if (markersRef.current.length === 0) { // Only create if not already created
+        createMarkers();
+      }
+    }
+  }, [mapRef.current, garageSales, createMarkers]);
+
   // Effect to handle centering on user location
   useEffect(() => {
     if (shouldCenterOnUser && userLocation && mapRef.current) {
@@ -290,7 +307,7 @@ function MapView({ mapContainerStyle }) {
     }
   }, [userLocation, isLoaded]);
 
-  // Effect to create/update markers when garage sales change
+  // Effect to create markers when map is loaded and sales data is available
   useEffect(() => {
     if (!isLoaded) {
       console.log('MapView: Map not loaded yet, waiting to create markers...');
@@ -316,43 +333,6 @@ function MapView({ mapContainerStyle }) {
     createMarkers();
   }, [isLoaded, garageSales, createMarkers]);
 
-  const onLoad = useCallback((map) => {
-    console.log('MapView: Map loaded, setting reference and loaded state');
-    mapRef.current = map;
-    setIsLoaded(true);
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    console.log('MapView: Map unmounting, cleaning up');
-    cleanupMarkers();
-    mapRef.current = null;
-    setIsLoaded(false);
-  }, [cleanupMarkers]);
-
-  const mapOptions = useMemo(() => ({
-    zoomControl: true,
-    mapTypeControl: true,
-    mapTypeControlOptions: {
-      position: window.google?.maps?.ControlPosition?.TOP_RIGHT,
-      style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR,
-      mapTypeIds: [
-        'roadmap',
-        'satellite',
-        'hybrid',
-        'terrain'
-      ]
-    },
-    streetViewControl: true,
-    fullscreenControl: true,
-    fullscreenControlOptions: {
-      position: window.google?.maps?.ControlPosition?.TOP_RIGHT
-    },
-    zoomControlOptions: {
-      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
-    },
-    mapId: import.meta.env.VITE_GOOGLE_MAPS_ID
-  }), []);
-
   const titleStyle = {
     textAlign: 'center',
     padding: '15px',
@@ -367,60 +347,91 @@ function MapView({ mapContainerStyle }) {
     zIndex: 1,
     borderRadius: '5px'
   };
-  // Check for Google Maps loading error first
-  if (loadError) {
-    console.error('Error loading Google Maps API:', loadError);
-    return <MapLoadError error={loadError.message} />;
-  }
-
-  // If Maps API is not loaded yet, show loading indicator
-  if (!mapsApiLoaded) {
-    return <div>Loading Google Maps...</div>;
-  }
-
-  // Loading and error states for garage sales data
-  if (loading) {
-    return <div>Loading garage sales...</div>;
-  }
-
-  if (error) {
-    return <div>Error loading garage sales: {error}</div>;
-  }
 
   // Log when rendering the map
   console.log('MapView: Rendering Google Map component');
 
-  return (
-    <div style={{ position: 'relative' }}>
-      <div style={titleStyle}>
-        {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
+  // Prepare render content based on state
+  let renderContent;
+  
+  // Check if window.google is available (maps script is loaded)
+  if (!window.google) {
+    console.error('Google Maps API not loaded yet');
+    renderContent = <MapLoadError error="Google Maps not loaded yet. Please try refreshing the page." />;
+  }
+  // Loading and error states for garage sales data
+  else if (loading) {
+    renderContent = <div>Loading garage sales...</div>;
+  }
+  else if (error) {
+    renderContent = <div>Error loading garage sales: {error}</div>;
+  }
+  else {
+    renderContent = (
+      <div style={{ position: 'relative' }}>
+        <div style={titleStyle}>
+          {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
+        </div>
+
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
+          center={center}
+          zoom={13}
+          onLoad={(map) => {
+            console.log("Map component loaded");
+            mapRef.current = map;
+            
+            // Explicitly set map type control position
+            if (map && window.google) {
+              map.setOptions({
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                  position: window.google.maps.ControlPosition.TOP_RIGHT,
+                  style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+                },
+                zoomControl: true,
+                zoomControlOptions: {
+                  position: window.google.maps.ControlPosition.RIGHT_CENTER
+                },
+                fullscreenControl: true,
+                fullscreenControlOptions: {
+                  position: window.google.maps.ControlPosition.TOP_RIGHT
+                }
+              });
+            }
+            
+            // Set loaded state after configuring the map
+            setIsLoaded(true);
+            
+            // Directly create markers if garage sales data is available
+            if (garageSales?.length && window.google) {
+              console.log("Map loaded with data available, creating markers immediately");
+              setTimeout(() => {createMarkers(); centerOnUserLocation();}, 100); // Small timeout to ensure state is updated
+            }
+          }}
+          onUnmount={(map) => {
+            console.log("Map component unmounted");
+            mapRef.current = null;
+          }}
+          options={mapOptions}
+        >
+          {selectedSale && (
+            <InfoWindow
+              position={selectedSale.position}
+              onCloseClick={() => setSelectedSale(null)}
+            >
+              <div>
+                <h3>{selectedSale.address}</h3>
+                <p>{selectedSale.description}</p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
       </div>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={center}
-        zoom={11}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={mapOptions}
-        onError={(e) => {
-          console.error('Google Maps error:', e);
-          // You can set an error state here if needed
-        }}
-      >
-        {selectedSale && (
-          <InfoWindow
-            position={selectedSale.position}
-            onCloseClick={() => setSelectedSale(null)}
-          >
-            <div>
-              <h3>{selectedSale.address}</h3>
-              <p>{selectedSale.description}</p>
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
-    </div>
-  );
+    );
+  }
+
+  return renderContent;
 }
 
 export default MapView;
