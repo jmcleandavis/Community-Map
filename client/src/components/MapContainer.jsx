@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { LoadScript } from '@react-google-maps/api';
 import MapView from './MapView';
 import HamburgerMenu from './HamburgerMenu';
 
@@ -7,23 +6,13 @@ import HamburgerMenu from './HamburgerMenu';
 const libraries = ['marker'];
 
 function MapContainer() {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
 
   return (
     <>
       <HamburgerMenu />
       <div className="map-container">
-        <LoadScript
-          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-          mapIds={[import.meta.env.VITE_GOOGLE_MAPS_ID]}
-          libraries={libraries}
-          onLoad={() => {
-            console.log('Google Maps script loaded');
-            setIsLoaded(true);
-          }}
-        >
-          {isLoaded && <MapView isLoaded={isLoaded} />}
-        </LoadScript>
+        <MapView isLoaded={isLoaded} />
       </div>
     </>
   );

@@ -75,6 +75,82 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async () => {
+    try {
+      // Just call the API method - it handles the redirect directly
+      await api.googleLogin();
+      // No need to redirect here as it's handled in the API
+    } catch (error) {
+      console.error('Error in googleLogin:', error);
+      throw error;
+    }
+  };
+
+  const handleGoogleCallback = async (token) => {
+    try {
+      console.log('AuthContext: Processing Google callback with token');
+      const response = await api.handleGoogleCallback(token);
+      
+      if (response && response.success && response.user) {
+        // For now, just log the user in with the data we have
+        // In production, this would use real data from the backend
+        console.log('Login successful with user:', response.user);
+        
+        const mockUserData = {
+          userId: 'google-user-123',
+          userType: 'USER',
+          userInfo: response.user,
+          email: response.user.email
+        };
+        
+        setIsAuthenticated(true);
+        setUserId(mockUserData.userId);
+        setUserType(mockUserData.userType);
+        setUserInfo(mockUserData.userInfo);
+        setUserEmail(mockUserData.email);
+        
+        localStorage.setItem('userId', mockUserData.userId);
+        localStorage.setItem('userType', mockUserData.userType);
+        localStorage.setItem('userEmail', mockUserData.email);
+        localStorage.setItem('userInfo', JSON.stringify(mockUserData.userInfo));
+        
+        return { success: true, data: mockUserData };
+      } else {
+        throw new Error('Invalid response from Google callback');
+      }
+    } catch (error) {
+      console.error('Error in handleGoogleCallback:', error);
+      throw error;
+    }
+  };
+
+  const requestPasswordReset = async (email) => {
+    try {
+      const response = await api.requestPasswordReset(email);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const verifyResetToken = async (token) => {
+    try {
+      const response = await api.verifyResetToken(token);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    try {
+      const response = await api.resetPassword(token, newPassword);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const register = async (userEmail, password, firstName, lastName) => {
     try {
       const response = await api.register(userEmail, password, firstName, lastName);
@@ -127,7 +203,12 @@ export const AuthProvider = ({ children }) => {
         userType,
         login,
         logout,
-        register
+        register,
+        googleLogin,
+        handleGoogleCallback,
+        requestPasswordReset,
+        verifyResetToken,
+        resetPassword
       }}
     >
       {children}

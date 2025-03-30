@@ -328,6 +328,25 @@ const deleteGarageSale = async (saleIds) => {
   }
 };
 
+// Update a garage sale
+const updateGarageSale = async (saleId, updateData) => {
+  try {
+    const sessionId = await getSessionId();
+    
+    const response = await mapsApi.patch(`/v1/updateAddress/${saleId}`, updateData, {
+      headers: {
+        'sessionId': sessionId
+      }
+    });
+    
+    console.log('Updated garage sale:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating garage sale:', error);
+    throw error;
+  }
+};
+
 // Authentication methods
 const register = async (userEmail, password, firstName, lastName) => {
   try {
@@ -485,14 +504,111 @@ const logout = async () => {
 const api = {
   createSession,
   getSessionId,
+  verifySession,
   getAddresses,
   getUserInfo,
+  createGarageSale,
+  deleteGarageSale,
+  updateGarageSale,
   register,
   login,
   logout,
-  createGarageSale,
-  deleteGarageSale,
-  verifySession
+  
+  // Google SSO login
+  googleLogin: async () => {
+    try {
+      // Google OAuth parameters
+      const clientId = '207215937730-v0mbhofpdv4rpglkdcfvk7dpudje5150.apps.googleusercontent.com';
+      const redirectUri = 'http://localhost:5173/loginRedirect';
+      const scope = 'email profile';
+      // Use authorization code flow instead of implicit flow
+      const responseType = 'code';
+      
+      // Construct the Google OAuth URL
+      const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=${responseType}`;
+      
+      console.log('Redirecting to Google OAuth:', authUrl);
+      
+      // Redirect the user to Google login
+      window.location.href = authUrl;
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error initiating Google login:', error);
+      throw error;
+    }
+  },
+  
+  // Handle Google SSO callback
+  handleGoogleCallback: async (token) => {
+    try {
+      // In production, this would be sent to the backend
+      console.log('🔐 Google SSO token received:', token);
+      
+      // This is where you would normally exchange the authorization code for a token
+      // and then decode the token to get user information
+      // But for demonstration, we'll just log the code/token
+
+      // For demo purposes, create a simulated user object
+      const simulatedUser = {
+        email: 'demo@example.com',
+        firstName: 'Demo',
+        lastName: 'User',
+      };
+      
+      // Create the payload expected by the backend according to neighbor's instructions
+      const backendPayload = {
+        username: simulatedUser.email,
+        token: token,
+        type: "G_SSO"
+      };
+      
+      console.log('📤 Data to be sent to backend:', backendPayload);
+      console.log('In production, this would be sent to the login endpoint with type G_SSO');
+      
+      // Return a simulated successful response
+      return {
+        success: true,
+        user: simulatedUser
+      };
+    } catch (error) {
+      console.error('Error handling Google callback:', error);
+      throw error;
+    }
+  },
+  
+  // Request password reset
+  requestPasswordReset: async (email) => {
+    try {
+      const response = await authApi.post('/requestPasswordReset', { email });
+      return response.data;
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      throw error;
+    }
+  },
+  
+  // Verify reset token
+  verifyResetToken: async (token) => {
+    try {
+      const response = await authApi.get(`/verifyResetToken/${token}`);
+      return response.data;
+    } catch (error) {
+      console.error('Token verification error:', error);
+      throw error;
+    }
+  },
+  
+  // Reset password with token
+  resetPassword: async (token, newPassword) => {
+    try {
+      const response = await authApi.post('/resetPassword', { token, newPassword });
+      return response.data;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  }
 };
 
 export default api;
