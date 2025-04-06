@@ -8,6 +8,7 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import LoginRedirect from './pages/LoginRedirect';
+import PasswordReset from './pages/PasswordReset';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import CommunitySalesAdmin from './pages/CommunitySalesAdmin';
@@ -84,6 +85,12 @@ function App() {
                       <>
                         <ConditionalMenu />
                         <Login />
+                      </>
+                    } />
+                    <Route path="/reset-password" element={
+                      <>
+                        <ConditionalMenu />
+                        <PasswordReset />
                       </>
                     } />
                     <Route path="/sales" element={
