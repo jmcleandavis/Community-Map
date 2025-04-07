@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Session API configuration
 const sessionApi = axios.create({
-  baseURL: import.meta.env.VITE_SESSION_API_URL || 'https://br-session-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_SESSION_API_URL || '/session-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ const sessionApi = axios.create({
 
 // Maps API configuration
 const mapsApi = axios.create({
-  baseURL: import.meta.env.VITE_MAPS_API_URL || 'https://br-maps-mgt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_MAPS_API_URL || '/maps-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -25,18 +25,19 @@ const mapsApi = axios.create({
 
 // Auth (Logging in) API configuration
 const authApi = axios.create({
-  baseURL: import.meta.env.VITE_AUTH_API_URL || 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
+  baseURL: '/auth-api', // Always use the proxy path
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
     'app-key': import.meta.env.VITE_APP_API_KEY
-  }
+  },
+  withCredentials: false // Must be false to avoid CORS issues with wildcard response
 });
 
 // Create Customer/user API configuration
 const createCustomerApi = axios.create({
-  baseURL: import.meta.env.VITE_CUSTOMER_API_URL || 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL || '/customer-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ const createCustomerApi = axios.create({
 
 // User Information API configuration
 const userInformationApi = axios.create({
-  baseURL: import.meta.env.VITE_CUSTOMER_API_URL ? `${import.meta.env.VITE_CUSTOMER_API_URL}/v1/getCustomerByEmail/EMAIL` : 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL ? `${import.meta.env.VITE_CUSTOMER_API_URL}/v1/getCustomerByEmail/EMAIL` : '/customer-api/v1/getCustomerByEmail/EMAIL',
   timeout: 30000,
   // withCredentials: true, //flagged with true when it should be false
   headers: {
@@ -429,8 +430,7 @@ const register = async (userEmail, password, firstName, lastName) => {
 const login = async (email, password) => {
   try {
     // First ensure we have a valid session
-      // const sessionId = await createSession();
-      const sessionId = await getSessionId();
+    const sessionId = await getSessionId();
     console.log('Created/Retrieved session for login:', sessionId);
     
     // Create form data
@@ -440,7 +440,41 @@ const login = async (email, password) => {
     formData.append('type', 'EMAIL');
 
     console.log('Sending login request with sessionId:', sessionId);
-    const response = await authApi.post('/login', formData);
+    
+    // Create temporary headers with sessionId for this request
+    const headers = { 
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'app-name': 'web-service',
+      'app-key': import.meta.env.VITE_APP_API_KEY,
+      'sessionId': sessionId
+    };
+    
+    // Use fetch API as an alternative to axios
+    const fetchResponse = await fetch('/auth-api/login', {
+      method: 'POST',
+      headers: headers,
+      body: formData,
+      credentials: 'omit' // Don't send cookies or HTTP auth
+    });
+    
+    // Check if the response is successful
+    if (!fetchResponse.ok) {
+      console.error('Login failed with status:', fetchResponse.status);
+      const errorText = await fetchResponse.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Login failed with status ${fetchResponse.status}: ${errorText}`);
+    }
+    
+    // Convert fetch response to a format similar to axios
+    const responseData = await fetchResponse.text();
+    let response;
+    try {
+      // Try to parse as JSON if possible
+      response = { data: JSON.parse(responseData) };
+    } catch (e) {
+      // If not JSON, handle as boolean or text
+      response = { data: responseData === 'true' };
+    }
     
     // Check if login was successful
     if (response.data === true) {
