@@ -56,10 +56,26 @@ const PasswordReset = () => {
       setMessage({ type: 'error', text: 'Missing reset token. Please request a new password reset link.' });
       return;
     }
-
+    
+    // Make sure we extract email from token if it's not provided as a parameter
     if (!email) {
-      setMessage({ type: 'error', text: 'Email address is required.' });
-      return;
+      try {
+        // Extract email from token (assuming JWT format)
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          if (payload.email) {
+            setEmail(payload.email);
+          } else {
+            setMessage({ type: 'error', text: 'Could not retrieve email from reset token. Please contact support.' });
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing token:', error);
+        setMessage({ type: 'error', text: 'Invalid token format. Please request a new password reset link.' });
+        return;
+      }
     }
 
     if (!validatePassword(password)) {
