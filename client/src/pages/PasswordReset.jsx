@@ -18,9 +18,11 @@ const PasswordReset = () => {
 
   useEffect(() => {
     // Extract token and email from URL parameters
+    console.log('URL search:', location.search);
     const searchParams = new URLSearchParams(location.search);
     const tokenParam = searchParams.get('token');
     const emailParam = searchParams.get('email');
+    console.log('URL params extracted - token:', tokenParam ? 'exists' : 'missing', 'email:', emailParam);
 
     if (tokenParam) {
       setToken(tokenParam);
@@ -34,7 +36,24 @@ const PasswordReset = () => {
     }
 
     if (emailParam) {
+      console.log('Setting email from URL param:', emailParam);
       setEmail(emailParam);
+    } else if (tokenParam) {
+      // Try to extract email from token immediately
+      try {
+        console.log('Attempting to extract email from token');
+        const tokenParts = tokenParam.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log('Token payload:', payload);
+          if (payload.email) {
+            console.log('Found email in token:', payload.email);
+            setEmail(payload.email);
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting email from token:', error);
+      }
     }
   }, [location]);
 
@@ -114,6 +133,7 @@ const PasswordReset = () => {
     }
   };
 
+  console.log('Rendering with email:', email);
   return (
     <div className="password-reset-container">
       <div className="password-reset-card">
@@ -129,7 +149,7 @@ const PasswordReset = () => {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Email Address</label>
-              <div className="email-display">{email}</div>
+              <div className="email-display">{email || 'No email available'}</div>
             </div>
             
             <div className="form-group">
