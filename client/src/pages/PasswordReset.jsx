@@ -112,15 +112,8 @@ const PasswordReset = () => {
         {isTokenValid && message.type !== 'success' && (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={!!email}
-                required
-              />
+              <label>Email Address</label>
+              <div className="email-display">{email}</div>
             </div>
             
             <div className="form-group">
