@@ -28,7 +28,7 @@ const LoginRedirect = () => {
           console.log('Authorization code found:', code);
           
           // Process the code
-          await handleGoogleCallback(code);
+          await handleGoogleCallback(code, email);
           setStatus('Login successful! Redirecting...');
           setTimeout(() => navigate('/'), 1000);
         } else {

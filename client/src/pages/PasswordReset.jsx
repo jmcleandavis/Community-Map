@@ -112,6 +112,7 @@ const PasswordReset = () => {
 
     try {
       setIsLoading(true);
+      console.warn('TOKEN: ', token);
       await resetPassword(token, password, email);
       setMessage({ 
         type: 'success', 

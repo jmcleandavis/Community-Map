@@ -578,17 +578,25 @@ const resetPassword = async (token, newPassword, userEmail) => {
     // Get or create session ID
     const sessionId = await getSessionId();
     console.log('Using session for password reset:', sessionId);
+    console.log('Headers being sent to the backend:', {
+      sessionId: sessionId,
+      token,
+      userEmail,
+      newPassword,
+      appCode: 'app1234'//import.meta.env.VITE_APP_CODE || '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
+    });
     
     const response = await authApi.patch('/resetPassword', { 
       token,
       userEmail,
       newPassword,
-      appCode: '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
+      appCode: 'app1234'//import.meta.env.VITE_APP_CODE || '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
     }, {
       headers: {
         sessionId: sessionId
       }
     });
+    console.log('Server response from password reset:', response);
     console.log('Password reset successful');
     return response.data;
   } catch (error) {
@@ -641,7 +649,7 @@ const api = {
   },
   
   // Handle Google SSO callback
-  handleGoogleCallback: async (code) => {
+  handleGoogleCallback: async (code, email) => {
     try {
       // Get or create session ID
       const sessionId = await getSessionId();
@@ -651,10 +659,12 @@ const api = {
       console.log('🔐 Google authorization code received:', code);
       console.log('Sending auth code to backend for token exchange');
       
-      const response = await authApi.post('/googleLogin', {
+      const response = await authApi.post('/login', {
+        username: email,
         code: code,
         redirectUri: import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect', // Must match the original redirect URI
-        sessionId: sessionId
+        sessionId: sessionId,
+        type: "SSO_G"
       }, {
         headers: {
           sessionId: sessionId,

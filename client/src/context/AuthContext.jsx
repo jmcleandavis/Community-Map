@@ -86,10 +86,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleGoogleCallback = async (code) => {
+  const handleGoogleCallback = async (code, email) => {
     try {
       console.log('AuthContext: Processing Google callback with authorization code');
-      const response = await api.handleGoogleCallback(code);
+      const response = await api.handleGoogleCallback(code, email);
       
       if (response && response.success && response.user) {
         // Extract user data from backend response
