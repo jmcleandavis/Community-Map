@@ -660,15 +660,15 @@ const api = {
       console.log('Sending auth code to backend for token exchange');
       
       const response = await authApi.post('/login', {
-        username: email,
-        code: code,
+        // username: email,
+        token: code,
         redirectUri: import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect', // Must match the original redirect URI
         sessionId: sessionId,
         type: "SSO_G"
       }, {
         headers: {
           sessionId: sessionId,
-          'app-name': 'postman-call',
+          'app-name': 'web-service',
           'app-key': import.meta.env.VITE_APP_API_KEY
         }
       });
