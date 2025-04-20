@@ -6,7 +6,7 @@ import { useNavigation } from '../context/NavigationContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { setFromLanding } = useNavigation();
+  const { setFromLanding, fromMap, setFromMap } = useNavigation();
 
   const handleNavigation = (path) => {
     setFromLanding(true); // Set that navigation came from landing page
@@ -52,9 +52,14 @@ const LandingPage = () => {
             <div className="cta-button" onClick={() => handleNavigation('/login')}>
               Get Started Today
             </div>
-            <div className="cta-button secondary" onClick={() => handleNavigation('/')} style={{ marginLeft: '1rem' }}>
-              View Map
-            </div>
+            {fromMap && (
+              <div className="cta-button secondary" onClick={() => {
+                setFromMap(false); // Reset fromMap flag when returning to map
+                navigate('/');
+              }} style={{ marginLeft: '1rem' }}>
+                Return to Map
+              </div>
+            )}
           </div>
         </section>
 
