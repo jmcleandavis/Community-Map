@@ -497,21 +497,43 @@ const login = async (email, password) => {
       response = { data: responseData === 'true' };
     }
     
+    console.log('Login response:', response);
+    
     // Check if login was successful
-    if (response.data === true) {
+    if (response.data === true || response.data.success === true) {
       console.log('Login successful, fetching user info');
-      // If login successful, fetch user information
-      const userInfo = await getUserInfo(email);
       
-      // Return the structured data needed by AuthContext
-      return {
-        data: {
-          sessionId: sessionId,
-          userId: userInfo.userId,
-          userType: userInfo.userType,
-          userInfo: userInfo // Include full user info
-        }
-      };
+      // Ensure we have email (the parameter passed to this function)
+      if (!email) {
+        console.error('Email is undefined during login process');
+        throw new Error('Email is required for user information retrieval');
+      }
+      
+      try {
+        // If login successful, fetch user information
+        const userInfo = await getUserInfo(email);
+        
+        // Return the structured data needed by AuthContext
+        return {
+          data: {
+            sessionId: sessionId,
+            userId: userInfo.userId,
+            userType: userInfo.userType,
+            userInfo: userInfo // Include full user info
+          }
+        };
+      } catch (userInfoError) {
+        console.error('Error fetching user info after successful login:', userInfoError);
+        // Still return a successful login but with minimal user info
+        return {
+          data: {
+            sessionId: sessionId,
+            userId: email, // Use email as fallback userId if userInfo fetch fails
+            userType: 'USER', // Default user type
+            userInfo: { email, fName: '', lName: '' } // Minimal user info
+          }
+        };
+      }
     }
     throw new Error('Invalid login response');
   } catch (error) {
