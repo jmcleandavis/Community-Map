@@ -91,15 +91,7 @@ const HamburgerMenu = () => {
           <span className="menu-text">Garage Sales</span>
         </div>
 
-        {isAuthenticated && (
-          <div className="menu-item" onClick={() => {
-            navigate('/admin/community-sales');
-            setIsOpen(false);
-          }}>
-            <span className="menu-icon">🏙️</span>
-            <span className="menu-text">Community Sales Administration</span>
-          </div>
-        )}
+        {/* Community Sales Administration menu item removed */}
 
         <div className="menu-item" onClick={handleMyLocation}>
           <span className="menu-icon">📍</span>
