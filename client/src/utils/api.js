@@ -671,13 +671,13 @@ const api = {
   
   
   // Handle Google SSO callback
-  handleGoogleCallback: async (code, email) => {
+  handleGoogleCallback: async (code) => {
     try {
       // Check if this code has already been processed
       if (processedAuthCodes.has(code)) {
         console.log('This authorization code has already been processed, preventing duplicate request');
-        // Return the cached response or a success indicator
-        return { success: true, user: { email } };
+        // Return a success indicator without requiring email
+        return { success: true, user: { email: 'cached_request' } };
       }
       
       // Mark this code as being processed
