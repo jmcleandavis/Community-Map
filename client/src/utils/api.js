@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Track processed Google auth codes to prevent duplicate requests
+const processedAuthCodes = new Set();
+
 // Session API configuration
 const sessionApi = axios.create({
   baseURL: import.meta.env.VITE_SESSION_API_URL || '/session-api',
@@ -648,9 +651,20 @@ const api = {
     }
   },
   
+  
   // Handle Google SSO callback
   handleGoogleCallback: async (code, email) => {
     try {
+      // Check if this code has already been processed
+      if (processedAuthCodes.has(code)) {
+        console.log('This authorization code has already been processed, preventing duplicate request');
+        // Return the cached response or a success indicator
+        return { success: true, user: { email } };
+      }
+      
+      // Mark this code as being processed
+      processedAuthCodes.add(code);
+      
       // Get or create session ID
       const sessionId = await getSessionId();
       console.log('Using session for Google SSO:', sessionId);
@@ -660,7 +674,6 @@ const api = {
       console.log('Sending auth code to backend for token exchange');
       
       const response = await authApi.post('/login', {
-        // username: email,
         token: code,
         redirectUri: import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect', // Must match the original redirect URI
         sessionId: sessionId,
@@ -677,16 +690,40 @@ const api = {
       console.log('Google authentication successful');
       
       if (!response.data || !response.data.success) {
+        // If request fails, remove the code from processed set so it can be tried again
+        processedAuthCodes.delete(code);
         throw new Error('Invalid response from Google authentication');
+      }
+      
+      // Handle the case where user field may be the email string directly
+      let userData;
+      if (typeof response.data.user === 'string') {
+        // Handle when 'user' is directly the email string - we need to fetch complete user info
+        const email = response.data.user;
+        console.log('Retrieved email from SSO:', email);
+        
+        try {
+          // Fetch complete user information using the email
+          console.log('Fetching complete user information...');
+          userData = await getUserInfo(email);
+          console.log('User info retrieved successfully:', userData);
+        } catch (userInfoError) {
+          console.error('Failed to retrieve user info:', userInfoError);
+          // Fallback to basic user object with just the email
+          userData = { email: email };
+        }
+      } else {
+        // Handle when 'user' is an object or fallback to separate fields
+        userData = response.data.user || {
+          email: response.data.email,
+          firstName: response.data.firstName || response.data.given_name,
+          lastName: response.data.lastName || response.data.family_name
+        };
       }
       
       return {
         success: true,
-        user: response.data.user || {
-          email: response.data.email,
-          firstName: response.data.firstName || response.data.given_name,
-          lastName: response.data.lastName || response.data.family_name
-        }
+        user: userData
       };
     } catch (error) {
       console.error('Error handling Google callback:', error);
