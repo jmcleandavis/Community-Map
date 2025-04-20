@@ -91,7 +91,7 @@ const HamburgerMenu = () => {
           <span className="menu-text">Garage Sales</span>
         </div>
 
-        {userType === 'ADMIN' && (
+        {isAuthenticated && (
           <div className="menu-item" onClick={() => {
             navigate('/admin/community-sales');
             setIsOpen(false);
