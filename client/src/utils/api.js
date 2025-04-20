@@ -751,6 +751,18 @@ const api = {
       
       console.log('Retrieved email from SSO:', email);
       
+      // Extract any available name information from the response
+      let firstName = '';
+      let lastName = '';
+      
+      if (response.data.user && typeof response.data.user !== 'string') {
+        firstName = response.data.user.firstName || response.data.user.given_name || '';
+        lastName = response.data.user.lastName || response.data.user.family_name || '';
+      } else {
+        firstName = response.data.firstName || response.data.given_name || '';
+        lastName = response.data.lastName || response.data.family_name || '';
+      }
+      
       // Always make a separate call to get full user information from the backend
       let userData;
       try {
@@ -761,27 +773,37 @@ const api = {
       } catch (userInfoError) {
         console.error('Failed to retrieve user info from backend:', userInfoError);
         
-        // Fallback to basic user object with data from Google response
-        const fallbackData = response.data.user && typeof response.data.user !== 'string' 
-          ? response.data.user 
-          : {
-              email: email,
-              firstName: response.data.firstName || response.data.given_name || '',
-              lastName: response.data.lastName || response.data.family_name || ''
-            };
-        
-        // Still normalize the fallback data
+        // Create a comprehensive fallback user object
         userData = {
-          ...fallbackData,
-          fName: fallbackData.fName || fallbackData.firstName || fallbackData.given_name || '',
-          lName: fallbackData.lName || fallbackData.lastName || fallbackData.family_name || '',
-          firstName: fallbackData.firstName || fallbackData.fName || fallbackData.given_name || '',
-          lastName: fallbackData.lastName || fallbackData.lName || fallbackData.family_name || '',
-          email: email
+          // Required fields for display in UI
+          email: email,
+          fName: firstName,
+          lName: lastName,
+          firstName: firstName,
+          lastName: lastName,
+          // Extra fields that might be needed
+          userId: `google-${email}`,
+          userType: 'USER',
+          id: `google-${email}`
         };
         
-        console.log('Using fallback normalized SSO user data:', userData);
+        console.log('Using fallback user data for hamburger menu display:', userData);
       }
+      
+      // Final verification to ensure required fields exist
+      if (!userData.fName && (userData.firstName || firstName)) {
+        userData.fName = userData.firstName || firstName;
+      }
+      
+      if (!userData.lName && (userData.lastName || lastName)) {
+        userData.lName = userData.lastName || lastName;
+      }
+      
+      if (!userData.email) {
+        userData.email = email;
+      }
+      
+      console.log('Final normalized user data for UI display:', userData);
       
       return {
         success: true,
