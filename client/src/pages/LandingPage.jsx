@@ -52,6 +52,9 @@ const LandingPage = () => {
             <div className="cta-button" onClick={() => handleNavigation('/login')}>
               Get Started Today
             </div>
+            <div className="cta-button secondary" onClick={() => handleNavigation('/')} style={{ marginLeft: '1rem' }}>
+              View Map
+            </div>
           </div>
         </section>
 
