@@ -261,7 +261,25 @@ async function getUserInfo(email) {
     const response = await userInformationApi.get(email);
     console.log('User info response:', response);
     
-    return response.data;
+    // Get the raw data
+    let userData = response.data;
+    
+    // Normalize the user data to ensure consistent property names
+    // This ensures that properties are accessible regardless of the API response format
+    const normalizedUserData = {
+      ...userData,
+      // Ensure fName and lName are always available for the hamburger menu
+      fName: userData.fName || userData.firstName || userData.given_name || '',
+      lName: userData.lName || userData.lastName || userData.family_name || '',
+      // Also keep firstName/lastName for backward compatibility
+      firstName: userData.firstName || userData.fName || userData.given_name || '',
+      lastName: userData.lastName || userData.lName || userData.family_name || '',
+      // Ensure email is always available
+      email: userData.email || email
+    };
+    
+    console.log('Normalized user data:', normalizedUserData);
+    return normalizedUserData;
   } catch (error) {
     console.error('Error fetching user information:', error);
     throw error;
@@ -695,30 +713,52 @@ const api = {
         throw new Error('Invalid response from Google authentication');
       }
       
-      // Handle the case where user field may be the email string directly
-      let userData;
+      // Extract email from the response
+      let email;
       if (typeof response.data.user === 'string') {
-        // Handle when 'user' is directly the email string - we need to fetch complete user info
-        const email = response.data.user;
-        console.log('Retrieved email from SSO:', email);
-        
-        try {
-          // Fetch complete user information using the email
-          console.log('Fetching complete user information...');
-          userData = await getUserInfo(email);
-          console.log('User info retrieved successfully:', userData);
-        } catch (userInfoError) {
-          console.error('Failed to retrieve user info:', userInfoError);
-          // Fallback to basic user object with just the email
-          userData = { email: email };
-        }
+        email = response.data.user;
+      } else if (response.data.user && response.data.user.email) {
+        email = response.data.user.email;
       } else {
-        // Handle when 'user' is an object or fallback to separate fields
-        userData = response.data.user || {
-          email: response.data.email,
-          firstName: response.data.firstName || response.data.given_name,
-          lastName: response.data.lastName || response.data.family_name
+        email = response.data.email;
+      }
+      
+      if (!email) {
+        throw new Error('No email found in Google authentication response');
+      }
+      
+      console.log('Retrieved email from SSO:', email);
+      
+      // Always make a separate call to get full user information from the backend
+      let userData;
+      try {
+        // Fetch complete user information using the email
+        console.log('Making separate backend call for complete user information...');
+        userData = await getUserInfo(email); // This function already normalizes the data
+        console.log('Complete user info retrieved successfully:', userData);
+      } catch (userInfoError) {
+        console.error('Failed to retrieve user info from backend:', userInfoError);
+        
+        // Fallback to basic user object with data from Google response
+        const fallbackData = response.data.user && typeof response.data.user !== 'string' 
+          ? response.data.user 
+          : {
+              email: email,
+              firstName: response.data.firstName || response.data.given_name || '',
+              lastName: response.data.lastName || response.data.family_name || ''
+            };
+        
+        // Still normalize the fallback data
+        userData = {
+          ...fallbackData,
+          fName: fallbackData.fName || fallbackData.firstName || fallbackData.given_name || '',
+          lName: fallbackData.lName || fallbackData.lastName || fallbackData.family_name || '',
+          firstName: fallbackData.firstName || fallbackData.fName || fallbackData.given_name || '',
+          lastName: fallbackData.lastName || fallbackData.lName || fallbackData.family_name || '',
+          email: email
         };
+        
+        console.log('Using fallback normalized SSO user data:', userData);
       }
       
       return {
