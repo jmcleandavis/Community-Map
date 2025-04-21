@@ -377,6 +377,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
           mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
           center={center}
           zoom={13}
+          onClick={() => {
+            // Close InfoWindow when clicking on the map
+            if (selectedSale) setSelectedSale(null);
+          }}
           onLoad={(map) => {
             console.log("Map component loaded");
             mapRef.current = map;
