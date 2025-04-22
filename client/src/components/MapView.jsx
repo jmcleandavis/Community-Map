@@ -3,6 +3,7 @@ import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useLocation as useRouterLocation } from 'react-router-dom';
+import useWindowSize from '../hooks/useWindowSize';
 import { useLocation } from '../context/LocationContext';
 
 const COMMUNITY_NAME = 'BAY RIDGES';
@@ -51,6 +52,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
     lat: 43.8384,
     lng: -79.0868
   });
+  
+  // Get window dimensions
+  const { width } = useWindowSize();
+  const isCompactView = width < 1045;
   
   // Google Maps is already loaded by LoadScript in App.jsx
   // We assume it's loaded when this component mounts
@@ -336,7 +341,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const titleStyle = {
     textAlign: 'center',
     padding: '15px',
-    fontSize: '24px',
+    fontSize: isCompactView ? '10px' : '24px',
     fontWeight: 'bold',
     backgroundColor: '#ffffff',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
@@ -347,6 +352,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     zIndex: 1,
     borderRadius: '5px'
   };
+  console.log('titleStyle:', titleStyle);
 
   // Log when rendering the map
   console.log('MapView: Rendering Google Map component');
@@ -385,27 +391,97 @@ function MapView({ mapContainerStyle, mapOptions }) {
             console.log("Map component loaded");
             mapRef.current = map;
             
-            // Explicitly set map type control position
+            // Explicitly set map type control position based on screen width
             if (map && window.google) {
-              map.setOptions({
-                mapTypeControl: true,
-                mapTypeControlOptions: {
-                  position: window.google.maps.ControlPosition.TOP_RIGHT,
-                  style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-                },
-                zoomControl: true,
-                zoomControlOptions: {
-                  position: window.google.maps.ControlPosition.RIGHT_CENTER
-                },
-                fullscreenControl: true,
-                fullscreenControlOptions: {
-                  position: window.google.maps.ControlPosition.TOP_RIGHT
-                }
-              });
+              console.log('Setting map options with screen width:', width, 'isCompactView:', isCompactView);
+              
+              if (isCompactView) {
+                // For small screens (<1045px): Stack controls vertically
+                // Full screen on top right, map type controls below it
+                map.setOptions({
+                  // Disable all default UI controls
+                  disableDefaultUI: true,
+                  // Then enable only the controls we want
+                  mapTypeControl: true,
+                  mapTypeControlOptions: {
+                    position: window.google.maps.ControlPosition.LEFT_CENTER,
+                    style: window.google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                  },
+                  zoomControl: true,
+                  zoomControlOptions: {
+                    position: window.google.maps.ControlPosition.RIGHT_CENTER
+                  },
+                  fullscreenControl: true,
+                  fullscreenControlOptions: {
+                    position: window.google.maps.ControlPosition.TOP_RIGHT
+                  },
+                  // Enable standard Google Maps controls
+                  streetViewControl: false,
+                  scaleControl: true
+                });
+              } else {
+                // For larger screens (>=1045px): Normal horizontal positioning
+                map.setOptions({
+                  // Disable all default UI controls
+                  disableDefaultUI: true,
+                  // Then enable only the controls we want
+                  mapTypeControl: true,
+                  mapTypeControlOptions: {
+                    position: window.google.maps.ControlPosition.TOP_RIGHT,
+                    style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+                  },
+                  zoomControl: true,
+                  zoomControlOptions: {
+                    position: window.google.maps.ControlPosition.RIGHT_CENTER
+                  },
+                  fullscreenControl: true,
+                  fullscreenControlOptions: {
+                    position: window.google.maps.ControlPosition.TOP_RIGHT
+                  },
+                  // Enable standard Google Maps controls
+                  streetViewControl: false,
+                  scaleControl: true
+                });
+              }
             }
             
             // Set loaded state after configuring the map
             setIsLoaded(true);
+            
+            // Add a custom My Location button that uses the existing centerOnUserLocation function
+            const locationButton = document.createElement("button");
+            locationButton.title = "My Location";
+            locationButton.classList.add("custom-map-control-button");
+            
+            // Create a div for the icon
+            const iconContainer = document.createElement("div");
+            iconContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>';
+            iconContainer.style.display = "flex";
+            iconContainer.style.justifyContent = "center";
+            iconContainer.style.alignItems = "center";
+            locationButton.appendChild(iconContainer);
+            
+            // Style the button to match the screenshot
+            locationButton.style.backgroundColor = "white"; // White background
+            locationButton.style.border = "none";
+            locationButton.style.borderRadius = "50%"; // Make it circular
+            locationButton.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+            locationButton.style.cursor = "pointer";
+            locationButton.style.margin = "10px";
+            locationButton.style.padding = "10px";
+            locationButton.style.display = "flex";
+            locationButton.style.justifyContent = "center";
+            locationButton.style.alignItems = "center";
+            locationButton.style.height = "40px";
+            locationButton.style.width = "40px";
+            
+            map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(locationButton);
+            
+            // Setup the click event listener
+            locationButton.addEventListener("click", () => {
+              // Call the existing centerOnUserLocation function
+              centerOnUserLocation();
+            });
             
             // Directly create markers if garage sales data is available
             if (garageSales?.length && window.google) {
