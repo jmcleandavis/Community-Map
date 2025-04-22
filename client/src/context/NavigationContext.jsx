@@ -20,10 +20,9 @@ export const NavigationProvider = ({ children }) => {
     } else if (location.pathname === '/') {
       // If we're on the map page, mark that future navigations will be from map
       setFromMap(true);
-    } else {
-      // Reset the fromMap state when navigating to other pages
-      setFromMap(false);
     }
+    // We don't reset the fromMap flag so the "Return to Map" button remains visible
+    // across all pages when the user has navigated from the map
     // We don't reset the fromLanding flag so they maintain the "from landing" context
   }, [location.pathname]);
 
