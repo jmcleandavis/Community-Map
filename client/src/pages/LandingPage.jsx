@@ -54,7 +54,7 @@ const LandingPage = () => {
             </div>
             {fromMap && (
               <div className="cta-button secondary" onClick={() => {
-                setFromMap(false); // Reset fromMap flag when returning to map
+                // Don't reset fromMap flag so the button remains visible when returning to this page
                 navigate('/');
               }} style={{ marginLeft: '1rem' }}>
                 Return to Map

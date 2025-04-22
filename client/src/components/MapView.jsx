@@ -352,7 +352,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
     zIndex: 1,
     borderRadius: '5px'
   };
-  console.log('titleStyle:', titleStyle);
 
   // Log when rendering the map
   console.log('MapView: Rendering Google Map component');
