@@ -404,20 +404,17 @@ function MapView({ mapContainerStyle, mapOptions }) {
                   // Then enable only the controls we want
                   mapTypeControl: true,
                   mapTypeControlOptions: {
-                    position: window.google.maps.ControlPosition.LEFT_CENTER,
-                    style: window.google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                    position: window.google.maps.ControlPosition.LEFT_BOTTOM,
+                    style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
                   },
-                  zoomControl: true,
-                  zoomControlOptions: {
-                    position: window.google.maps.ControlPosition.RIGHT_CENTER
-                  },
+                  zoomControl: false,
                   fullscreenControl: true,
                   fullscreenControlOptions: {
                     position: window.google.maps.ControlPosition.TOP_RIGHT
                   },
                   // Enable standard Google Maps controls
-                  streetViewControl: false,
-                  scaleControl: true
+                  streetViewControl: true,
+                  scaleControl: true,
                 });
               } else {
                 // For larger screens (>=1045px): Normal horizontal positioning
@@ -439,7 +436,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
                     position: window.google.maps.ControlPosition.TOP_RIGHT
                   },
                   // Enable standard Google Maps controls
-                  streetViewControl: false,
+                  streetViewControl: true,
                   scaleControl: true
                 });
               }
