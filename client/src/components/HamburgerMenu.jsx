@@ -15,11 +15,30 @@ const HamburgerMenu = () => {
 
   // Function to check if a click is outside the menu
   const handleClickOutside = (event) => {
+    // Check if click is outside the menu and not on the hamburger button
     if (menuRef.current && !menuRef.current.contains(event.target) && 
         !event.target.closest('.hamburger-button')) {
-      setIsOpen(false); // Close the menu
+      // Close the menu when clicking outside
+      setIsOpen(false);
     }
   };
+
+  // Additional handler specifically for map clicks
+  const handleMapClick = () => {
+    // This will be called when the map is clicked via the MapView component
+    setIsOpen(false);
+  };
+  
+  // Expose the handleMapClick function to the window object so it can be called from MapView
+  useEffect(() => {
+    // Make the function accessible globally
+    window.closeHamburgerMenu = handleMapClick;
+    
+    return () => {
+      // Clean up when component unmounts
+      delete window.closeHamburgerMenu;
+    };
+  }, []);
 
   // Add event listener when component mounts
   useEffect(() => {
@@ -31,7 +50,8 @@ const HamburgerMenu = () => {
     };
   }, []); // Empty dependency array means this runs once on mount
 
-  const handleMapClick = () => {
+  // Handler for Map menu item click
+  const handleMapMenuItemClick = () => {
     navigate('/');
     setIsOpen(false);
   };
@@ -67,7 +87,7 @@ const HamburgerMenu = () => {
           </div>
         )}
 
-        <div className="menu-item" onClick={handleMapClick}>
+        <div className="menu-item" onClick={handleMapMenuItemClick}>
           <span className="menu-icon">🗺️</span>
           <span className="menu-text">Map</span>
         </div>
