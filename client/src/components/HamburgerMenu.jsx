@@ -36,15 +36,6 @@ const HamburgerMenu = () => {
     setIsOpen(false);
   };
 
-  const handleMyLocation = () => {
-    centerOnUserLocation();
-    setIsOpen(false);
-    
-    // Check if we're not already on the main map page (URL path is '/')
-    if (window.location.pathname !== '/') {
-      navigate('/');
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -93,10 +84,6 @@ const HamburgerMenu = () => {
 
         {/* Community Sales Administration menu item removed */}
 
-        <div className="menu-item" onClick={handleMyLocation}>
-          <span className="menu-icon">📍</span>
-          <span className="menu-text">My Location</span>
-        </div>
 
         <div className="menu-item" onClick={() => {
           navigate('/settings');
