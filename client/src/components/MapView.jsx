@@ -385,6 +385,11 @@ function MapView({ mapContainerStyle, mapOptions }) {
           onClick={() => {
             // Close InfoWindow when clicking on the map
             if (selectedSale) setSelectedSale(null);
+            
+            // Close hamburger menu if it's open
+            if (window.closeHamburgerMenu) {
+              window.closeHamburgerMenu();
+            }
           }}
           onLoad={(map) => {
             console.log("Map component loaded");
