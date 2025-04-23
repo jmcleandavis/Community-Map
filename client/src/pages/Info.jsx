@@ -41,27 +41,29 @@ const InfoPage = () => {
         </div>
       </div>
       
-      {/* Return to Map Button */}
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <div 
-          className="cta-button secondary" 
-          onClick={() => {
-            navigate('/');
-          }} 
-          style={{ 
-            display: 'inline-block',
-            backgroundColor: '#27ae60',
-            color: 'white',
-            padding: '0.8rem 1.5rem',
-            borderRadius: '4px',
-            textDecoration: 'none',
-            fontWeight: '500',
-            cursor: 'pointer'
-          }}
-        >
-          Return to Map
+      {/* Return to Map Button - Only shown if user came from map */}
+      {fromMap && (
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <div 
+            className="cta-button secondary" 
+            onClick={() => {
+              navigate('/');
+            }} 
+            style={{ 
+              display: 'inline-block',
+              backgroundColor: '#27ae60',
+              color: 'white',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
+          >
+            Return to Map
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
