@@ -1,7 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useNavigation } from '../context/NavigationContext';
 import './Info.css';
 
 const InfoPage = () => {
+  const navigate = useNavigate();
+  const { fromMap, setFromMap } = useNavigation();
   return (
     <div className="info-page">
       <div className="info-container">
@@ -18,7 +22,7 @@ const InfoPage = () => {
               <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a>
             </div>
             <div className="developer">
-              <p>Jamie-Lee Mclean Davis</p>
+              <p>Jamie-Lee Mclean-Davis</p>
               <a href="mailto:jmclean.davis@gmail.com">jmclean.davis@gmail.com</a>
             </div>
           </div>
@@ -34,6 +38,28 @@ const InfoPage = () => {
               <li><a href="#">Community Guidelines</a></li>
             </ul>
           </div>
+        </div>
+      </div>
+      
+      {/* Return to Map Button */}
+      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+        <div 
+          className="cta-button secondary" 
+          onClick={() => {
+            navigate('/');
+          }} 
+          style={{ 
+            display: 'inline-block',
+            backgroundColor: '#27ae60',
+            color: 'white',
+            padding: '0.8rem 1.5rem',
+            borderRadius: '4px',
+            textDecoration: 'none',
+            fontWeight: '500',
+            cursor: 'pointer'
+          }}
+        >
+          Return to Map
         </div>
       </div>
     </div>
