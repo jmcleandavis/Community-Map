@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
+import './MapView.css';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import useWindowSize from '../hooks/useWindowSize';
 import { useLocation } from '../context/LocationContext';
@@ -373,7 +374,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   }
   else {
     renderContent = (
-      <div style={{ position: 'relative' }}>
+      <div className="map-container">
         <div style={titleStyle}>
           {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
         </div>
@@ -411,6 +412,8 @@ function MapView({ mapContainerStyle, mapOptions }) {
                     position: window.google.maps.ControlPosition.LEFT_BOTTOM,
                     style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
                   },
+                  // Apply custom styles after map loads to adjust control positions
+                  // This will be handled in the useEffect below
                   zoomControl: false,
                   fullscreenControl: true,
                   fullscreenControlOptions: {
@@ -449,6 +452,8 @@ function MapView({ mapContainerStyle, mapOptions }) {
             // Set loaded state after configuring the map
             setIsLoaded(true);
             
+            // Map type controls position is now handled entirely through CSS in MapView.css
+            
             // Add a custom My Location button that uses the existing centerOnUserLocation function
             const locationButton = document.createElement("button");
             locationButton.title = "My Location";
@@ -457,24 +462,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
             // Create a div for the icon
             const iconContainer = document.createElement("div");
             iconContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>';
-            iconContainer.style.display = "flex";
-            iconContainer.style.justifyContent = "center";
-            iconContainer.style.alignItems = "center";
+            iconContainer.classList.add("icon-container");
             locationButton.appendChild(iconContainer);
             
-            // Style the button to match the screenshot
-            locationButton.style.backgroundColor = "white"; // White background
-            locationButton.style.border = "none";
-            locationButton.style.borderRadius = "50%"; // Make it circular
-            locationButton.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
-            locationButton.style.cursor = "pointer";
-            locationButton.style.margin = "10px";
-            locationButton.style.padding = "10px";
-            locationButton.style.display = "flex";
-            locationButton.style.justifyContent = "center";
-            locationButton.style.alignItems = "center";
-            locationButton.style.height = "40px";
-            locationButton.style.width = "40px";
+            // The button is styled via CSS classes in MapView.css
             
             map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(locationButton);
             
