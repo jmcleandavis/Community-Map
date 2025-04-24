@@ -14,9 +14,19 @@
 
 /* Map type control styles for small screens */
 @media (max-width: 1044px) {
-  /* LEFT_BOTTOM position styling */
-  .gm-style .gmnoprint.gm-style-mtc {
-    margin-bottom: 15px !important;
+  /* Target the map type controls positioned at the bottom of the screen */
+  /* Based on the screenshot, we need to target the element with bottom:26px */
+  div[style*="position: absolute"][style*="bottom: 26px"],
+  div[style*="position:absolute"][style*="bottom:26px"],
+  .gm-style div[style*="bottom: 26px"],
+  .gm-style div[style*="bottom:26px"] {
+    bottom: 60px !important; /* Increase from 26px to 60px to move it higher */
+  }
+  
+  /* Alternative approach to target the map type control container */
+  .gm-style-mtc button {
+    /* Add any additional styling for the buttons if needed */
+    font-weight: 500;
   }
 }
 
@@ -26,8 +36,8 @@
   /* No additional styling needed by default */
 }
 
-/* Styles for the custom location button */
-.custom-map-control-button {
+/* Styles for the My Location button */
+.my-location-button {
   background-color: white;
   border: none;
   border-radius: 50%;
@@ -42,6 +52,6 @@
   align-items: center;
 }
 
-.custom-map-control-button:hover {
+.my-location-button:hover {
   background-color: #f8f8f8;
 }
