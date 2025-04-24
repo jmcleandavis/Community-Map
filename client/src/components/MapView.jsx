@@ -412,8 +412,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
                     position: window.google.maps.ControlPosition.LEFT_BOTTOM,
                     style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
                   },
-                  // Apply custom styles after map loads to adjust control positions
-                  // This will be handled in the useEffect below
                   zoomControl: false,
                   fullscreenControl: true,
                   fullscreenControlOptions: {
@@ -457,7 +455,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
             // Add a custom My Location button that uses the existing centerOnUserLocation function
             const locationButton = document.createElement("button");
             locationButton.title = "My Location";
-            locationButton.classList.add("custom-map-control-button");
+            locationButton.classList.add("my-location-button");
             
             // Create a div for the icon
             const iconContainer = document.createElement("div");
