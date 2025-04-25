@@ -8,13 +8,16 @@ const ConditionalMenu = () => {
   const { fromLanding } = useNavigation();
   const location = useLocation();
   
-  // Always use the HamburgerMenu when on the map page (root path)
-  if (location.pathname === '/') {
+  // Pages that should always use the HamburgerMenu regardless of navigation path
+  const alwaysHamburgerPages = ['/', '/help', '/settings', '/sales'];
+  if (alwaysHamburgerPages.includes(location.pathname)) {
     return <HamburgerMenu />;
   }
   
   // Use the MenuBar on landing and about pages or if we came from landing
-  if (location.pathname === '/landing' || location.pathname === '/about' || fromLanding) {
+  // but not for pages that should always use the hamburger menu
+  if ((location.pathname === '/landing' || location.pathname === '/about' || fromLanding) && 
+      !alwaysHamburgerPages.includes(location.pathname)) {
     return <MenuBar />;
   }
   

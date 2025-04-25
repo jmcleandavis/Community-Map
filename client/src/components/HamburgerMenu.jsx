@@ -105,13 +105,13 @@ const HamburgerMenu = () => {
         {/* Community Sales Administration menu item removed */}
 
 
-        <div className="menu-item" onClick={() => {
+        {/* <div className="menu-item" onClick={() => {
           navigate('/settings');
           setIsOpen(false);
         }}>
           <span className="menu-icon">⚙️</span>
           <span className="menu-text">Map Settings</span>
-        </div>
+        </div> */}
 
         <div className="menu-item" onClick={() => {
           navigate('/help');
