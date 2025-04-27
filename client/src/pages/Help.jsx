@@ -43,12 +43,12 @@ function Help() {
       <section className="help-section">
         <h2>Menu Options</h2>
         <div className="left-aligned-list">
-          <div className="list-item"><span className="bullet">•</span> <strong>Map:</strong> Return to the main map view</div>
-          <div className="list-item"><span className="bullet">•</span> <strong>Show Selected Sales:</strong> View a all garage sales that you have selected on the map</div>
-          <div className="list-item"><span className="bullet">•</span> <strong>Garage Sales:</strong> View a list of all garage sales</div>
-          <div className="list-item"><span className="bullet">•</span> <strong>About:</strong> View information about the app and how to create your own community garage sale map</div>
-          <div className="list-item"><span className="bullet">•</span> <strong>Login/Signup:</strong> Access your account</div>
-          <div className="list-item"><span className="bullet">•</span> <strong>Help:</strong> View this help guide</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Map:</strong>&nbsp; Return to the main map view</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Show Selected Sales:</strong>&nbsp; View all garage sales that you have selected on the map</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Garage Sales:</strong>&nbsp; View a list of all garage sales</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>About:</strong>&nbsp; View information about the app and how to create your own community garage sale map</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Login/Signup:</strong>&nbsp; Access your account</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Help:</strong>&nbsp; View this help guide</div>
         </div>
       </section>
 
