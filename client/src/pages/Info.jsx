@@ -13,13 +13,15 @@ const InfoPage = () => {
         <div className="content">
           <div className="about-section">
             <h3>About Community Map</h3>
-            <p>A community-driven platform for finding and sharing local garage sales.</p>
+            <p>An app that maps out garage sales in your community during a community garage sale event.</p>
           </div>
           <div className="developed-by">
             <h3>Developed By</h3>
             <div className="developer">
               <p>Asher Green</p>
               <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a>
+              <br />
+              <a href="https://www.ashergreen.ca" target="_blank" rel="noopener noreferrer">www.ashergreen.ca</a>
             </div>
             <div className="developer">
               <p>Jamie-Lee Mclean-Davis</p>
