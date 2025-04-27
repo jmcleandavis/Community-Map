@@ -1,10 +1,18 @@
 import React from 'react';
 import './Help.css';
 
+// Location icon component
+const LocationIcon = () => (
+  <span className="location-icon" style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '4px', marginRight: '4px' }}>
+    {/* Unicode character for a target/crosshair */}
+    ⊕
+  </span>
+);
+
 function Help() {
   return (
     <div className="help-container">
-      <h1>Help & FAQ</h1>
+      <h1>Help</h1>
       
       <section className="help-section">
         <h2>Getting Started</h2>
@@ -13,35 +21,35 @@ function Help() {
 
       <section className="help-section">
         <h2>Map Navigation</h2>
-        <ul>
-          <li>Pan the map by clicking and dragging</li>
-          <li>Zoom in/out using the scroll wheel or the + / - buttons</li>
-          <li>Click the "My Location" button to center on your current position</li>
-          <li>The blue dot shows your current location</li>
-          <li>Red dots indicate garage sale locations</li>
-        </ul>
+        <div className="left-aligned-list">
+          <div className="list-item"><span className="bullet">•</span> Pan the map by clicking and dragging</div>
+          <div className="list-item"><span className="bullet">•</span> Zoom in/out using the scroll wheel or the pinch zoom</div>
+          <div className="list-item"><span className="bullet">•</span> Click the <LocationIcon /> button to center on your current position</div>
+          <div className="list-item"><span className="bullet">•</span> The blue dot shows your current location</div>
+          <div className="list-item"><span className="bullet">•</span> Red dots indicate garage sale locations</div>
+          <div className="list-item"><span className="bullet">•</span> Green dots indicate garage sales that you have selected (must be logged in)</div>
+        </div>
       </section>
 
       <section className="help-section">
         <h2>Garage Sales</h2>
-        <ul>
-          <li>Click on any red dot to view garage sale details</li>
-          <li>The info window shows the address and description</li>
-          <li>Close the info window by clicking the X or clicking elsewhere on the map</li>
-        </ul>
+        <div className="left-aligned-list">
+          <div className="list-item"><span className="bullet">•</span> Click on any red dot to view garage sale details</div>
+          <div className="list-item"><span className="bullet">•</span> The info window shows the address and description</div>
+          <div className="list-item"><span className="bullet">•</span> Close the info window by clicking the X or clicking elsewhere on the map</div>
+        </div>
       </section>
 
       <section className="help-section">
         <h2>Menu Options</h2>
-        <ul>
-          <li><strong>Map:</strong> Return to the main map view</li>
-          <li><strong>Garage Sales:</strong> View a list of all garage sales</li>
-          <li><strong>My Location:</strong> Center the map on your current location</li>
-          <li><strong>Map Settings:</strong> Adjust map display preferences</li>
-          <li><strong>Login/Signup:</strong> Access your account</li>
-          <li><strong>Settings:</strong> Configure application settings</li>
-          <li><strong>Help:</strong> View this help guide</li>
-        </ul>
+        <div className="left-aligned-list">
+          <div className="list-item"><span className="bullet">•</span> <strong>Map:</strong> Return to the main map view</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Show Selected Sales:</strong> View a all garage sales that you have selected on the map</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Garage Sales:</strong> View a list of all garage sales</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>About:</strong> View information about the app and how to create your own community garage sale map</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Login/Signup:</strong> Access your account</div>
+          <div className="list-item"><span className="bullet">•</span> <strong>Help:</strong> View this help guide</div>
+        </div>
       </section>
 
       <section className="help-section">

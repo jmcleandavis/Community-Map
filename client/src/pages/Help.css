@@ -29,23 +29,24 @@
   margin-bottom: 15px;
 }
 
-.help-section ul {
-  list-style-type: none;
-  padding-left: 0;
+/* New left-aligned list styles */
+.left-aligned-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
 }
 
-.help-section li {
+.list-item {
+  display: flex;
   color: #666;
   margin-bottom: 10px;
-  padding-left: 20px;
-  position: relative;
+  align-items: flex-start;
 }
 
-.help-section li::before {
-  content: "•";
+.bullet {
   color: #4285f4;
-  position: absolute;
-  left: 0;
+  margin-right: 5px;
   font-weight: bold;
 }
 
