@@ -352,7 +352,7 @@ const CommunitySalesAdmin = () => {
               )}
               <div className="card-description">{sale.description}</div>
               <div className="card-actions">
-                <div>
+                <div className="left-buttons">
                   <button 
                     className="edit-button"
                     onClick={() => handleEdit(sale)}
@@ -366,18 +366,20 @@ const CommunitySalesAdmin = () => {
                     Delete
                   </button>
                 </div>
-                <button 
-                  className="manage-button"
-                  onClick={() => handleManageSale(sale)}
-                >
-                  Manage Garage Sales
-                </button>
-                <button 
-                  className="view-on-map-button"
-                  onClick={() => handleViewOnMap(sale)}
-                >
-                  View the Map
-                </button>
+                <div className="right-buttons">
+                  <button 
+                    className="view-on-map-button"
+                    onClick={() => handleViewOnMap(sale)}
+                  >
+                    View the Map
+                  </button>
+                  <button 
+                    className="manage-button"
+                    onClick={() => handleManageSale(sale)}
+                  >
+                    Manage Garage Sales
+                  </button>
+                </div>
               </div>
             </div>
           ))}
