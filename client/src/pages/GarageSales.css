@@ -13,12 +13,19 @@
 }
 
 .controls-container {
-  margin-bottom: 30px;
+  margin-bottom: 5px;
+  margin-left: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
   flex-shrink: 0;
 }
 
 .search-container {
   margin-bottom: 20px;
+  margin-left: 0px !important;
+  width: 98%;
+  flex-grow: 0;
   flex-shrink: 0;
 }
 
