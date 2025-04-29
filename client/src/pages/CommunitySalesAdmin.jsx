@@ -225,14 +225,6 @@ const CommunitySalesAdmin = () => {
       </div>
       
       <div className="admin-controls">
-        <button 
-          className="add-new-button"
-          onClick={handleAddNew}
-          disabled={isAddingNew}
-        >
-          Add New Community Sale
-        </button>
-        
         <div className="search-container">
           <input
             type="text"
@@ -242,6 +234,16 @@ const CommunitySalesAdmin = () => {
             className="search-input"
           />
         </div>
+      </div>
+      
+      <div className="admin-button-row">
+        <button 
+          className="add-new-button"
+          onClick={handleAddNew}
+          disabled={isAddingNew}
+        >
+          Add New Community Sale
+        </button>
         
         {selectedSales.size > 0 && (
           <>
