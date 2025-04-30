@@ -377,14 +377,6 @@ const GarageSalesAdmin = () => {
       </div>
       
       <div className="admin-controls">
-        <button 
-          className="add-new-button"
-          onClick={handleAddNew}
-          disabled={isAddingNew}
-        >
-          Add New Garage Sale
-        </button>
-        
         <div className="search-container">
           <input
             type="text"
@@ -395,41 +387,51 @@ const GarageSalesAdmin = () => {
           />
         </div>
         
-        {adminSelectedSales.size > 0 && (
-          <>
-            <button 
-              className="select-all-button"
-              onClick={handleSelectAll}
-            >
-              Select All
-            </button>
-            <button 
-              className="deselect-all-button"
-              onClick={handleDeselectAll}
-            >
-              Deselect All
-            </button>
-            <button 
-              className="delete-selected-button"
-              onClick={handleDeleteSelected}
-            >
-              Delete Selected ({adminSelectedSales.size})
-            </button>
-            <button 
-              className="associate-button"
-              onClick={handleAssociateGarageSales}
-            >
-              Associate with Community Sale
-            </button>
-          </>
-        )}
-        
-        <button 
-          className="back-button"
-          onClick={handleBackToCommunitySales}
-        >
-          Back to Community Sales
-        </button>
+        <div className="buttons-container">
+          <button 
+            className="add-new-button"
+            onClick={handleAddNew}
+            disabled={isAddingNew}
+          >
+            Add New Garage Sale
+          </button>
+          
+          {adminSelectedSales.size > 0 && (
+            <>
+              <button 
+                className="select-all-button"
+                onClick={handleSelectAll}
+              >
+                Select All
+              </button>
+              <button 
+                className="deselect-all-button"
+                onClick={handleDeselectAll}
+              >
+                Deselect All
+              </button>
+              <button 
+                className="delete-selected-button"
+                onClick={handleDeleteSelected}
+              >
+                Delete Selected ({adminSelectedSales.size})
+              </button>
+              <button 
+                className="associate-button"
+                onClick={handleAssociateGarageSales}
+              >
+                Associate with Community Sale
+              </button>
+            </>
+          )}
+          
+          <button 
+            className="back-to-community-sales"
+            onClick={handleBackToCommunitySales}
+          >
+            Back to Community Sales
+          </button>
+        </div>
       </div>
 
       {(isAddingNew || editingSale) && (
