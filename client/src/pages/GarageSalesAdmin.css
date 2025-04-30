@@ -59,7 +59,7 @@ h1 {
 
 .admin-controls button {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #2196F3;
   color: white;
   border: none;
   border-radius: 4px;
@@ -68,17 +68,7 @@ h1 {
   margin-bottom: 10px;
 }
 
-.admin-controls .view-selected-button {
-  background-color: #2196F3;
-}
-
-.admin-controls .delete-selected-button {
-  background-color: #f44336;
-}
-
-.admin-controls .back-to-community-sales {
-  background-color: #607D8B; /* A nice blue-gray color */
-}
+/* All buttons now use the same blue color defined in .admin-controls button */
 
 .buttons-container {
   display: flex;
@@ -128,12 +118,12 @@ h1 {
 }
 
 .form-buttons button[type="submit"] {
-  background-color: #4CAF50;
+  background-color: #4285f4;
   color: white;
 }
 
 .form-buttons button[type="button"] {
-  background-color: #f44336;
+  background-color: #4285f4;
   color: white;
 }
 
@@ -270,21 +260,21 @@ h1 {
 }
 
 .edit-button {
-  background-color: #FFA000;
+  background-color: #4285f4;
   color: white;
 }
 
 .edit-button:hover {
-  background-color: #FF8F00;
+  background-color: #4285f4;
 }
 
 .delete-button {
-  background-color: #f44336;
+  background-color: #4285f4;
   color: white;
 }
 
 .delete-button:hover {
-  background-color: #d32f2f;
+  background-color: #4285f4;
 }
 
 .loading,
@@ -310,7 +300,7 @@ h1 {
 }
 
 .add-new-button {
-  background-color: #4CAF50;
+  background-color: #4285f4;
   color: white;
   padding: 10px 20px;
   border: none;
