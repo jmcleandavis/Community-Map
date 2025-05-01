@@ -32,6 +32,11 @@ const Login = () => {
     const userEmailParam = searchParams.get('email');
     
     if (code) {
+      // Immediately remove the code from URL to prevent reprocessing
+      // This must happen synchronously before any async operations
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      
       // Handle Google auth callback
       const handleCallback = async () => {
         try {
