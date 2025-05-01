@@ -104,6 +104,11 @@ export const AuthProvider = ({ children }) => {
           email: userData.email
         };
         
+        // Ensure we have a standardized userData with consistent email property
+        if (userData.userEmail && !userData.email) {
+          userData.email = userData.userEmail;
+        }
+        
         // Update state with user information
         setIsAuthenticated(true);
         setUserId(authData.userId);

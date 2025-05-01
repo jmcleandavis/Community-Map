@@ -698,8 +698,32 @@ const api = {
       // Check if this code has already been processed
       if (processedAuthCodes.has(code)) {
         console.log('This authorization code has already been processed, preventing duplicate request');
-        // Return a success indicator without requiring email
-        return { success: true, user: { email: 'cached_request' } };
+        
+        // Instead of returning minimal data, retrieve the user info from localStorage
+        const storedUserInfo = localStorage.getItem('userInfo');
+        const storedEmail = localStorage.getItem('userEmail');
+        
+        if (storedUserInfo) {
+          try {
+            // Parse the stored user info
+            const userData = JSON.parse(storedUserInfo);
+            console.log('Using stored user data from localStorage:', userData);
+            return { success: true, user: userData };
+          } catch (e) {
+            console.error('Error parsing stored user info:', e);
+          }
+        }
+        
+        // If we couldn't get valid user data from localStorage but have an email
+        if (storedEmail && storedEmail !== 'cached_request') {
+          return { success: true, user: { 
+            email: storedEmail
+          }};
+        }
+        
+        // As a last resort, clear the processed codes set to force a fresh login
+        console.log('No valid user data found in localStorage, clearing processed codes');
+        processedAuthCodes.clear();
       }
       
       // Mark this code as being processed
