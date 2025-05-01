@@ -18,7 +18,6 @@ const GarageSalesAdmin = () => {
   } = useGarageSales();
   
   const navigate = useNavigate();
-  const { communitySaleId } = useParams();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { searchTerm, handleSearchChange } = useSearch();
   
@@ -33,8 +32,6 @@ const GarageSalesAdmin = () => {
     description: ''
   });
   const [submitError, setSubmitError] = useState('');
-  const [communitySale, setCommunitySale] = useState(null);
-  const [associatedGarageSales, setAssociatedGarageSales] = useState([]);
   
   // Load any previously saved admin selections
   useEffect(() => {
@@ -53,31 +50,7 @@ const GarageSalesAdmin = () => {
     localStorage.setItem('adminSelectedSaleIds', JSON.stringify([...adminSelectedSales]));
   }, [adminSelectedSales]);
 
-  // Fetch community sale and associated garage sales when communitySaleId is available
-  useEffect(() => {
-    const fetchCommunitySaleData = async () => {
-      if (communitySaleId) {
-        try {
-          // Fetch the community sale details
-          const response = await api.getCommunitySaleById(communitySaleId);
-          setCommunitySale(response);
-          
-          // Fetch garage sales associated with this community sale
-          const associatedSales = await api.getGarageSalesByCommunitySale(communitySaleId);
-          setAssociatedGarageSales(associatedSales);
-          
-          // Pre-select the associated garage sales in the admin UI
-          const associatedIds = new Set(associatedSales.map(sale => sale.id));
-          setAdminSelectedSales(associatedIds);
-        } catch (error) {
-          console.error('Error fetching community sale data:', error);
-          setSubmitError('Failed to load community sale data. Please try again.');
-        }
-      }
-    };
-    
-    fetchCommunitySaleData();
-  }, [communitySaleId]);
+
 
   // Refresh garage sales data when component mounts
   useEffect(() => {
@@ -265,6 +238,81 @@ const GarageSalesAdmin = () => {
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
     navigate('/');
   };
+  
+  // Function to handle QR code generation for the community map
+  const handleCreateQRCode = () => {
+    // Create a URL that points to the main map
+    const baseUrl = window.location.origin;
+    const mapUrl = `${baseUrl}/`;
+    
+    // Use a free QR code generation service
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mapUrl)}`;
+    
+    // Create a custom HTML page with white background and title
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Community Garage Sale QR Code</title>
+        <style>
+          body {
+            background-color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+          }
+          h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+          }
+          .qr-container {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
+          }
+          .instructions {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            max-width: 500px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Community Garage Sale</h1>
+        <div class="qr-container">
+          <img src="${qrCodeUrl}" alt="QR Code for Community Garage Sale" />
+        </div>
+        <div class="instructions">
+          <p>Scan this QR code to access the Community Garage Sale map on your mobile device.</p>
+          <p>You can print this page or save the QR code image for distribution.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Create a blob from the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    
+    // Open the custom HTML page in a new tab
+    const newTab = window.open(blobUrl, '_blank');
+    
+    // Clean up the blob URL when the tab is closed
+    if (newTab) {
+      newTab.onload = () => {
+        // This will execute when the new tab has loaded
+        URL.revokeObjectURL(blobUrl);
+      };
+    }
+  };
 
   const handleViewSelected = () => {
     const selectedSalesData = filteredSales
@@ -306,43 +354,7 @@ const GarageSalesAdmin = () => {
     setAdminSelectedSales(new Set());
   };
 
-  // Handle associating selected garage sales with the community sale
-  const handleAssociateGarageSales = async () => {
-    if (!communitySaleId) return;
-    
-    try {
-      const selectedIds = Array.from(adminSelectedSales);
-      
-      // Get currently associated sale IDs
-      const currentlyAssociatedIds = associatedGarageSales.map(sale => sale.id);
-      
-      // Find sales to add (selected but not currently associated)
-      const salesToAdd = selectedIds.filter(id => !currentlyAssociatedIds.includes(id));
-      
-      // Find sales to remove (currently associated but not selected)
-      const salesToRemove = currentlyAssociatedIds.filter(id => !adminSelectedSales.has(id));
-      
-      // Add new associations
-      for (const saleId of salesToAdd) {
-        await api.addGarageSaleToCommunitySale(communitySaleId, saleId);
-      }
-      
-      // Remove old associations
-      for (const saleId of salesToRemove) {
-        await api.removeGarageSaleFromCommunitySale(communitySaleId, saleId);
-      }
-      
-      // Refresh associated garage sales
-      const updatedAssociatedSales = await api.getGarageSalesByCommunitySale(communitySaleId);
-      setAssociatedGarageSales(updatedAssociatedSales);
-      
-      // Show success message
-      alert(`Successfully updated garage sales for the community sale.`);
-    } catch (error) {
-      console.error('Error associating garage sales:', error);
-      setSubmitError('Failed to update community sale associations. Please try again.');
-    }
-  };
+
 
   // Return to the community sales admin page
   const handleBackToCommunitySales = () => {
@@ -396,6 +408,13 @@ const GarageSalesAdmin = () => {
             Add New Garage Sale
           </button>
           
+          <button
+            className={styles.qrCodeButton}
+            onClick={handleCreateQRCode}
+          >
+            Create QR Code
+          </button>
+          
           {adminSelectedSales.size > 0 && (
             <>
               <button 
@@ -415,12 +434,6 @@ const GarageSalesAdmin = () => {
                 onClick={handleDeleteSelected}
               >
                 Delete Selected ({adminSelectedSales.size})
-              </button>
-              <button 
-                className={styles.associateButton}
-                onClick={handleAssociateGarageSales}
-              >
-                Associate with Community Sale
               </button>
             </>
           )}

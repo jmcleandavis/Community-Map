@@ -38,7 +38,7 @@ const Login = () => {
           setLoading(true);
           setError('');
           console.log('Processing Google authorization code');
-          await handleGoogleCallback(code, email);
+          await handleGoogleCallback(code);
           navigate('/');
         } catch (err) {
           setError('Failed to authenticate with Google. Please try again.');
