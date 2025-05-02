@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Track processed Google auth codes to prevent duplicate requests
+const processedAuthCodes = new Set();
+
 // Session API configuration
 const sessionApi = axios.create({
-  baseURL: 'https://br-session-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_SESSION_API_URL || '/session-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +16,7 @@ const sessionApi = axios.create({
 
 // Maps API configuration
 const mapsApi = axios.create({
-  baseURL: 'https://br-maps-mgt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_MAPS_API_URL || '/maps-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -25,18 +28,19 @@ const mapsApi = axios.create({
 
 // Auth (Logging in) API configuration
 const authApi = axios.create({
-  baseURL: 'https://br-auth-api-dev001-207215937730.us-central1.run.app',
+  baseURL: '/auth-api', // Always use the proxy path
   timeout: 30000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_SESSION_KEY
-  }
+    'app-key': import.meta.env.VITE_APP_API_KEY
+  },
+  withCredentials: false // Must be false to avoid CORS issues with wildcard response
 });
 
 // Create Customer/user API configuration
 const createCustomerApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL || '/customer-api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -47,13 +51,13 @@ const createCustomerApi = axios.create({
 
 // User Information API configuration
 const userInformationApi = axios.create({
-  baseURL: 'https://br-customer-mgmt-api-dev001-207215937730.us-central1.run.app/v1/getCustomerByEmail/EMAIL',
+  baseURL: import.meta.env.VITE_CUSTOMER_API_URL ? `${import.meta.env.VITE_CUSTOMER_API_URL}/v1/getCustomerByEmail/EMAIL` : '/customer-api/v1/getCustomerByEmail/EMAIL',
   timeout: 30000,
   // withCredentials: true, //flagged with true when it should be false
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'app-name': 'web-service',
-    'app-key': import.meta.env.VITE_APP_SESSION_KEY //used incorrect key
+    'app-key': import.meta.env.VITE_APP_SESSION_KEY
   }
 });
 
@@ -257,7 +261,25 @@ async function getUserInfo(email) {
     const response = await userInformationApi.get(email);
     console.log('User info response:', response);
     
-    return response.data;
+    // Get the raw data
+    let userData = response.data;
+    
+    // Normalize the user data to ensure consistent property names
+    // This ensures that properties are accessible regardless of the API response format
+    const normalizedUserData = {
+      ...userData,
+      // Ensure fName and lName are always available for the hamburger menu
+      fName: userData.fName || userData.firstName || userData.given_name || '',
+      lName: userData.lName || userData.lastName || userData.family_name || '',
+      // Also keep firstName/lastName for backward compatibility
+      firstName: userData.firstName || userData.fName || userData.given_name || '',
+      lastName: userData.lastName || userData.lName || userData.family_name || '',
+      // Ensure email is always available
+      email: userData.email || email
+    };
+    
+    console.log('Normalized user data:', normalizedUserData);
+    return normalizedUserData;
   } catch (error) {
     console.error('Error fetching user information:', error);
     throw error;
@@ -429,8 +451,7 @@ const register = async (userEmail, password, firstName, lastName) => {
 const login = async (email, password) => {
   try {
     // First ensure we have a valid session
-      // const sessionId = await createSession();
-      const sessionId = await getSessionId();
+    const sessionId = await getSessionId();
     console.log('Created/Retrieved session for login:', sessionId);
     
     // Create form data
@@ -440,23 +461,79 @@ const login = async (email, password) => {
     formData.append('type', 'EMAIL');
 
     console.log('Sending login request with sessionId:', sessionId);
-    const response = await authApi.post('/login', formData);
+    
+    // Create temporary headers with sessionId for this request
+    const headers = { 
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'app-name': 'web-service',
+      'app-key': import.meta.env.VITE_APP_API_KEY,
+      'sessionId': sessionId
+    };
+    
+    // Use fetch API as an alternative to axios
+    const fetchResponse = await fetch('/auth-api/login', {
+      method: 'POST',
+      headers: headers,
+      body: formData,
+      credentials: 'omit' // Don't send cookies or HTTP auth
+    });
+    
+    // Check if the response is successful
+    if (!fetchResponse.ok) {
+      console.error('Login failed with status:', fetchResponse.status);
+      const errorText = await fetchResponse.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Login failed with status ${fetchResponse.status}: ${errorText}`);
+    }
+    
+    // Convert fetch response to a format similar to axios
+    const responseData = await fetchResponse.text();
+    let response;
+    try {
+      // Try to parse as JSON if possible
+      response = { data: JSON.parse(responseData) };
+    } catch (e) {
+      // If not JSON, handle as boolean or text
+      response = { data: responseData === 'true' };
+    }
+    
+    console.log('Login response:', response);
     
     // Check if login was successful
-    if (response.data === true) {
+    if (response.data === true || response.data.success === true) {
       console.log('Login successful, fetching user info');
-      // If login successful, fetch user information
-      const userInfo = await getUserInfo(email);
       
-      // Return the structured data needed by AuthContext
-      return {
-        data: {
-          sessionId: sessionId,
-          userId: userInfo.userId,
-          userType: userInfo.userType,
-          userInfo: userInfo // Include full user info
-        }
-      };
+      // Ensure we have email (the parameter passed to this function)
+      if (!email) {
+        console.error('Email is undefined during login process');
+        throw new Error('Email is required for user information retrieval');
+      }
+      
+      try {
+        // If login successful, fetch user information
+        const userInfo = await getUserInfo(email);
+        
+        // Return the structured data needed by AuthContext
+        return {
+          data: {
+            sessionId: sessionId,
+            userId: userInfo.userId,
+            userType: userInfo.userType,
+            userInfo: userInfo // Include full user info
+          }
+        };
+      } catch (userInfoError) {
+        console.error('Error fetching user info after successful login:', userInfoError);
+        // Still return a successful login but with minimal user info
+        return {
+          data: {
+            sessionId: sessionId,
+            userId: email, // Use email as fallback userId if userInfo fetch fails
+            userType: 'USER', // Default user type
+            userInfo: { email, fName: '', lName: '' } // Minimal user info
+          }
+        };
+      }
     }
     throw new Error('Invalid login response');
   } catch (error) {
@@ -500,6 +577,80 @@ const logout = async () => {
   }
 };
 
+// Request password reset - send email to user
+const requestPasswordReset = async (email) => {
+  try {
+    // Get or create session ID
+    const sessionId = await getSessionId();
+    console.log('Using session for password reset request:', sessionId);
+    
+    const response = await authApi.post('/sendResetEmail', { 
+      userEmail: email
+    }, {
+      headers: {
+        sessionId: sessionId
+      }
+    });
+    console.log('Password reset email sent successfully');
+    return response.data;
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    if (error.response && error.response.status === 404) {
+      throw new Error('Password reset service unavailable. Please try again later.');
+    }
+    throw new Error(error.response?.data?.message || 'Failed to send password reset email. Please try again.');
+  }
+};
+
+// Verify reset token - no longer needed as a separate function
+// We'll use the token directly in resetPassword
+const verifyResetToken = async (token) => {
+  try {
+    // Just return success since verification happens when resetting the password
+    console.log('Token will be verified during password reset');
+    return { valid: true };
+  } catch (error) {
+    console.error('Token verification error:', error);
+    throw new Error('Failed to verify reset token. Please try again.');
+  }
+};
+
+// Reset password with token
+const resetPassword = async (token, newPassword, userEmail) => {
+  try {
+    // Get or create session ID
+    const sessionId = await getSessionId();
+    console.log('Using session for password reset:', sessionId);
+    console.log('Headers being sent to the backend:', {
+      sessionId: sessionId,
+      token,
+      userEmail,
+      newPassword,
+      appCode: 'app1234'//import.meta.env.VITE_APP_CODE || '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
+    });
+    
+    const response = await authApi.patch('/resetPassword', { 
+      token,
+      userEmail,
+      newPassword,
+      appCode: 'app1234'//import.meta.env.VITE_APP_CODE || '6mful1WT8NOcQLTrYdHLskYSOL4hXQ5c'
+    }, {
+      headers: {
+        sessionId: sessionId
+      }
+    });
+    console.log('Server response from password reset:', response);
+    console.log('Password reset successful');
+    return response.data;
+  } catch (error) {
+    console.error('Password reset error:', error);
+    if (error.response && error.response.status === 400) {
+      throw new Error('Invalid token or password requirements not met. Please try again.');
+    }
+    throw new Error(error.response?.data?.message || 'Failed to reset password. Please try again.');
+  }
+};
+
 // Add the custom methods to the api object
 const api = {
   createSession,
@@ -518,14 +669,15 @@ const api = {
   googleLogin: async () => {
     try {
       // Google OAuth parameters
-      const clientId = '207215937730-v0mbhofpdv4rpglkdcfvk7dpudje5150.apps.googleusercontent.com';
-      const redirectUri = 'http://localhost:5173/loginRedirect';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_PLACEHOLDER';
+      const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect';
       const scope = 'email profile';
       // Use authorization code flow instead of implicit flow
       const responseType = 'code';
       
+      
       // Construct the Google OAuth URL
-      const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=${responseType}`;
+      const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=${encodeURIComponent(responseType)}`;
       
       console.log('Redirecting to Google OAuth:', authUrl);
       
@@ -539,76 +691,138 @@ const api = {
     }
   },
   
+  
   // Handle Google SSO callback
-  handleGoogleCallback: async (token) => {
+  handleGoogleCallback: async (code) => {
     try {
-      // In production, this would be sent to the backend
-      console.log('🔐 Google SSO token received:', token);
+      // Check if this code has already been processed
+      if (processedAuthCodes.has(code)) {
+        console.log('This authorization code has already been processed, preventing duplicate request');
+        // Return a success indicator without requiring email
+        return { success: true, user: { email: 'cached_request' } };
+      }
       
-      // This is where you would normally exchange the authorization code for a token
-      // and then decode the token to get user information
-      // But for demonstration, we'll just log the code/token
-
-      // For demo purposes, create a simulated user object
-      const simulatedUser = {
-        email: 'demo@example.com',
-        firstName: 'Demo',
-        lastName: 'User',
-      };
+      // Mark this code as being processed
+      processedAuthCodes.add(code);
       
-      // Create the payload expected by the backend according to neighbor's instructions
-      const backendPayload = {
-        username: simulatedUser.email,
-        token: token,
-        type: "G_SSO"
-      };
+      // Get or create session ID
+      const sessionId = await getSessionId();
+      console.log('Using session for Google SSO:', sessionId);
       
-      console.log('📤 Data to be sent to backend:', backendPayload);
-      console.log('In production, this would be sent to the login endpoint with type G_SSO');
+      // Send the authorization code to the backend
+      console.log('🔐 Google authorization code received:', code);
+      console.log('Sending auth code to backend for token exchange');
       
-      // Return a simulated successful response
+      const response = await authApi.post('/login', {
+        token: code,
+        redirectUri: import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect', // Must match the original redirect URI
+        sessionId: sessionId,
+        type: "SSO_G"
+      }, {
+        headers: {
+          sessionId: sessionId,
+          'app-name': 'web-service',
+          'app-key': import.meta.env.VITE_APP_API_KEY
+        }
+      });
+      
+      // The backend should exchange the code for tokens and return user info
+      console.log('Google authentication successful');
+      
+      if (!response.data || !response.data.success) {
+        // If request fails, remove the code from processed set so it can be tried again
+        processedAuthCodes.delete(code);
+        throw new Error('Invalid response from Google authentication');
+      }
+      
+      // Extract email from the response
+      let email;
+      if (typeof response.data.user === 'string') {
+        email = response.data.user;
+      } else if (response.data.user && response.data.user.email) {
+        email = response.data.user.email;
+      } else {
+        email = response.data.email;
+      }
+      
+      if (!email) {
+        throw new Error('No email found in Google authentication response');
+      }
+      
+      console.log('Retrieved email from SSO:', email);
+      
+      // Extract any available name information from the response
+      let firstName = '';
+      let lastName = '';
+      
+      if (response.data.user && typeof response.data.user !== 'string') {
+        firstName = response.data.user.firstName || response.data.user.given_name || '';
+        lastName = response.data.user.lastName || response.data.user.family_name || '';
+      } else {
+        firstName = response.data.firstName || response.data.given_name || '';
+        lastName = response.data.lastName || response.data.family_name || '';
+      }
+      
+      // Always make a separate call to get full user information from the backend
+      let userData;
+      try {
+        // Fetch complete user information using the email
+        console.log('Making separate backend call for complete user information...');
+        userData = await getUserInfo(email); // This function already normalizes the data
+        console.log('Complete user info retrieved successfully:', userData);
+      } catch (userInfoError) {
+        console.error('Failed to retrieve user info from backend:', userInfoError);
+        
+        // Create a comprehensive fallback user object
+        userData = {
+          // Required fields for display in UI
+          email: email,
+          fName: firstName,
+          lName: lastName,
+          firstName: firstName,
+          lastName: lastName,
+          // Extra fields that might be needed
+          userId: `google-${email}`,
+          userType: 'USER',
+          id: `google-${email}`
+        };
+        
+        console.log('Using fallback user data for hamburger menu display:', userData);
+      }
+      
+      // Final verification to ensure required fields exist
+      if (!userData.fName && (userData.firstName || firstName)) {
+        userData.fName = userData.firstName || firstName;
+      }
+      
+      if (!userData.lName && (userData.lastName || lastName)) {
+        userData.lName = userData.lastName || lastName;
+      }
+      
+      if (!userData.email) {
+        userData.email = email;
+      }
+      
+      console.log('Final normalized user data for UI display:', userData);
+      
       return {
         success: true,
-        user: simulatedUser
+        user: userData
       };
     } catch (error) {
       console.error('Error handling Google callback:', error);
-      throw error;
+      if (error.response && error.response.status === 400) {
+        throw new Error('Invalid authorization code. Please try logging in again.');
+      } else if (error.response && error.response.status === 404) {
+        throw new Error('Google login service unavailable. Please try again later.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to authenticate with Google. Please try again.');
     }
   },
   
-  // Request password reset
-  requestPasswordReset: async (email) => {
-    try {
-      const response = await authApi.post('/requestPasswordReset', { email });
-      return response.data;
-    } catch (error) {
-      console.error('Password reset request error:', error);
-      throw error;
-    }
-  },
-  
-  // Verify reset token
-  verifyResetToken: async (token) => {
-    try {
-      const response = await authApi.get(`/verifyResetToken/${token}`);
-      return response.data;
-    } catch (error) {
-      console.error('Token verification error:', error);
-      throw error;
-    }
-  },
-  
-  // Reset password with token
-  resetPassword: async (token, newPassword) => {
-    try {
-      const response = await authApi.post('/resetPassword', { token, newPassword });
-      return response.data;
-    } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
-    }
-  }
+  requestPasswordReset,
+  verifyResetToken,
+  resetPassword
 };
 
 export default api;

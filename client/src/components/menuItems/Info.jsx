@@ -16,7 +16,7 @@ const Info = () => {
             <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a>
           </div>
           <div className="developer">
-            <p>Jamie-Lee Mclean Davis</p>
+            <p>Jamie-Lee Mclean-Davis</p>
             <a href="mailto:jmclean.davis@gmail.com">jmclean.davis@gmail.com</a>
           </div>
         </div>

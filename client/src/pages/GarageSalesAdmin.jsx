@@ -7,7 +7,7 @@ import { useSearch } from '../context/SearchContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import api from '../utils/api';
-import './GarageSalesAdmin.css';
+import styles from './GarageSalesAdmin.module.css';
 
 const GarageSalesAdmin = () => {
   const {
@@ -369,72 +369,74 @@ const GarageSalesAdmin = () => {
   }
 
   return (
-    <div className="garage-sales-admin">
-      <h1>Garage Sales Administration</h1>
-      <div className="user-info">
-        <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
-        <div className="user-email">{userEmail}</div>
+    <div className={styles.garageSalesAdmin}>
+      <h1 className={styles.title}>Garage Sales Administration</h1>
+      <div className={styles.userInfo}>
+        <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
+        <div className={styles.userEmail}>{userEmail}</div>
       </div>
       
-      <div className="admin-controls">
-        <button 
-          className="add-new-button"
-          onClick={handleAddNew}
-          disabled={isAddingNew}
-        >
-          Add New Garage Sale
-        </button>
-        
-        <div className="search-container">
+      <div className={styles.adminControls}>
+        <div className={styles.searchContainer}>
           <input
             type="text"
             placeholder="Search by address or description..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="search-input"
+            className={styles.searchInput}
           />
         </div>
         
-        {adminSelectedSales.size > 0 && (
-          <>
-            <button 
-              className="select-all-button"
-              onClick={handleSelectAll}
-            >
-              Select All
-            </button>
-            <button 
-              className="deselect-all-button"
-              onClick={handleDeselectAll}
-            >
-              Deselect All
-            </button>
-            <button 
-              className="delete-selected-button"
-              onClick={handleDeleteSelected}
-            >
-              Delete Selected ({adminSelectedSales.size})
-            </button>
-            <button 
-              className="associate-button"
-              onClick={handleAssociateGarageSales}
-            >
-              Associate with Community Sale
-            </button>
-          </>
-        )}
-        
-        <button 
-          className="back-button"
-          onClick={handleBackToCommunitySales}
-        >
-          Back to Community Sales
-        </button>
+        <div className={styles.buttonsContainer}>
+          <button 
+            className={styles.addNewButton}
+            onClick={handleAddNew}
+            disabled={isAddingNew}
+          >
+            Add New Garage Sale
+          </button>
+          
+          {adminSelectedSales.size > 0 && (
+            <>
+              <button 
+                className={styles.selectAllButton}
+                onClick={handleSelectAll}
+              >
+                Select All
+              </button>
+              <button 
+                className={styles.deselectAllButton}
+                onClick={handleDeselectAll}
+              >
+                Deselect All
+              </button>
+              <button 
+                className={styles.deleteSelectedButton}
+                onClick={handleDeleteSelected}
+              >
+                Delete Selected ({adminSelectedSales.size})
+              </button>
+              <button 
+                className={styles.associateButton}
+                onClick={handleAssociateGarageSales}
+              >
+                Associate with Community Sale
+              </button>
+            </>
+          )}
+          
+          <button 
+            className={styles.backToCommunityButton}
+            onClick={handleBackToCommunitySales}
+          >
+            Back to Community Sales
+          </button>
+        </div>
       </div>
 
       {(isAddingNew || editingSale) && (
-        <form onSubmit={handleSubmit} className="garage-sale-form">
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className={styles.garageForm}>
+          <div className={styles.formGroup}>
             <label>Address:</label>
             <GooglePlacesAutocomplete
               selectProps={{
@@ -445,7 +447,7 @@ const GarageSalesAdmin = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label>Description:</label>
             <AutoResizeTextArea
               name="description"
@@ -455,48 +457,48 @@ const GarageSalesAdmin = () => {
             />
           </div>
 
-          <div className="form-actions">
-            <button type="submit" className="save-button">
+          <div className={styles.formActions}>
+            <button type="submit" className={styles.saveButton}>
               {editingSale ? 'Save Changes' : 'Create Garage Sale'}
             </button>
-            <button type="button" className="cancel-button" onClick={handleCancelEdit}>
+            <button type="button" className={styles.cancelButton} onClick={handleCancelEdit}>
               Cancel
             </button>
           </div>
         </form>
       )}
 
-      <div className="sales-grid">
+      <div className={styles.salesGrid}>
         {filteredSales && filteredSales.length > 0 ? (
           filteredSales.map(sale => (
-            <div key={sale.id} className="sale-card">
-              <div className="card-header">
-                <label className="checkbox-container">
+            <div key={sale.id} className={styles.saleCard}>
+              <div className={styles.cardHeader}>
+                <label className={styles.checkboxContainer}>
                   <input
                     type="checkbox"
                     checked={adminSelectedSales.has(sale.id)}
                     onChange={() => handleAdminCheckboxChange(sale.id)}
                   />
-                  <span className="checkmark"></span>
+                  <span className={styles.checkmark}></span>
                 </label>
               </div>
               <h3>{sale.address}</h3>
               <p>{sale.description}</p>
-              <div className="sale-actions">
+              <div className={styles.saleActions}>
                 {/* <button
-                  className="view-map-button"
+                  className={styles.viewMapButton}
                   onClick={() => handleViewOnMap(sale)}
                 >
                   View on Map
                 </button> */}
                 <button
-                  className="edit-button"
+                  className={styles.editButton}
                   onClick={() => handleEdit(sale)}
                 >
                   Edit
                 </button>
                 <button
-                  className="delete-button"
+                  className={styles.deleteButton}
                   onClick={() => handleDelete(sale.id)}
                 >
                   Delete
@@ -505,11 +507,11 @@ const GarageSalesAdmin = () => {
             </div>
           ))
         ) : (
-          <div className="no-results">No garage sales found</div>
+          <div className={styles.noResults}>No garage sales found</div>
         )}
       </div>
       
-      <div className="total-count">
+      <div className={styles.totalCount}>
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {adminSelectedSales.size > 0 && ` (${adminSelectedSales.size} selected)`}
       </div>

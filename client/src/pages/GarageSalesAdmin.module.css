@@ -1,0 +1,444 @@
+.garageSalesAdmin {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.userInfo {
+  text-align: center;
+  margin: -20px 0 20px;
+  padding: 8px 15px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.userName {
+  font-weight: 600;
+  color: #333;
+  font-size: 1em;
+  margin-bottom: 2px;
+}
+
+.userEmail {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.adminControls {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  gap: 0;
+}
+
+.searchContainer {
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.buttonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Common button styles - used as a base for all buttons */
+.button {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #3367d6;
+}
+
+/* Specific button styles */
+.addNewButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.addNewButton:hover {
+  background-color: #3367d6;
+}
+
+.selectAllButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.selectAllButton:hover {
+  background-color: #3367d6;
+}
+
+.deselectAllButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.deselectAllButton:hover {
+  background-color: #3367d6;
+}
+
+.deleteSelectedButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.deleteSelectedButton:hover {
+  background-color: #3367d6;
+}
+
+.associateButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.associateButton:hover {
+  background-color: #3367d6;
+}
+
+.backToCommunityButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.backToCommunityButton:hover {
+  background-color: #3367d6;
+}
+
+.garageForm {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background-color: #3367d6;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #3367d6;
+}
+
+.salesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.saleCard {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.cardHeader {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.saleCard h3 {
+  margin: 0 0 10px;
+  padding-left: 30px;
+  font-size: 18px;
+  color: #333;
+}
+
+.saleCard p {
+  margin: 0 0 20px;
+  color: #666;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.saleActions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  align-items: center;
+}
+
+.viewMapButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.viewMapButton:hover {
+  background-color: #3367d6;
+}
+
+.editButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.editButton:hover {
+  background-color: #3367d6;
+}
+
+.deleteButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #3367d6;
+}
+
+.loading,
+.error,
+.noResults {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error {
+  color: #f44336;
+}
+
+.retryButton {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.retryButton:hover {
+  background-color: #3367d6;
+}
+
+.totalCount {
+  margin-top: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Checkbox styling */
+.checkboxContainer {
+  display: block;
+  position: relative;
+  padding-left: 25px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxContainer input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: white;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.checkboxContainer:hover input ~ .checkmark {
+  border-color: #4285f4;
+}
+
+.checkboxContainer input:checked ~ .checkmark {
+  background-color: #4285f4;
+  border-color: #4285f4;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkboxContainer input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkboxContainer .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+@media (max-width: 600px) {
+  .salesGrid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}

@@ -86,40 +86,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleGoogleCallback = async (token) => {
+  const handleGoogleCallback = async (code) => {
     try {
-      console.log('AuthContext: Processing Google callback with token');
-      const response = await api.handleGoogleCallback(token);
+      console.log('AuthContext: Processing Google callback with authorization code');
+      const response = await api.handleGoogleCallback(code);
       
       if (response && response.success && response.user) {
-        // For now, just log the user in with the data we have
-        // In production, this would use real data from the backend
-        console.log('Login successful with user:', response.user);
+        // Extract user data from backend response
+        const userData = response.user;
+        console.log('Login successful with user:', userData);
         
-        const mockUserData = {
-          userId: 'google-user-123',
-          userType: 'USER',
-          userInfo: response.user,
-          email: response.user.email
+        // Construct user session data
+        const authData = {
+          userId: userData.userId || userData.id || `google-${userData.email}`,
+          userType: userData.userType || 'USER',
+          userInfo: userData,
+          email: userData.email
         };
         
+        // Update state with user information
         setIsAuthenticated(true);
-        setUserId(mockUserData.userId);
-        setUserType(mockUserData.userType);
-        setUserInfo(mockUserData.userInfo);
-        setUserEmail(mockUserData.email);
+        setUserId(authData.userId);
+        setUserType(authData.userType);
+        setUserInfo(userData);
+        setUserEmail(userData.email);
         
-        localStorage.setItem('userId', mockUserData.userId);
-        localStorage.setItem('userType', mockUserData.userType);
-        localStorage.setItem('userEmail', mockUserData.email);
-        localStorage.setItem('userInfo', JSON.stringify(mockUserData.userInfo));
+        // Store the authentication data in localStorage
+        localStorage.setItem('userId', authData.userId);
+        localStorage.setItem('userType', authData.userType);
+        localStorage.setItem('userEmail', userData.email);
+        localStorage.setItem('userInfo', JSON.stringify(userData));
         
-        return { success: true, data: mockUserData };
+        return { success: true, data: authData };
       } else {
-        throw new Error('Invalid response from Google callback');
+        throw new Error('Invalid response from Google authentication');
       }
     } catch (error) {
       console.error('Error in handleGoogleCallback:', error);
+      setIsAuthenticated(false);
+      setUserId(null);
+      setUserType(null);
+      setUserInfo(null);
+      setUserEmail(null);
       throw error;
     }
   };
@@ -127,8 +135,10 @@ export const AuthProvider = ({ children }) => {
   const requestPasswordReset = async (email) => {
     try {
       const response = await api.requestPasswordReset(email);
-      return response;
+      console.log('Password reset email sent successfully');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in requestPasswordReset:', error);
       throw error;
     }
   };
@@ -136,17 +146,21 @@ export const AuthProvider = ({ children }) => {
   const verifyResetToken = async (token) => {
     try {
       const response = await api.verifyResetToken(token);
-      return response;
+      console.log('Reset token verified successfully');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in verifyResetToken:', error);
       throw error;
     }
   };
 
-  const resetPassword = async (token, newPassword) => {
+  const resetPassword = async (token, newPassword, userEmail) => {
     try {
-      const response = await api.resetPassword(token, newPassword);
-      return response;
+      const response = await api.resetPassword(token, newPassword, userEmail);
+      console.log('Password reset successful');
+      return { success: true, data: response };
     } catch (error) {
+      console.error('Error in resetPassword:', error);
       throw error;
     }
   };
