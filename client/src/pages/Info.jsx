@@ -32,14 +32,14 @@ const InfoPage = () => {
             <h3>Version</h3>
             <p>1.0.0</p>
           </div>
-          <div className="links">
+          {/* <div className="links">
             <h3>Quick Links</h3>
             <ul>
               <li><a href="#">Privacy Policy</a></li>
               <li><a href="#">Terms of Service</a></li>
               <li><a href="#">Community Guidelines</a></li>
             </ul>
-          </div>
+          </div> */}
         </div>
       </div>
       

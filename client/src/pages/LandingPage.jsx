@@ -155,7 +155,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p>&copy; 2025 Community Garage Sale Maps. All rights reserved.</p>
+        {/* <p>&copy; 2025 Community Garage Sale Maps. All rights reserved.</p> */}
       </footer>
     </div>
   );
