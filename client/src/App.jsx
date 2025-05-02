@@ -8,6 +8,7 @@ import InfoPage from './pages/Info';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import LoginRedirect from './pages/LoginRedirect';
+import PasswordReset from './pages/PasswordReset';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import CommunitySalesAdmin from './pages/CommunitySalesAdmin';
@@ -86,6 +87,12 @@ function App() {
                         <Login />
                       </>
                     } />
+                    <Route path="/reset-password" element={
+                      <>
+                        <ConditionalMenu />
+                        <PasswordReset />
+                      </>
+                    } />
                     <Route path="/sales" element={
                       <>
                         <ConditionalMenu />
@@ -138,9 +145,10 @@ function App() {
 
 // Move ProtectedRoute inside App to avoid circular dependency
 const ProtectedRouteWrapper = ({ children }) => {
-  const { isAuthenticated, userType } = useAuth();
+  const { isAuthenticated } = useAuth();
   
-  if (!isAuthenticated || userType !== 'ADMIN') {
+  // Only check if the user is authenticated, no longer requiring admin status
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   

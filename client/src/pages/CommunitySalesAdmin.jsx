@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './CommunitySalesAdmin.css';
 
 const CommunitySalesAdmin = () => {
   const navigate = useNavigate();
+  const { userInfo, userEmail } = useAuth(); // Get user info from auth context
   // Mock data for demonstration purposes
   const [communitySales, setCommunitySales] = useState([
     {
@@ -218,19 +220,11 @@ const CommunitySalesAdmin = () => {
       <h1>Community Sales Administration</h1>
       
       <div className="user-info">
-        <div className="user-name">Admin User</div>
-        <div className="user-email">admin@example.com</div>
+        <div className="user-name">{userInfo?.fName || ''} {userInfo?.lName || ''}</div>
+        <div className="user-email">{userEmail}</div>
       </div>
       
       <div className="admin-controls">
-        <button 
-          className="add-new-button"
-          onClick={handleAddNew}
-          disabled={isAddingNew}
-        >
-          Add New Community Sale
-        </button>
-        
         <div className="search-container">
           <input
             type="text"
@@ -240,6 +234,16 @@ const CommunitySalesAdmin = () => {
             className="search-input"
           />
         </div>
+      </div>
+      
+      <div className="admin-button-row">
+        <button 
+          className="add-new-button"
+          onClick={handleAddNew}
+          disabled={isAddingNew}
+        >
+          Add New Community Sale
+        </button>
         
         {selectedSales.size > 0 && (
           <>
@@ -350,7 +354,7 @@ const CommunitySalesAdmin = () => {
               )}
               <div className="card-description">{sale.description}</div>
               <div className="card-actions">
-                <div>
+                <div className="left-buttons">
                   <button 
                     className="edit-button"
                     onClick={() => handleEdit(sale)}
@@ -364,18 +368,20 @@ const CommunitySalesAdmin = () => {
                     Delete
                   </button>
                 </div>
-                <button 
-                  className="manage-button"
-                  onClick={() => handleManageSale(sale)}
-                >
-                  Manage Garage Sales
-                </button>
-                <button 
-                  className="view-on-map-button"
-                  onClick={() => handleViewOnMap(sale)}
-                >
-                  View the Map
-                </button>
+                <div className="right-buttons">
+                  <button 
+                    className="view-on-map-button"
+                    onClick={() => handleViewOnMap(sale)}
+                  >
+                    View the Map
+                  </button>
+                  <button 
+                    className="manage-button"
+                    onClick={() => handleManageSale(sale)}
+                  >
+                    Manage Garage Sales
+                  </button>
+                </div>
               </div>
             </div>
           ))}

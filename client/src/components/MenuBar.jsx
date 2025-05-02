@@ -33,7 +33,7 @@ const MenuBar = () => {
       <div className="menu-bar-item" onClick={() => handleNavigation('/info')}>Info</div>
       <div className="menu-bar-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
       {isAuthenticated ? (
-        <div className="menu-bar-item" onClick={handleLogout}>Logout ({userEmail})</div>
+        <div className="menu-bar-item" onClick={handleLogout}>Logout</div>
       ) : (
         <div className="menu-bar-item" onClick={() => handleNavigation('/login?from=landing')}>Login</div>
       )}

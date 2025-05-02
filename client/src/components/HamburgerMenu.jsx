@@ -15,11 +15,30 @@ const HamburgerMenu = () => {
 
   // Function to check if a click is outside the menu
   const handleClickOutside = (event) => {
+    // Check if click is outside the menu and not on the hamburger button
     if (menuRef.current && !menuRef.current.contains(event.target) && 
         !event.target.closest('.hamburger-button')) {
-      setIsOpen(false); // Close the menu
+      // Close the menu when clicking outside
+      setIsOpen(false);
     }
   };
+
+  // Additional handler specifically for map clicks
+  const handleMapClick = () => {
+    // This will be called when the map is clicked via the MapView component
+    setIsOpen(false);
+  };
+  
+  // Expose the handleMapClick function to the window object so it can be called from MapView
+  useEffect(() => {
+    // Make the function accessible globally
+    window.closeHamburgerMenu = handleMapClick;
+    
+    return () => {
+      // Clean up when component unmounts
+      delete window.closeHamburgerMenu;
+    };
+  }, []);
 
   // Add event listener when component mounts
   useEffect(() => {
@@ -31,20 +50,12 @@ const HamburgerMenu = () => {
     };
   }, []); // Empty dependency array means this runs once on mount
 
-  const handleMapClick = () => {
+  // Handler for Map menu item click
+  const handleMapMenuItemClick = () => {
     navigate('/');
     setIsOpen(false);
   };
 
-  const handleMyLocation = () => {
-    centerOnUserLocation();
-    setIsOpen(false);
-    
-    // Check if we're not already on the main map page (URL path is '/')
-    if (window.location.pathname !== '/') {
-      navigate('/');
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -76,7 +87,7 @@ const HamburgerMenu = () => {
           </div>
         )}
 
-        <div className="menu-item" onClick={handleMapClick}>
+        <div className="menu-item" onClick={handleMapMenuItemClick}>
           <span className="menu-icon">🗺️</span>
           <span className="menu-text">Map</span>
         </div>
@@ -91,28 +102,16 @@ const HamburgerMenu = () => {
           <span className="menu-text">Garage Sales</span>
         </div>
 
-        {userType === 'ADMIN' && (
-          <div className="menu-item" onClick={() => {
-            navigate('/admin/community-sales');
-            setIsOpen(false);
-          }}>
-            <span className="menu-icon">🏙️</span>
-            <span className="menu-text">Community Sales Administration</span>
-          </div>
-        )}
+        {/* Community Sales Administration menu item removed */}
 
-        <div className="menu-item" onClick={handleMyLocation}>
-          <span className="menu-icon">📍</span>
-          <span className="menu-text">My Location</span>
-        </div>
 
-        <div className="menu-item" onClick={() => {
+        {/* <div className="menu-item" onClick={() => {
           navigate('/settings');
           setIsOpen(false);
         }}>
           <span className="menu-icon">⚙️</span>
           <span className="menu-text">Map Settings</span>
-        </div>
+        </div> */}
 
         <div className="menu-item" onClick={() => {
           navigate('/help');
@@ -122,13 +121,6 @@ const HamburgerMenu = () => {
           <span className="menu-text">Help</span>
         </div>
 
-        <div className="menu-item" onClick={() => {
-          navigate('/info');
-          setIsOpen(false);
-        }}>
-          <span className="menu-icon">ℹ️</span>
-          <span className="menu-text">Info</span>
-        </div>
 
         <div className="menu-item" onClick={() => {
           navigate('/about');

@@ -6,7 +6,7 @@ import { useNavigation } from '../context/NavigationContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { setFromLanding } = useNavigation();
+  const { setFromLanding, fromMap, setFromMap } = useNavigation();
 
   const handleNavigation = (path) => {
     setFromLanding(true); // Set that navigation came from landing page
@@ -17,9 +17,9 @@ const LandingPage = () => {
     <div className="landing-page">
       {/* Header */}
       <header className="landing-header">
-        <h1 className="landing-title">Community Garage Sale Events on Google Maps</h1>
+        <h1 className="landing-title">Community Sale Events on Google Maps</h1>
         <p className="landing-subtitle">
-          Create interactive maps for your neighborhood's garage sales, making it easy for visitors to find what they're looking for.
+          Create interactive maps for your neighborhood's community sales, making it easy for visitors to find what they're looking for.
         </p>
       </header>
 
@@ -40,8 +40,8 @@ const LandingPage = () => {
           <h2 className="landing-section-title">Simplify Your Community Sale Event</h2>
           <p>
             Are you organizing a community sale event for your neighbourhood and would like to map out
-            all the garage/yard sales on Google Maps? This makes it easy for visitors to find the garage
-            sales they want to go to, or even just to see where the sales are in relation to them without the
+            all the community sales on Google Maps? This makes it easy for visitors to find the sales
+            they want to go to, or even just to see where the sales are in relation to them without the
             need for those old fashioned maps.
           </p>
           <p>
@@ -52,6 +52,14 @@ const LandingPage = () => {
             <div className="cta-button" onClick={() => handleNavigation('/login')}>
               Get Started Today
             </div>
+            {fromMap && (
+              <div className="cta-button secondary" onClick={() => {
+                // Don't reset fromMap flag so the button remains visible when returning to this page
+                navigate('/');
+              }} style={{ marginLeft: '1rem' }}>
+                Return to Map
+              </div>
+            )}
           </div>
         </section>
 

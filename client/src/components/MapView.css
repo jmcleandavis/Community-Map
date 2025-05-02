@@ -1,0 +1,57 @@
+/* MapView.css - Styles for the map component */
+
+/* Map container class */
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Custom class to adjust map type controls position in small screen mode */
+.map-type-controls-adjusted {
+  margin-bottom: 10px !important; /* Use !important to override Google Maps inline styles */
+}
+
+/* Map type control styles for small screens */
+@media (max-width: 1044px) {
+  /* Target the map type controls positioned at the bottom of the screen */
+  /* Based on the screenshot, we need to target the element with bottom:26px */
+  div[style*="position: absolute"][style*="bottom: 26px"],
+  div[style*="position:absolute"][style*="bottom:26px"],
+  .gm-style div[style*="bottom: 26px"],
+  .gm-style div[style*="bottom:26px"] {
+    bottom: 60px !important; /* Increase from 26px to 60px to move it higher */
+  }
+  
+  /* Alternative approach to target the map type control container */
+  .gm-style-mtc button {
+    /* Add any additional styling for the buttons if needed */
+    font-weight: 500;
+  }
+}
+
+/* Map type control styles for larger screens */
+@media (min-width: 1045px) {
+  /* TOP_RIGHT position styling */
+  /* No additional styling needed by default */
+}
+
+/* Styles for the My Location button */
+.my-location-button {
+  background-color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  margin: 10px;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.my-location-button:hover {
+  background-color: #f8f8f8;
+}

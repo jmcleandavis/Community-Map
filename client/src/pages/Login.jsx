@@ -27,18 +27,22 @@ const Login = () => {
   // Check for Google auth callback or password reset token
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const token = searchParams.get('token');
+    const code = searchParams.get('code'); // Google returns 'code' not 'token'
     const resetTokenParam = searchParams.get('reset');
+    const userEmailParam = searchParams.get('email');
     
-    if (token) {
+    if (code) {
       // Handle Google auth callback
       const handleCallback = async () => {
         try {
           setLoading(true);
-          await handleGoogleCallback(token);
+          setError('');
+          console.log('Processing Google authorization code');
+          await handleGoogleCallback(code, email);
           navigate('/');
         } catch (err) {
           setError('Failed to authenticate with Google. Please try again.');
+          console.error('Google authentication error:', err);
         } finally {
           setLoading(false);
         }
@@ -53,6 +57,14 @@ const Login = () => {
           await verifyResetToken(resetTokenParam);
           setIsResetPassword(true);
           setResetToken(resetTokenParam);
+          
+          // Save the email from the query parameter if available
+          if (userEmailParam) {
+            setFormData(prev => ({
+              ...prev,
+              email: userEmailParam
+            }));
+          }
         } catch (err) {
           setError('Invalid or expired password reset link. Please request a new one.');
         } finally {
@@ -96,14 +108,39 @@ const Login = () => {
         }
       } else if (isForgotPassword) {
         // Handle forgot password form submission
-        await requestPasswordReset(formData.email);
-        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox.');
+        if (!formData.email) {
+          throw new Error('Please enter your email address');
+        }
+        
+        const response = await requestPasswordReset(formData.email);
+        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox and spam folder. Due to email provider limitations, the email may appear in your spam folder.');
+        
+        // Clear the email field after successful submission
+        setFormData({
+          ...formData,
+          email: ''
+        });
       } else if (isResetPassword) {
         // Handle password reset form submission
+        if (!formData.newPassword || !formData.confirmNewPassword) {
+          throw new Error('Please fill in all password fields');
+        }
+        
         if (formData.newPassword !== formData.confirmNewPassword) {
           throw new Error('Passwords do not match');
         }
-        await resetPassword(resetToken, formData.newPassword);
+        
+        // Basic password validation
+        if (formData.newPassword.length < 8) {
+          throw new Error('Password must be at least 8 characters long');
+        }
+        
+        // Use the email that was saved from the URL or entered by the user
+        if (!formData.email) {
+          throw new Error('Email address is missing. Please contact support.');
+        }
+        
+        await resetPassword(resetToken, formData.newPassword, formData.email);
         setSuccessMessage('Your password has been reset successfully. You can now log in with your new password.');
         
         // Reset the form state after successful reset
@@ -197,26 +234,30 @@ const Login = () => {
           <h2>Forgot Password</h2>
           {error && <div className="error-message">{error}</div>}
           {successMessage && <div className="success-message">{successMessage}</div>}
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="submit-button"
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Send Reset Link'}
-            </button>
-          </form>
+          
+          {!successMessage && (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <button 
+                type="submit" 
+                className="submit-button"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : 'Send Reset Link'}
+              </button>
+            </form>
+          )}
+          
           <button 
             className="back-button"
             onClick={backToLogin}
