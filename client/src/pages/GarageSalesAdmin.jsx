@@ -467,6 +467,8 @@ const GarageSalesAdmin = () => {
               value={formData.description}
               onChange={handleInputChange}
               placeholder="Enter description..."
+              minRows={6}
+              className={styles.descriptionTextarea}
             />
           </div>
 
