@@ -217,7 +217,7 @@ const CommunitySalesAdmin = () => {
 
   return (
     <div className="sales-admin">
-      <h1>Community Sales Administration</h1>
+      <h1>Community Sales Events Administration</h1>
       
       <div className="user-info">
         <div className="user-name">{userInfo?.fName || ''} {userInfo?.lName || ''}</div>
