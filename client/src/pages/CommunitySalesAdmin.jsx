@@ -242,7 +242,7 @@ const CommunitySalesAdmin = () => {
           onClick={handleAddNew}
           disabled={isAddingNew}
         >
-          Add New Community Sale
+          Create a New Community Sales Event
         </button>
         
         {selectedSales.size > 0 && (
