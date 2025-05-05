@@ -120,7 +120,7 @@ const GarageSales = () => {
                 className="view-selected-button"
                 onClick={handleViewSelected}
               >
-                View Selected ({selectedSales.size})
+                View and Save Selected ({selectedSales.size})
               </button>
             </>
           )}
