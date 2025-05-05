@@ -7,6 +7,7 @@ import { useSelection } from '../context/SelectionContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useAuth } from '../context/AuthContext';
 import LoginRequiredModal from '../components/LoginRequiredModal';
+import api from '../utils/api';
 
 const GarageSales = () => {
   const {
@@ -27,6 +28,43 @@ const GarageSales = () => {
   useEffect(() => {
     fetchGarageSales();
   }, [fetchGarageSales]);
+
+  // Effect to fetch user's saved address list from server if user is logged in
+  useEffect(() => {
+    const fetchUserAddressList = async () => {
+      if (isAuthenticated && userInfo?.userId) {
+        try {
+          console.log('Fetching user address list for user:', userInfo.userId);
+          const userAddressList = await api.getUserAddressList(userInfo.userId);
+          
+          if (userAddressList && userAddressList.addressList && userAddressList.addressList.length > 0) {
+            console.log('User has saved address list on server:', userAddressList.addressList);
+            
+            // Convert the array to a Set for the selection context
+            const serverSelectedSales = new Set(userAddressList.addressList);
+            
+            // Update the selected sales in the selection context
+            // This will override any locally stored selections
+            handleDeselectAll(); // Clear existing selections first
+            
+            // Add each server-side selection
+            serverSelectedSales.forEach(saleId => {
+              handleCheckboxChange(saleId);
+            });
+            
+            console.log('Updated selections from server list');
+          } else {
+            console.log('User does not have a saved address list on server, using local selections');
+          }
+        } catch (error) {
+          console.error('Error fetching user address list:', error);
+          // If there's an error, we'll fall back to the local storage selections
+        }
+      }
+    };
+    
+    fetchUserAddressList();
+  }, [isAuthenticated, userInfo, handleCheckboxChange, handleDeselectAll]);
   
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
