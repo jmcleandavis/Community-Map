@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
@@ -6,6 +6,7 @@ import { useSearch } from '../context/SearchContext';
 import { useSelection } from '../context/SelectionContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useAuth } from '../context/AuthContext';
+import LoginRequiredModal from '../components/LoginRequiredModal';
 
 const GarageSales = () => {
   const {
@@ -21,10 +22,19 @@ const GarageSales = () => {
   
   const navigate = useNavigate();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     fetchGarageSales();
   }, [fetchGarageSales]);
+  
+  const handleSelectionWithAuth = (saleId) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    handleCheckboxChange(saleId);
+  };
 
   const handleViewOnMap = (sale) => {
     const saleToView = {
@@ -140,7 +150,7 @@ const GarageSales = () => {
                   <input
                     type="checkbox"
                     checked={selectedSales.has(sale.id)}
-                    onChange={() => handleCheckboxChange(sale.id)}
+                    onChange={() => handleSelectionWithAuth(sale.id)}
                   />
                   <span className="checkmark"></span>
                 </label>
@@ -164,6 +174,10 @@ const GarageSales = () => {
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
       </div>
+      <LoginRequiredModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
     </div>
   );
 };
