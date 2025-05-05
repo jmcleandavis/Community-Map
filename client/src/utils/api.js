@@ -350,6 +350,38 @@ const deleteGarageSale = async (saleIds) => {
   }
 };
 
+// Get user's saved address list
+const getUserAddressList = async (userId) => {
+  try {
+    console.log('Fetching user address list for userId:', userId);
+    const sessionId = await getSessionId();
+    
+    const response = await mapsApi.get(`/v1/userAddressList/getUserAddressList/${userId}`, {
+      headers: {
+        'sessionId': sessionId
+      }
+    });
+    
+    console.log('User address list response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user address list:', error);
+    
+    // If the error is a 404, it means the user doesn't have a saved list
+    if (error.response?.status === 404) {
+      return false;
+    }
+    
+    // Extract error message from response if available
+    const errorMessage = error.response?.data?.message || 
+                         error.response?.data?.error || 
+                         error.message || 
+                         'Failed to fetch user address list';
+    
+    throw new Error(errorMessage);
+  }
+};
+
 // Update a garage sale
 const updateGarageSale = async (saleId, updateData) => {
   try {
@@ -846,7 +878,8 @@ const api = {
   
   requestPasswordReset,
   verifyResetToken,
-  resetPassword
+  resetPassword,
+  getUserAddressList
 };
 
 export default api;
