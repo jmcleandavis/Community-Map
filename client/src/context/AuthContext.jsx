@@ -218,7 +218,7 @@ export const AuthProvider = ({ children }) => {
     
     // Clear selected sales data
     localStorage.removeItem('selectedSaleIds');
-    localStorage.removeItem('selectedSales');
+    // localStorage.removeItem('selectedSales');
     
     console.log('User logged out, cleared all user data and selections');
     
