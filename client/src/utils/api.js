@@ -713,7 +713,8 @@ const api = {
         payload.community = community;
       }
       
-      const response = await createCustomerApi.post('/v1/userAddressList/createUpdateUserAddressList', payload, {
+      // Using mapsApi instead of createCustomerApi to use VITE_MAPS_API_URL
+      const response = await mapsApi.post('/v1/userAddressList/createUpdateUserAddressList', payload, {
         headers: {
           sessionId: sessionId,
           'Content-Type': 'application/json'
