@@ -29,7 +29,7 @@ const GarageSales = () => {
     fetchGarageSales();
   }, [fetchGarageSales]);
 
-  // Effect to fetch user's saved address list from server if user is logged in
+  // Effect to fetch user's saved address list from server if user is logged in - only runs once on mount
   useEffect(() => {
     const fetchUserAddressList = async () => {
       if (isAuthenticated && userInfo?.userId) {
@@ -64,13 +64,15 @@ const GarageSales = () => {
     };
     
     fetchUserAddressList();
-  }, [isAuthenticated, userInfo, handleCheckboxChange, handleDeselectAll]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
+    // Just update local selection state without server calls
     handleCheckboxChange(saleId);
   };
 
