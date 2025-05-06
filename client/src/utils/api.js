@@ -697,6 +697,37 @@ const api = {
   login,
   logout,
   
+  // Create or update user's saved address list
+  createUpdateUserAddressList: async (userId, addressList, community = null) => {
+    try {
+      console.log('Saving user address list for user:', userId);
+      const sessionId = await getSessionId();
+      
+      const payload = {
+        userId: userId,
+        addressList: Array.from(addressList), // Convert Set to Array if needed
+      };
+      
+      // Add community if provided
+      if (community) {
+        payload.community = community;
+      }
+      
+      const response = await createCustomerApi.post('/v1/userAddressList/createUpdateUserAddressList', payload, {
+        headers: {
+          sessionId: sessionId,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('User address list saved successfully:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error saving user address list:', error);
+      throw error;
+    }
+  },
+  
   // Google SSO login
   googleLogin: async () => {
     try {

@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [sessionId, setSessionId] = useState(localStorage.getItem('sessionId') || null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -205,11 +208,25 @@ export const AuthProvider = ({ children }) => {
     setUserType(null);
     setUserInfo(null);
     setUserEmail(null);
+    
+    // Clear all authentication data from localStorage
     localStorage.removeItem('sessionId');
     localStorage.removeItem('userId');
     localStorage.removeItem('userType');
     localStorage.removeItem('userInfo');
     localStorage.removeItem('userEmail');
+    
+    // Clear selected sales data
+    localStorage.removeItem('selectedSaleIds');
+    localStorage.removeItem('selectedSales');
+    
+    console.log('User logged out, cleared all user data and selections');
+    
+    // If user is on the garage sales page, navigate to the map page
+    if (location.pathname === '/sales') {
+      console.log('User was on garage sales page, navigating to map page');
+      navigate('/');
+    }
   };
 
   return (
