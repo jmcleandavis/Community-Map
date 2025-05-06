@@ -87,23 +87,40 @@ const GarageSales = () => {
     navigate('/');
   };
 
-  const handleViewSelected = () => {
+  const handleViewSelected = async () => {
     const selectedSalesData = filteredSales
-      .filter(sale => selectedSales.has(sale.id))
-      .map(sale => ({
-        ...sale,
-        lat: sale.position.lat,
-        lng: sale.position.lng,
-        address: sale.address,
-        description: sale.description
-      }));
+      .filter(sale => selectedSales.has(sale.id));
 
     if (selectedSalesData.length > 0) {
-      localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
+      // If user is authenticated, save the selection to the server
+      if (isAuthenticated && userInfo?.userId) {
+        try {
+          console.log('Saving selected sales to server for user:', userInfo.userId);
+          
+          // Extract just the IDs for the server request
+          const selectedSaleIds = Array.from(selectedSales);
+          
+          // Save the selected sales to the server
+          const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds);
+          console.log('Successfully saved selected sales to server:', response);
+          
+          // Optional: Show a success message
+          // alert('Your selected garage sales have been saved to your account.');
+        } catch (error) {
+          console.error('Error saving selected sales to server:', error);
+          // Continue with navigation even if server save fails
+          // We don't want to block the user from viewing their selections
+        }
+      } else {
+        console.log('User not authenticated, skipping server save of selected sales');
+      }
+      
       // If not already showing only selected sales, turn it on
       if (!showOnlySelected) {
         toggleDisplayMode();
       }
+      
+      // Navigate to the map page to view the selected sales
       navigate('/');
     } else {
       alert('Please select at least one garage sale to view on the map.');
