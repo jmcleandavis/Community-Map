@@ -1,17 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages/Login.css';
 
 const LoginRedirect = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { handleGoogleCallback } = useAuth();
+  const location = useLocation();
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Processing your login...');
+  const processingRef = useRef(false);
 
   useEffect(() => {
+    console.error('-------------------- useEffect in LoginRedirect.jsx FIRED -----------------------');
     const processAuth = async () => {
+      // Prevent duplicate processing
+      if (processingRef.current) {
+        console.log('Auth processing already in progress, skipping duplicate execution');
+        return;
+      }
+      
+      // Set processing flag to true
+      processingRef.current = true;
+      
       try {
         // Debug the incoming URL
         console.log('=== LoginRedirect Page Loaded ===');
@@ -24,8 +35,20 @@ const LoginRedirect = () => {
         const searchParams = new URLSearchParams(location.search);
         const code = searchParams.get('code');
         
+        // Check if we've already processed this code in this session
+        const processedCode = sessionStorage.getItem('processedAuthCode');
+        if (code && processedCode === code) {
+          console.log('This code has already been processed in this session');
+          setStatus('Login successful! Redirecting...');
+          setTimeout(() => navigate('/'), 1000);
+          return;
+        }
+        
         if (code) {
           console.log('Authorization code found:', code);
+          
+          // Store the code in session storage to prevent duplicate processing
+          sessionStorage.setItem('processedAuthCode', code);
           
           // Process the code
           await handleGoogleCallback(code);
@@ -44,7 +67,12 @@ const LoginRedirect = () => {
     };
 
     processAuth();
-  }, [location, navigate, handleGoogleCallback]);
+    
+    // Cleanup function to reset the processing flag when component unmounts
+    return () => {
+      processingRef.current = false;
+    };
+  }, [navigate, handleGoogleCallback]); // Removed location from dependencies
 
   return (
     <div className="login-container">
