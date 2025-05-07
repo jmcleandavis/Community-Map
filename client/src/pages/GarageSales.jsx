@@ -89,6 +89,24 @@ const GarageSales = () => {
     navigate('/');
   };
 
+  const handleDeselectAllWithServerUpdate = async () => {
+    // First, clear the local selections
+    handleDeselectAll();
+    
+    // Then, if user is authenticated, update the server with an empty list
+    if (isAuthenticated && userInfo?.userId) {
+      try {
+        console.log('Updating server with empty selection list for user:', userInfo.userId);
+        
+        // Call API with empty array for addressList
+        const response = await api.createUpdateUserAddressList(userInfo.userId, []);
+        console.log('Successfully updated server with empty selection list:', response);
+      } catch (error) {
+        console.error('Error updating server with empty selection list:', error);
+      }
+    }
+  };
+
   const handleViewSelected = async () => {
     const selectedSalesData = filteredSales
       .filter(sale => selectedSales.has(sale.id));
@@ -179,7 +197,7 @@ const GarageSales = () => {
             <>
               <button 
                 className="select-all-button"
-                onClick={() => handleDeselectAll(filteredSales)}
+                onClick={handleDeselectAllWithServerUpdate}
               >
                 Deselect All
               </button>
