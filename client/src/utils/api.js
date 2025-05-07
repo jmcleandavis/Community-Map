@@ -698,26 +698,27 @@ const api = {
   logout,
   
   // Create or update user's saved address list
-  createUpdateUserAddressList: async (userId, addressList, community = null) => {
+  createUpdateUserAddressList: async (userId, addressList, community = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
     try {
       console.log('Saving user address list for user:', userId);
       const sessionId = await getSessionId();
       
       const payload = {
         userId: userId,
-        addressList: Array.from(addressList), // Convert Set to Array if needed
+        addressList: Array.isArray(addressList) ? addressList : Array.from(addressList), // Ensure addressList is an array
+        community: community // Always include community parameter
       };
       
-      // Add community if provided
-      if (community) {
-        payload.community = community;
-      }
-      
       // Using mapsApi instead of createCustomerApi to use VITE_MAPS_API_URL
+      console.log('Saving user address list payload:', payload);
+      
+      // Ensure headers match exactly what's in the CURL example
       const response = await mapsApi.post('/v1/userAddressList/createUpdateUserAddressList', payload, {
         headers: {
-          sessionId: sessionId,
-          'Content-Type': 'application/json'
+          'sessionId': sessionId,
+          'Content-Type': 'application/json',
+          'app-name': 'web-service',
+          'app-key': import.meta.env.VITE_APP_SESSION_KEY
         }
       });
       
