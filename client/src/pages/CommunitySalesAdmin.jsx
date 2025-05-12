@@ -9,6 +9,8 @@ const CommunitySalesAdmin = () => {
   const [communitySales, setCommunitySales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   // Fetch community sales data when component mounts
   useEffect(() => {
@@ -129,37 +131,97 @@ const CommunitySalesAdmin = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (editingSale) {
-      // Update existing community sale
-      setCommunitySales(prev => 
-        prev.map(sale => 
-          sale.id === editingSale.id 
-            ? { ...sale, ...formData } 
-            : sale
-        )
-      );
-    } else {
-      // Create new community sale with a mock ID
-      const newSale = {
-        ...formData,
-        id: Date.now().toString() // use timestamp as a mock ID
-      };
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
       
-      setCommunitySales(prev => [...prev, newSale]);
+      if (editingSale) {
+        // Update existing community sale
+        // For now, just update locally
+        setCommunitySales(prev => 
+          prev.map(sale => 
+            sale.id === editingSale.id 
+              ? { ...sale, ...formData } 
+              : sale
+          )
+        );
+      } else {
+        // Format dates for API submission
+        const formatDateForApi = (dateString) => {
+          if (!dateString) return '';
+          // Add default time if not provided
+          const defaultStartTime = 'T09:00:00';
+          const defaultEndTime = 'T18:00:00';
+          return dateString + (formData.startDate === formData.endDate ? 
+            (dateString === formData.startDate ? defaultStartTime : defaultEndTime) : 
+            (dateString === formData.startDate ? defaultStartTime : defaultEndTime));
+        };
+        
+        // Prepare data for API
+        const apiData = {
+          userId: userInfo?.id,
+          name: formData.name,
+          description: formData.description,
+          startDate: formatDateForApi(formData.startDate),
+          endDate: formatDateForApi(formData.endDate),
+          location: formData.location
+        };
+        
+        // Make API call to create community sale
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/create`;
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'app-name': 'web-service',
+            'app-key': import.meta.env.VITE_APP_SESSION_KEY,
+            'sessionId': sessionId || '',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Add the new sale to the local state
+        const newSale = {
+          id: result.data.id,
+          name: result.data.name,
+          description: result.data.description,
+          startDate: result.data.startDate ? new Date(result.data.startDate).toISOString().split('T')[0] : '',
+          endDate: result.data.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : '',
+          location: result.data.location
+        };
+        
+        setCommunitySales(prev => [...prev, newSale]);
+        
+        // Show success message
+        alert('Community sale created successfully!');
+      }
+      
+      setIsAddingNew(false);
+      setEditingSale(null);
+      setFormData({
+        name: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        location: ''
+      });
+    } catch (err) {
+      console.error('Error creating/updating community sale:', err);
+      setSubmitError('Failed to save community sale. Please try again.');
+      alert(`Error: ${err.message || 'Failed to save community sale. Please try again.'}`);
+    } finally {
+      setSubmitting(false);
     }
-    
-    setIsAddingNew(false);
-    setEditingSale(null);
-    setFormData({
-      name: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-      location: ''
-    });
   };
 
   // Handle deleting a community sale
@@ -350,13 +412,19 @@ const CommunitySalesAdmin = () => {
           </div>
           
           <div className="form-actions">
-            <button type="submit" className="save-button">
-              {editingSale ? 'Save Changes' : 'Create Community Sale'}
+            <button type="submit" className="save-button" disabled={submitting}>
+              {submitting ? 'Saving...' : (editingSale ? 'Save Changes' : 'Create Community Sale')}
             </button>
-            <button type="button" className="cancel-button" onClick={handleCancelEdit}>
+            <button type="button" className="cancel-button" onClick={handleCancelEdit} disabled={submitting}>
               Cancel
             </button>
           </div>
+          
+          {submitError && (
+            <div className="error-message">
+              {submitError}
+            </div>
+          )}
         </form>
       )}
       
