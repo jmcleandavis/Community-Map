@@ -40,7 +40,8 @@ const CommunitySalesAdmin = () => {
           id: sale.id,
           name: sale.name,
           description: sale.description,
-          date: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
+          startDate: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
+          endDate: sale.endDate ? new Date(sale.endDate).toISOString().split('T')[0] : '',
           location: sale.location
         }));
         
@@ -67,7 +68,8 @@ const CommunitySalesAdmin = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    date: '',
+    startDate: '',
+    endDate: '',
     location: ''
   });
 
@@ -82,7 +84,8 @@ const CommunitySalesAdmin = () => {
     setFormData({
       name: '',
       description: '',
-      date: '',
+      startDate: '',
+      endDate: '',
       location: ''
     });
     setIsAddingNew(true);
@@ -95,7 +98,8 @@ const CommunitySalesAdmin = () => {
     setFormData({
       name: sale.name,
       description: sale.description,
-      date: sale.date || '',
+      startDate: sale.startDate || '',
+      endDate: sale.endDate || '',
       location: sale.location || ''
     });
     // Scroll to the top of the page to make the form visible
@@ -108,7 +112,8 @@ const CommunitySalesAdmin = () => {
     setFormData({
       name: '',
       description: '',
-      date: '',
+      startDate: '',
+      endDate: '',
       location: ''
     });
     setIsAddingNew(false);
@@ -151,7 +156,8 @@ const CommunitySalesAdmin = () => {
     setFormData({
       name: '',
       description: '',
-      date: '',
+      startDate: '',
+      endDate: '',
       location: ''
     });
   };
@@ -311,13 +317,24 @@ const CommunitySalesAdmin = () => {
           </div>
           
           <div className="form-group">
-            <label>Date:</label>
+            <label>Start Date:</label>
             <input
               type="date"
-              name="date"
-              value={formData.date}
+              name="startDate"
+              value={formData.startDate}
               onChange={handleInputChange}
-              placeholder="Select date..."
+              placeholder="Select start date..."
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>End Date:</label>
+            <input
+              type="date"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleInputChange}
+              placeholder="Select end date..."
             />
           </div>
           
