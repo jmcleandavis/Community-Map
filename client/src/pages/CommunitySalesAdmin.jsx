@@ -190,14 +190,15 @@ const CommunitySalesAdmin = () => {
         
         const result = await response.json();
         
-        // Add the new sale to the local state
+        // Add the new community sale to the local state
         const newSale = {
           id: result.data.id,
           name: result.data.name,
           description: result.data.description,
           startDate: result.data.startDate ? new Date(result.data.startDate).toISOString().split('T')[0] : '',
           endDate: result.data.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : '',
-          location: result.data.location
+          location: result.data.location,
+          userId: result.data.userId
         };
         
         setCommunitySales(prev => [...prev, newSale]);
