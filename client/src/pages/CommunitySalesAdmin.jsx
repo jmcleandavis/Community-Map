@@ -1,42 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './CommunitySalesAdmin.css';
 
 const CommunitySalesAdmin = () => {
   const navigate = useNavigate();
-  const { userInfo, userEmail } = useAuth(); // Get user info from auth context
-  // Mock data for demonstration purposes
-  const [communitySales, setCommunitySales] = useState([
-    {
-      id: '1',
-      name: 'Spring Community Sale',
-      description: 'Annual spring community garage sale event',
-      date: '2025-04-15',
-      location: 'Downtown Community Center'
-    },
-    {
-      id: '2',
-      name: 'Summer Neighborhood Sale',
-      description: 'Neighborhood-wide summer garage sale event',
-      date: '2025-07-10',
-      location: 'Oakwood Neighborhood'
-    },
-    {
-      id: '3',
-      name: 'Fall Cleanup Sale',
-      description: 'Get rid of unused items before winter',
-      date: '2025-10-05',
-      location: 'Riverside Community Park'
-    },
-    {
-      id: 'd31a9eec-0dda-469d-8565-692ef9ad55c2',
-      name: 'Bay Ridges Community Sales Day',
-      description: 'Annual community garage sale event for the Bay Ridges neighborhood. Residents can participate and sell items from their homes.',
-      date: '2025-06-22',
-      location: 'Bay Ridges Community, Pickering'
+  const { userInfo, userEmail, sessionId } = useAuth(); // Get user info from auth context
+  const [communitySales, setCommunitySales] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch community sales data when component mounts
+  useEffect(() => {
+    const fetchCommunitySales = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Use the environment variable for the API URL
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/byUser/${userInfo?.id || ''}`;
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'app-name': 'web-service',
+            'app-key': import.meta.env.VITE_APP_SESSION_KEY,
+            'sessionId': sessionId || ''
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Transform API data to match component's expected format
+        const formattedData = data.map(sale => ({
+          id: sale.id,
+          name: sale.name,
+          description: sale.description,
+          date: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
+          location: sale.location
+        }));
+        
+        setCommunitySales(formattedData);
+      } catch (err) {
+        console.error('Error fetching community sales:', err);
+        setError('Failed to load community sales. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userInfo?.id) {
+      fetchCommunitySales();
+    } else {
+      setLoading(false);
     }
-  ]);
+  }, [userInfo, sessionId]);
 
   const [selectedSales, setSelectedSales] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -321,7 +343,16 @@ const CommunitySalesAdmin = () => {
         </form>
       )}
       
-      {filteredSales.length === 0 ? (
+      {loading ? (
+        <div className="loading-state">
+          <h3>Loading community sales...</h3>
+        </div>
+      ) : error ? (
+        <div className="error-state">
+          <h3>Error</h3>
+          <p>{error}</p>
+        </div>
+      ) : filteredSales.length === 0 ? (
         <div className="empty-state">
           <h3>No Community Sales Found</h3>
           <p>Start by creating a new community sale using the button above.</p>
