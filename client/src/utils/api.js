@@ -217,8 +217,8 @@ const getSessionId = async () => {
   return await createSession();
 };
 
-// Custom get method for addresses
-const getAddresses = async () => {
+// Custom get method for addresses - defaults to Bay Ridges Community Sales if no ID provided
+const getAddresses = async (communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
   try {
     console.log('API: Starting getAddresses call...');
     
@@ -227,13 +227,44 @@ const getAddresses = async () => {
     await getSessionId(); // This will create or verify the session
     
     // Make the request - sessionId will be added by interceptor
-    console.log('API: Making request to /getAddressList...');
-    const response = await mapsApi.get('/v1/getAddressByCommunity/d31a9eec-0dda-469d-8565-692ef9ad55c2');
+    console.log(`API: Making request to /getAddressByCommunity/${communityId}...`);
+    const response = await mapsApi.get(`/v1/getAddressByCommunity/${communityId}`);
     
     console.log('API: Successful response from backend:', response);
     return response;
   } catch (error) {
     console.error('API Error in getAddresses:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      }
+    });
+    throw error;
+  }
+};
+
+// Get addresses for a specific community
+const getAddressesByCommunity = async (communityId) => {
+  try {
+    console.log(`API: Starting getAddressesByCommunity call for community ${communityId}...`);
+    
+    // Ensure we have a valid session
+    console.log('API: Getting session ID...');
+    await getSessionId(); // This will create or verify the session
+    
+    // Make the request - sessionId will be added by interceptor
+    console.log(`API: Making request to /getAddressByCommunity/${communityId}...`);
+    const response = await mapsApi.get(`/v1/getAddressByCommunity/${communityId}`);
+    
+    console.log('API: Successful response from backend:', response);
+    return response;
+  } catch (error) {
+    console.error(`API Error in getAddressesByCommunity for community ${communityId}:`, {
       message: error.message,
       status: error.response?.status,
       statusText: error.response?.statusText,
@@ -913,7 +944,8 @@ const api = {
   requestPasswordReset,
   verifyResetToken,
   resetPassword,
-  getUserAddressList
+  getUserAddressList,
+  getAddressesByCommunity
 };
 
 export default api;

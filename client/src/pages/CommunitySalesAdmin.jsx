@@ -19,8 +19,21 @@ const CommunitySalesAdmin = () => {
         setLoading(true);
         setError(null);
         
-        // Use the environment variable for the API URL
-        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/byUser/${userInfo?.id || ''}`;
+        // Get the correct userId - similar to what we did in handleSubmit
+        if (!userInfo) {
+          throw new Error('User information is missing. Please log in again.');
+        }
+        
+        const userId = userInfo.userId || userInfo.id;
+        
+        if (!userId) {
+          throw new Error('User ID is missing. Please log in again.');
+        }
+        
+        console.log('Fetching community sales for userId:', userId);
+        
+        // Use the environment variable for the API URL with the correct userId
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/byUser/${userId}`;
         
         const response = await fetch(apiUrl, {
           method: 'GET',
@@ -56,9 +69,12 @@ const CommunitySalesAdmin = () => {
       }
     };
 
-    if (userInfo?.id) {
+    // Check if we have a valid userInfo with userId
+    if (userInfo && (userInfo.userId || userInfo.id)) {
+      console.log('User is logged in, fetching community sales...');
       fetchCommunitySales();
     } else {
+      console.log('User not logged in or missing userId, skipping fetch');
       setLoading(false);
     }
   }, [userInfo, sessionId]);
@@ -139,15 +155,82 @@ const CommunitySalesAdmin = () => {
       setSubmitError(null);
       
       if (editingSale) {
-        // Update existing community sale
-        // For now, just update locally
+        // Format dates for API submission - reuse the same function
+        const formatDateForApi = (dateString) => {
+          if (!dateString) return '';
+          // Add default time if not provided
+          const defaultStartTime = 'T09:00:00';
+          const defaultEndTime = 'T18:00:00';
+          return dateString + (formData.startDate === formData.endDate ? 
+            (dateString === formData.startDate ? defaultStartTime : defaultEndTime) : 
+            (dateString === formData.startDate ? defaultStartTime : defaultEndTime));
+        };
+        
+        // Check if we have valid user information
+        if (!userInfo) {
+          throw new Error('User information is missing. Please log in again.');
+        }
+        
+        // Get the correct userId
+        const userId = userInfo.userId || userInfo.id;
+        
+        if (!userId) {
+          throw new Error('User ID is missing. Please log in again.');
+        }
+        
+        // Prepare data for API
+        const apiData = {
+          userId: userId,
+          name: formData.name,
+          description: formData.description,
+          startDate: formatDateForApi(formData.startDate),
+          endDate: formatDateForApi(formData.endDate),
+          location: formData.location
+        };
+        
+        // Debug information
+        console.log('API Update Data:', apiData);
+        console.log('Updating community sale with ID:', editingSale.id);
+        
+        // Make API call to update community sale
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/create`;
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'app-name': 'web-service',
+            'app-key': import.meta.env.VITE_APP_SESSION_KEY,
+            'sessionId': sessionId || '',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Update the community sale in the local state
         setCommunitySales(prev => 
           prev.map(sale => 
             sale.id === editingSale.id 
-              ? { ...sale, ...formData } 
+              ? {
+                  id: result.data?.id || editingSale.id,
+                  name: result.data?.name || formData.name,
+                  description: result.data?.description || formData.description,
+                  startDate: result.data?.startDate ? new Date(result.data.startDate).toISOString().split('T')[0] : formData.startDate,
+                  endDate: result.data?.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : formData.endDate,
+                  location: result.data?.location || formData.location,
+                  userId: result.data?.userId || userId
+                } 
               : sale
           )
         );
+        
+        // Show success message
+        alert('Community sale updated successfully!');
       } else {
         // Format dates for API submission
         const formatDateForApi = (dateString) => {
@@ -160,15 +243,33 @@ const CommunitySalesAdmin = () => {
             (dateString === formData.startDate ? defaultStartTime : defaultEndTime));
         };
         
+        // Check if we have valid user information
+        if (!userInfo) {
+          throw new Error('User information is missing. Please log in again.');
+        }
+        
+        // Get the correct userId - from the console log we can see it's in userInfo.userId or userInfo.id
+        const userId = userInfo.userId || userInfo.id;
+        
+        if (!userId) {
+          throw new Error('User ID is missing. Please log in again.');
+        }
+        
         // Prepare data for API
         const apiData = {
-          userId: userInfo?.id,
+          userId: userId,
           name: formData.name,
           description: formData.description,
           startDate: formatDateForApi(formData.startDate),
           endDate: formatDateForApi(formData.endDate),
           location: formData.location
         };
+        
+        // Debug information
+        console.log('API Request Data:', apiData);
+        console.log('UserInfo:', userInfo);
+        console.log('Using sessionId:', sessionId);
+        console.log('App Key:', import.meta.env.VITE_APP_SESSION_KEY);
         
         // Make API call to create community sale
         const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/create`;
@@ -279,13 +380,8 @@ const CommunitySalesAdmin = () => {
 
   // Handle navigating to manage a specific community sale
   const handleManageSale = (sale) => {
-    if (sale.id === 'd31a9eec-0dda-469d-8565-692ef9ad55c2') {
-      // Only navigate to the garage sales admin page for Bay Ridges Community Sales
-      navigate(`/admin/sales`);
-    } else {
-      // For other sales, show an alert instead of navigating
-      alert(`Page not available for: ${sale.name}\nThis functionality is only implemented for Bay Ridges Community Sales Day.`);
-    }
+    // Navigate to the garage sales admin page with the specific community sale ID
+    navigate(`/admin/sales?communityId=${sale.id}`);
   };
 
   // Handle viewing a community sale on the map

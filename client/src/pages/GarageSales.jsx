@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useSearch } from '../context/SearchContext';
@@ -22,12 +22,47 @@ const GarageSales = () => {
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [communityId, setCommunityId] = useState(null);
+  const [communityName, setCommunityName] = useState('');
 
+  // Extract communityId from URL parameters
   useEffect(() => {
-    fetchGarageSales();
-  }, [fetchGarageSales]);
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get('communityId');
+    if (id) {
+      setCommunityId(id);
+      // Fetch community name based on ID
+      const fetchCommunityName = async () => {
+        try {
+          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/${id}`;
+          const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+              'app-name': 'web-service',
+              'app-key': import.meta.env.VITE_APP_SESSION_KEY
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setCommunityName(data.name || 'Community Sale');
+          }
+        } catch (error) {
+          console.error('Error fetching community name:', error);
+        }
+      };
+      
+      fetchCommunityName();
+    }
+  }, [location]);
+
+  // Fetch garage sales, filtered by communityId if available
+  useEffect(() => {
+    fetchGarageSales(communityId);
+  }, [fetchGarageSales, communityId]);
 
   // Effect to fetch user's saved address list from server if user is logged in - only runs once on mount
   useEffect(() => {
@@ -173,7 +208,7 @@ const GarageSales = () => {
 
   return (
     <div className="garage-sales-container">
-      <h1>Garage Sales</h1>
+      <h1>{communityName ? `${communityName} Garage Sales` : 'Garage Sales'}</h1>
       {isAuthenticated && (
         <div className="user-info">
           <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
