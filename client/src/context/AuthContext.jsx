@@ -244,7 +244,8 @@ export const AuthProvider = ({ children }) => {
         handleGoogleCallback,
         requestPasswordReset,
         verifyResetToken,
-        resetPassword
+        resetPassword,
+        sessionId 
       }}
     >
       {children}

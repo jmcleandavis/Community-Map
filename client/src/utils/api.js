@@ -103,7 +103,7 @@ const errorInterceptor = error => {
 
 // Add request interceptor to log headers
 const requestInterceptor = async config => {
-  const currentSessionId = await sessionStorage.getItem('sessionId');
+  const currentSessionId = localStorage.getItem('sessionId');
   console.log('Current session ID before request:', currentSessionId);
   
   // Ensure headers object exists
@@ -169,7 +169,8 @@ const createSession = async () => {
 
     console.log('New session data:', sessionData);
     console.log('Setting new sessionId in localStorage:', sessionId);
-    sessionStorage.setItem('sessionId', sessionId);
+    // sessionStorage.setItem('sessionId', sessionId);// Line 171 in api.js
+    localStorage.setItem('sessionId', sessionId);
     return sessionId;
   } catch (error) {
     console.error('Error creating session:', {
@@ -200,9 +201,9 @@ const verifySession = async (sessionId) => {
   }
 };
 
-// Get or create session ID
+// Get or create session ID - central function for session management
 const getSessionId = async () => {
-  const storedSessionId = sessionStorage.getItem('sessionId');
+  const storedSessionId = localStorage.getItem('sessionId');
   if (storedSessionId) {
     console.log('Found stored session:', storedSessionId);
     const isValid = await verifySession(storedSessionId);
@@ -593,7 +594,7 @@ const login = async (email, password) => {
 
 const logout = async () => {
   try {
-    const sessionId = sessionStorage.getItem('sessionId');
+    const sessionId = localStorage.getItem('sessionId');
     if (sessionId) {
       await authApi.post('/auth/logout', { 
         sessionId,
