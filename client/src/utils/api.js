@@ -28,7 +28,7 @@ const mapsApi = axios.create({
 
 // Auth (Logging in) API configuration
 const authApi = axios.create({
-  baseURL: import.meta.env.VITE_MAPS_API_URL || '/auth-api', // Always use the proxy path
+  baseURL: import.meta.env.VITE_AUTH_API_URL || '/auth-api', // Always use the proxy path
   timeout: 30000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -471,7 +471,7 @@ const login = async (email, password) => {
     };
     
     // Use fetch API as an alternative to axios
-    const fetchResponse = await fetch('/auth-api/login', {
+    const fetchResponse = await fetch(import.meta.env.VITE_AUTH_API_URL + '/login', {
       method: 'POST',
       headers: headers,
       body: formData,
