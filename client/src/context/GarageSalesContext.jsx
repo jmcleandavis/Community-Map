@@ -12,15 +12,14 @@ export function GarageSalesProvider({ children }) {
   
   useEffect(() => {
     console.log('GarageSalesContext: Provider mounted');
-    // Fetch garage sales immediately on mount
-    fetchGarageSales();
+    // Initial fetch will be triggered by components as needed
     
     return () => {
       console.log('GarageSalesContext: Provider unmounted');
     };
   }, []);
 
-  const fetchGarageSales = useCallback(async (forceRefresh = false) => {
+  const fetchGarageSales = useCallback(async (communityId = null, forceRefresh = false) => {
     if (fetchInProgressRef.current) {
       console.log('GarageSalesContext: Fetch already in progress');
       return;
@@ -37,7 +36,13 @@ export function GarageSalesProvider({ children }) {
       setLoading(true);
       setError(null);
 
-      const response = await api.getAddresses();
+      // If communityId is provided, fetch garage sales for that community
+      // Otherwise fetch all garage sales
+      const response = communityId
+        ? await api.getAddressesByCommunity(communityId)
+        : await api.getAddresses();
+      
+      console.log('GarageSalesContext: Fetching with communityId:', communityId);
       console.log('GarageSalesContext: Raw API response:', response);
       console.log('GarageSalesContext: Response data structure:', JSON.stringify(response.data?.[0], null, 2));
 
