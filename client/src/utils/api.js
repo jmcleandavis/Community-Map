@@ -28,7 +28,7 @@ const mapsApi = axios.create({
 
 // Auth (Logging in) API configuration
 const authApi = axios.create({
-  baseURL: '/auth-api', // Always use the proxy path
+  baseURL: import.meta.env.VITE_MAPS_API_URL || '/auth-api', // Always use the proxy path
   timeout: 30000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
