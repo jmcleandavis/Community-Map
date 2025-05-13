@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
@@ -18,8 +18,16 @@ const GarageSalesAdmin = () => {
   } = useGarageSales();
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { searchTerm, handleSearchChange } = useSearch();
+  
+  // State for community ID and name
+  const queryParams = new URLSearchParams(location.search);
+  const id = queryParams.get('communityId');
+  console.warn('GarageSalesAdmin: Extracted communityId from URL:', id);
+  const [communityId, setCommunityId] = useState(id);
+  const [communityName, setCommunityName] = useState('');
   
   // Create a separate state for admin selections
   const [adminSelectedSales, setAdminSelectedSales] = useState(new Set());
@@ -32,6 +40,45 @@ const GarageSalesAdmin = () => {
     description: ''
   });
   const [submitError, setSubmitError] = useState('');
+  
+  // Update communityId when URL parameters change
+  useEffect(() => {
+    const newId = queryParams.get('communityId');
+    if (newId !== communityId) {
+      console.log('GarageSalesAdmin: URL communityId changed, updating state:', newId);
+      setCommunityId(newId);
+      // Reset selections when community changes
+      setAdminSelectedSales(new Set());
+      // Force a refresh of garage sales data with the new communityId
+      fetchGarageSales(newId, true);
+    }
+  }, [location.search, fetchGarageSales]);
+
+  // Extract communityId from URL parameters
+  useEffect(() => {
+    // Fetch community name based on ID
+    const fetchCommunityName = async () => {
+      try {
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'app-name': 'web-service',
+            'app-key': import.meta.env.VITE_APP_SESSION_KEY
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCommunityName(data.name || 'Community Sale');
+        }
+      } catch (error) {
+        console.error('Error fetching community name:', error);
+      }
+    };
+    
+    fetchCommunityName();
+  }, [communityId]);
   
   // Load any previously saved admin selections
   useEffect(() => {
@@ -52,10 +99,14 @@ const GarageSalesAdmin = () => {
 
 
 
-  // Refresh garage sales data when component mounts
+  // Refresh garage sales data when component mounts or communityId changes
   useEffect(() => {
-    fetchGarageSales();
-  }, []);
+    if (communityId) {
+      console.log('GarageSalesAdmin: Fetching garage sales for communityId:', communityId);
+      // Always force a refresh when the communityId changes
+      fetchGarageSales(communityId, true);
+    }
+  }, [fetchGarageSales, communityId]);
 
   const parseAddress = (addressString) => {
     // Example: "727 Balaton Ave, Pickering, ON"
@@ -154,7 +205,8 @@ const GarageSalesAdmin = () => {
           addressData,
           formData.description,
           "Garage Sale", // Default name
-          [] // Empty highlighted items
+          [], // Empty highlighted items
+          communityId // Pass the current community ID
         );
       }
       
@@ -382,7 +434,7 @@ const GarageSalesAdmin = () => {
 
   return (
     <div className={styles.garageSalesAdmin}>
-      <h1 className={styles.title}>Garage Sales Administration</h1>
+      <h1 className={styles.title}>{communityName ? `${communityName} Garage Sales` : 'Garage Sales Administration'}</h1>
       <div className={styles.userInfo}>
         <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
         <div className={styles.userEmail}>{userEmail}</div>

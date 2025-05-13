@@ -19,15 +19,29 @@ export function GarageSalesProvider({ children }) {
     };
   }, []);
 
+  // Keep track of the last fetched community ID
+  const lastFetchedCommunityIdRef = useRef(null);
+
   const fetchGarageSales = useCallback(async (communityId = null, forceRefresh = false) => {
     if (fetchInProgressRef.current) {
       console.log('GarageSalesContext: Fetch already in progress');
       return;
     }
 
-    if (initialFetchDoneRef.current && !forceRefresh) {
-      console.log('GarageSalesContext: Initial fetch already done, skipping (not forced)');
+    // Always fetch if:
+    // 1. forceRefresh is true, OR
+    // 2. communityId is different from the last one we fetched
+    const communityChanged = communityId && communityId !== lastFetchedCommunityIdRef.current;
+    
+    if (initialFetchDoneRef.current && !forceRefresh && !communityChanged) {
+      console.log('GarageSalesContext: Skipping fetch - no changes detected');
       return;
+    }
+    
+    // Update the last fetched community ID reference
+    if (communityId) {
+      console.log('GarageSalesContext: Updating lastFetchedCommunityId from', lastFetchedCommunityIdRef.current, 'to', communityId);
+      lastFetchedCommunityIdRef.current = communityId;
     }
 
     try {
@@ -42,8 +56,15 @@ export function GarageSalesProvider({ children }) {
         ? await api.getAddressesByCommunity(communityId)
         : await api.getAddresses();
       
-      console.log('GarageSalesContext: Fetching with communityId:', communityId);
+      console.warn('GarageSalesContext: Fetching with communityId:', communityId);
       console.log('GarageSalesContext: Raw API response:', response);
+      
+      // Handle case where response.data is false instead of an empty array
+      if (response && response.data === false) {
+        console.log('GarageSalesContext: Response data is false, converting to empty array');
+        response.data = [];
+      }
+      
       console.log('GarageSalesContext: Response data structure:', JSON.stringify(response.data?.[0], null, 2));
 
       if (response && response.data) {
