@@ -43,8 +43,8 @@ const DisplayMode = ({ onSelect }) => {
         // Navigate to the map page
         navigate('/');
       } else {
-        // Alert if no sales are selected, but don't navigate
-        alert('Please select at least one garage sale to view on the map.');
+        // If no sales are selected, navigate to the GarageSales page where users can select sales
+        navigate('/sales');
       }
     } else {
       // "Show All Sales" option is clicked
