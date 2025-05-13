@@ -319,7 +319,7 @@ async function getUserInfo(email) {
 }
 
 // Create a new garage sale
-const createGarageSale = async (addressData, description, name, highlightedItems) => {
+const createGarageSale = async (addressData, description, name, highlightedItems, communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
   try {
     const currentSessionId = await getSessionId();
     const response = await mapsApi.post('/v1/createAddress', {
@@ -334,7 +334,7 @@ const createGarageSale = async (addressData, description, name, highlightedItems
       description: description,
       highlightedItems: highlightedItems || [],
       name: name || "Garage Sale",
-      community: "d31a9eec-0dda-469d-8565-692ef9ad55c2"
+      community: communityId
     }, {
       headers: {
         'sessionId': currentSessionId
