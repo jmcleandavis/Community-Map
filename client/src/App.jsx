@@ -19,6 +19,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DisplayProvider } from './context/DisplayContext';
 import { LocationProvider } from './context/LocationContext';
 import { NavigationProvider } from './context/NavigationContext';
+import { CommunitySalesProvider } from './context/CommunitySalesContext';
 
 function App() {
   // Google Maps libraries
@@ -60,6 +61,7 @@ function App() {
           <DisplayProvider>
             <LocationProvider>
               <NavigationProvider>
+                <CommunitySalesProvider>
                 <div className="app">
                   <Routes>
                     <Route path="/loginRedirect" element={<LoginRedirect />} />
@@ -134,6 +136,7 @@ function App() {
                     } />
                   </Routes>
                 </div>
+                </CommunitySalesProvider>
               </NavigationProvider>
             </LocationProvider>
           </DisplayProvider>

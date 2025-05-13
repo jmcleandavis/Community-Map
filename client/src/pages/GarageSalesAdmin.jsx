@@ -4,6 +4,7 @@ import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import api from '../utils/api';
@@ -21,13 +22,15 @@ const GarageSalesAdmin = () => {
   const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { searchTerm, handleSearchChange } = useSearch();
+  const { communitySalesEventName, currentCommunityId } = useCommunitySales();
   
   // State for community ID and name
   const queryParams = new URLSearchParams(location.search);
   const id = queryParams.get('communityId');
   console.warn('GarageSalesAdmin: Extracted communityId from URL:', id);
-  const [communityId, setCommunityId] = useState(id);
-  const [communityName, setCommunityName] = useState('');
+  const [communityId, setCommunityId] = useState(id || currentCommunityId);
+  // Use the community name from context if available, otherwise it will be fetched
+  const [communityName, setCommunityName] = useState(communitySalesEventName || '');
   
   // Create a separate state for admin selections
   const [adminSelectedSales, setAdminSelectedSales] = useState(new Set());
@@ -41,44 +44,60 @@ const GarageSalesAdmin = () => {
   });
   const [submitError, setSubmitError] = useState('');
   
-  // Update communityId when URL parameters change
+  // Update state when context or URL parameters change
   useEffect(() => {
-    const newId = queryParams.get('communityId');
-    if (newId !== communityId) {
-      console.log('GarageSalesAdmin: URL communityId changed, updating state:', newId);
+    console.log('GarageSalesAdmin: Context values:', { communitySalesEventName, currentCommunityId });
+    
+    // If we have a community name from context, use it
+    if (communitySalesEventName && communitySalesEventName !== communityName) {
+      console.log('GarageSalesAdmin: Setting community name from context:', communitySalesEventName);
+      setCommunityName(communitySalesEventName);
+    }
+    
+    // Get communityId from URL or context
+    const newId = queryParams.get('communityId') || currentCommunityId;
+    if (newId && newId !== communityId) {
+      console.log('GarageSalesAdmin: Community ID changed, updating state:', newId);
       setCommunityId(newId);
       // Reset selections when community changes
       setAdminSelectedSales(new Set());
       // Force a refresh of garage sales data with the new communityId
       fetchGarageSales(newId, true);
     }
-  }, [location.search, fetchGarageSales]);
+  }, [location.search, fetchGarageSales, communitySalesEventName, currentCommunityId]);
 
   // Extract communityId from URL parameters
   useEffect(() => {
-    // Fetch community name based on ID
-    const fetchCommunityName = async () => {
-      try {
-        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'app-name': 'web-service',
-            'app-key': import.meta.env.VITE_APP_SESSION_KEY
+    // Only fetch community name if it's not already available in the context
+    if (!communitySalesEventName && communityId) {
+      console.log('GarageSalesAdmin: Community name not in context, fetching from API');
+      
+      // Fetch community name based on ID
+      const fetchCommunityName = async () => {
+        try {
+          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
+          const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+              'app-name': 'web-service',
+              'app-key': import.meta.env.VITE_APP_SESSION_KEY
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setCommunityName(data.name || 'Community Sale');
           }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setCommunityName(data.name || 'Community Sale');
+        } catch (error) {
+          console.error('Error fetching community name:', error);
         }
-      } catch (error) {
-        console.error('Error fetching community name:', error);
-      }
-    };
-    
-    fetchCommunityName();
-  }, [communityId]);
+      };
+      
+      fetchCommunityName();
+    } else if (communitySalesEventName) {
+      console.log('GarageSalesAdmin: Using community name from context:', communitySalesEventName);
+    }
+  }, [communityId, communitySalesEventName]);
   
   // Load any previously saved admin selections
   useEffect(() => {
@@ -434,7 +453,7 @@ const GarageSalesAdmin = () => {
 
   return (
     <div className={styles.garageSalesAdmin}>
-      <h1 className={styles.title}>{communityName ? `${communityName} Garage Sales` : 'Garage Sales Administration'}</h1>
+      <h1 className={styles.title}>{communityName ? `${communityName}` : 'Garage Sales Administration'}</h1>
       <div className={styles.userInfo}>
         <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
         <div className={styles.userEmail}>{userEmail}</div>

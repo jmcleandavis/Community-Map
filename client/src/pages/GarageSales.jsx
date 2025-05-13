@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './GarageSales.css';
 import { useGarageSales } from '../context/GarageSalesContext';
+import { useAuth } from '../context/AuthContext';
+import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
 import { useSelection } from '../context/SelectionContext';
-import { useDisplay } from '../context/DisplayContext';
-import { useAuth } from '../context/AuthContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import api from '../utils/api';
 
@@ -24,40 +25,54 @@ const GarageSales = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
+  const { communitySalesEventName, setCommunitySalesEventName, currentCommunityId, setCurrentCommunityId } = useCommunitySales();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [communityId, setCommunityId] = useState(null);
-  const [communityName, setCommunityName] = useState('');
+  const [communityId, setCommunityId] = useState(currentCommunityId || null);
+  const [communityName, setCommunityName] = useState(communitySalesEventName || '');
 
-  // Extract communityId from URL parameters
+  // Extract communityId from URL parameters and update context/state
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const id = queryParams.get('communityId');
+    
     if (id) {
+      // Update local state
       setCommunityId(id);
-      // Fetch community name based on ID
-      const fetchCommunityName = async () => {
-        try {
-          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/${id}`;
-          const response = await fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-              'app-name': 'web-service',
-              'app-key': import.meta.env.VITE_APP_SESSION_KEY
-            }
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            setCommunityName(data.name || 'Community Sale');
-          }
-        } catch (error) {
-          console.error('Error fetching community name:', error);
-        }
-      };
+      // Update context
+      setCurrentCommunityId(id);
       
-      fetchCommunityName();
+      // If we don't have the community name in context, fetch it
+      if (!communitySalesEventName) {
+        console.log('GarageSales: Community name not in context, fetching from API');
+        const fetchCommunityName = async () => {
+          try {
+            const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/${id}`;
+            const response = await fetch(apiUrl, {
+              method: 'GET',
+              headers: {
+                'app-name': 'web-service',
+                'app-key': import.meta.env.VITE_APP_SESSION_KEY
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              const name = data.name || 'Community Sale';
+              setCommunityName(name);
+              setCommunitySalesEventName(name); // Also update the context
+            }
+          } catch (error) {
+            console.error('Error fetching community name:', error);
+          }
+        };
+        
+        fetchCommunityName();
+      } else {
+        console.log('GarageSales: Using community name from context:', communitySalesEventName);
+        setCommunityName(communitySalesEventName);
+      }
     }
-  }, [location]);
+  }, [location, communitySalesEventName, setCurrentCommunityId, setCommunitySalesEventName]);
 
   // Fetch garage sales, filtered by communityId if available
   useEffect(() => {
@@ -208,7 +223,7 @@ const GarageSales = () => {
 
   return (
     <div className="garage-sales-container">
-      <h1>{communityName ? `${communityName} Garage Sales` : 'Garage Sales'}</h1>
+      <h1>{communityName ? `${communityName}` : 'Garage Sales'}</h1>
       {isAuthenticated && (
         <div className="user-info">
           <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
