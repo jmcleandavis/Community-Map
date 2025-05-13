@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import './CommunitySalesAdmin.css';
 
 const CommunitySalesAdmin = () => {
   const navigate = useNavigate();
   const { userInfo, userEmail, sessionId } = useAuth(); // Get user info from auth context
+  const { setCommunitySalesEventName, setCurrentCommunityId } = useCommunitySales(); // Get community sales context
   const [communitySales, setCommunitySales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -380,6 +382,10 @@ const CommunitySalesAdmin = () => {
 
   // Handle navigating to manage a specific community sale
   const handleManageSale = (sale) => {
+    // Store the community sale name and ID in the context
+    setCommunitySalesEventName(sale.name);
+    setCurrentCommunityId(sale.id);
+    
     // Navigate to the garage sales admin page with the specific community sale ID
     navigate(`/admin/sales?communityId=${sale.id}`);
   };
