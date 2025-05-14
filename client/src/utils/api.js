@@ -534,8 +534,19 @@ const login = async (email, password) => {
       'sessionId': sessionId
     };
     
-    // Use fetch API as an alternative to axios
-    const fetchResponse = await fetch('/auth-api/login', {
+    // Use the full backend URL from environment variable
+    const authApiUrl = import.meta.env.VITE_AUTH_API_URL || 'https://br-auth-api-dev001-207215937730.us-central1.run.app';
+    const fullLoginUrl = `${authApiUrl}/login`;
+    
+    console.log('API Login Request Details:', {
+      url: fullLoginUrl,
+      method: 'POST',
+      headers: headers,
+      body: formData.toString(),
+      credentials: 'omit'
+    });
+    
+    const fetchResponse = await fetch(fullLoginUrl, {
       method: 'POST',
       headers: headers,
       body: formData,
