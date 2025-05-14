@@ -8,6 +8,16 @@ const ConditionalMenu = () => {
   const { fromLanding } = useNavigation();
   const location = useLocation();
   
+  // Admin pages should never show the hamburger menu
+  if (location.pathname.startsWith('/admin')) {
+    return <MenuBar />; // Don't show any menu for admin pages
+  }
+  
+ // Info pages should never show the hamburger menu  
+  if (location.pathname.startsWith('/info')) {
+    return <MenuBar />; // Don't show any menu for info pages
+  }
+    
   // Pages that should always use the HamburgerMenu regardless of navigation path
   const alwaysHamburgerPages = ['/', '/help', '/settings', '/sales'];
   if (alwaysHamburgerPages.includes(location.pathname)) {
