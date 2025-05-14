@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 import communityMapImage from '../assets/community-map-example.jpg';
@@ -7,6 +7,13 @@ import { useNavigation } from '../context/NavigationContext';
 const LandingPage = () => {
   const navigate = useNavigate();
   const { setFromLanding, fromMap, setFromMap } = useNavigation();
+  
+  // Record that the user started on the landing page
+  useEffect(() => {
+    // Store the initial page in sessionStorage
+    sessionStorage.setItem('initialPage', '/landing');
+    console.log('LandingPage: Recorded initial page as "/landing" in sessionStorage');
+  }, []);
 
   const handleNavigation = (path) => {
     setFromLanding(true); // Set that navigation came from landing page

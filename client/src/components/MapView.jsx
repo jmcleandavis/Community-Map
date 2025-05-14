@@ -84,6 +84,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
     return selectedSalesStr ? JSON.parse(selectedSalesStr) : [];
   }, []);
 
+  // Record that the user started on the map page
+  useEffect(() => {
+    // Store the initial page in sessionStorage
+    sessionStorage.setItem('initialPage', '/');
+    console.log('MapView: Recorded initial page as "/" in sessionStorage');
+  }, []);
+
   // Initial load of garage sales
   useEffect(() => {
     if (!initialLoadRef.current) {

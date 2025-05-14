@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from '../context/NavigationContext';
 import './Info.css';
@@ -6,6 +6,13 @@ import './Info.css';
 const InfoPage = () => {
   const navigate = useNavigate();
   const { fromMap, setFromMap } = useNavigation();
+  
+  // Record that the user started on the about page
+  useEffect(() => {
+    // Store the initial page in sessionStorage
+    sessionStorage.setItem('initialPage', '/about');
+    console.log('InfoPage: Recorded initial page as "/about" in sessionStorage');
+  }, []);
   return (
     <div className="info-page">
       <div className="info-container">

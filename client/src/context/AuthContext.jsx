@@ -125,6 +125,15 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('userEmail', userData.email);
         localStorage.setItem('userInfo', JSON.stringify(userData));
         
+        // Get the initial page from sessionStorage and navigate directly back to it
+        const initialPage = sessionStorage.getItem('initialPage');
+        console.log(`AUTH CONTEXT: Google login successful, navigating back to initial page: ${initialPage}`);
+        
+        // We need to use window.location instead of navigate() since this isn't a component
+        setTimeout(() => {
+          window.location.href = initialPage;
+        }, 100);
+        
         return { success: true, data: authData };
       } else {
         throw new Error('Invalid response from Google authentication');
