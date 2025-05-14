@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './App.css';
@@ -20,8 +21,10 @@ import { DisplayProvider } from './context/DisplayContext';
 import { LocationProvider } from './context/LocationContext';
 import { NavigationProvider } from './context/NavigationContext';
 import { CommunitySalesProvider } from './context/CommunitySalesContext';
+import { InitialPageProvider } from './context/InitialPageContext';
 
 function App() {
+  
   // Google Maps libraries
   const libraries = useMemo(() => ['places', 'marker'], []);
 
@@ -61,6 +64,7 @@ function App() {
           <DisplayProvider>
             <LocationProvider>
               <NavigationProvider>
+                <InitialPageProvider>
                 <CommunitySalesProvider>
                 <div className="app">
                   <Routes>
@@ -137,6 +141,7 @@ function App() {
                   </Routes>
                 </div>
                 </CommunitySalesProvider>
+                </InitialPageProvider>
               </NavigationProvider>
             </LocationProvider>
           </DisplayProvider>

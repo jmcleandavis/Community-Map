@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useInitialPage } from '../context/InitialPageContext';
 import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, googleLogin, handleGoogleCallback, requestPasswordReset, verifyResetToken, resetPassword } = useAuth();
+  const { initialPath, wasInitialPageMap, wasInitialPageAbout, debugInitialPage } = useInitialPage();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
@@ -43,9 +45,16 @@ const Login = () => {
         try {
           setLoading(true);
           setError('');
-          console.log('Processing Google authorization code');
+          console.log('GOOGLE AUTH: Processing Google authorization code');
           await handleGoogleCallback(code);
-          navigate('/');
+          
+          // Force a delay to ensure context is properly loaded
+          console.log('GOOGLE AUTH: Authentication complete, preparing navigation');
+          
+          // Always navigate to community sales admin after Google login
+          // This is a direct approach that bypasses the initial page checking
+          console.log('GOOGLE AUTH: Navigating to /admin/community-sales');
+          navigate('/admin/community-sales');
         } catch (err) {
           setError('Failed to authenticate with Google. Please try again.');
           console.error('Google authentication error:', err);
@@ -102,15 +111,16 @@ const Login = () => {
       if (isLogin) {
         await login(formData.email, formData.password);
         
-        // Get the current path
-        const currentPath = location.pathname;
-        
-        // If we're logging in from the map view (/login without referrer), stay on map
-        // Otherwise redirect to landing page
-        if (currentPath === '/login' && !location.search.includes('from=landing')) {
+        // Use the initial page tracker to determine where to navigate
+        if (wasInitialPageAbout()) {
+          // If they started on the about/landing page, go to Manage Community Sales
+          navigate('/admin/community-sales');
+        } else if (wasInitialPageMap()) {
+          // If they started on the map page, go back to the map
           navigate('/');
         } else {
-          navigate('/landing');
+          // Default fallback - if we can't determine, go to the map
+          navigate('/');
         }
       } else if (isForgotPassword) {
         // Handle forgot password form submission
@@ -176,15 +186,16 @@ const Login = () => {
           formData.lastName
         );
         
-        // Get the current path
-        const currentPath = location.pathname;
-        
-        // If we're logging in from the map view (/login without referrer), stay on map
-        // Otherwise redirect to landing page
-        if (currentPath === '/login' && !location.search.includes('from=landing')) {
+        // Use the initial page tracker to determine where to navigate
+        if (wasInitialPageAbout()) {
+          // If they started on the about/landing page, go to Manage Community Sales
+          navigate('/admin/community-sales');
+        } else if (wasInitialPageMap()) {
+          // If they started on the map page, go back to the map
           navigate('/');
         } else {
-          navigate('/landing');
+          // Default fallback - if we can't determine, go to the map
+          navigate('/');
         }
       }
     } catch (err) {
@@ -204,6 +215,10 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
+      // The initial page is already stored in sessionStorage by the InitialPageContext
+      // so it will persist during the Google OAuth redirect
+      console.log('[Login] Starting Google login, initial page is preserved in session storage');
+      debugInitialPage(); // Log the current initial page before redirect
       await googleLogin();
       // No need to navigate here as googleLogin will redirect to Google OAuth
     } catch (err) {
@@ -361,6 +376,7 @@ const Login = () => {
                 </div>
               </>
             )}
+            
             <div className="form-group">
               <input
                 type="email"
@@ -383,14 +399,6 @@ const Login = () => {
                 required
               />
             </div>
-            {isLogin && (
-              <span 
-                className="forgot-password"
-                onClick={toggleForgotPassword}
-              >
-                Forgot Password?
-              </span>
-            )}
             {!isLogin && (
               <div className="form-group">
                 <input
@@ -409,29 +417,45 @@ const Login = () => {
               className="submit-button"
               disabled={loading}
             >
-              {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
+              {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
             </button>
           </form>
-          <button 
-            className="toggle-button"
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError('');
-              setSuccessMessage('');
-              setFormData({
-                email: '',
-                password: '',
-                confirmPassword: '',
-                firstName: '',
-                lastName: '',
-                newPassword: '',
-                confirmNewPassword: ''
-              });
-            }}
-            disabled={loading}
-          >
-            {isLogin ? 'Need an account? Sign up' : 'Have an account? Login'}
-          </button>
+          
+          <div className="form-footer">
+            {isLogin ? (
+              <>
+                <button 
+                  className="toggle-form-button"
+                  onClick={() => {
+                    setIsLogin(false);
+                    setIsForgotPassword(false);
+                    setError('');
+                  }}
+                  disabled={loading}
+                >
+                  Need an account? Sign Up
+                </button>
+                <button 
+                  className="forgot-password-button"
+                  onClick={toggleForgotPassword}
+                  disabled={loading}
+                >
+                  Forgot Password?
+                </button>
+              </>
+            ) : (
+              <button 
+                className="toggle-form-button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setError('');
+                }}
+                disabled={loading}
+              >
+                Already have an account? Login
+              </button>
+            )}
+          </div>
         </>
       );
     }
@@ -439,7 +463,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
+      <div className="login-form">
         {renderForm()}
       </div>
     </div>
