@@ -53,14 +53,17 @@ const CommunitySalesAdmin = () => {
         const data = await response.json();
         
         // Transform API data to match component's expected format
-        const formattedData = data.map(sale => ({
-          id: sale.id,
-          name: sale.name,
-          description: sale.description,
-          startDate: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
-          endDate: sale.endDate ? new Date(sale.endDate).toISOString().split('T')[0] : '',
-          location: sale.location
-        }));
+        // Check if data is an array before mapping
+        const formattedData = Array.isArray(data) 
+          ? data.map(sale => ({
+              id: sale.id,
+              name: sale.name,
+              description: sale.description,
+              startDate: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
+              endDate: sale.endDate ? new Date(sale.endDate).toISOString().split('T')[0] : '',
+              location: sale.location
+            }))
+          : [];
         
         setCommunitySales(formattedData);
       } catch (err) {
@@ -538,8 +541,6 @@ const CommunitySalesAdmin = () => {
       ) : filteredSales.length === 0 ? (
         <div className="empty-state">
           <h3>No Community Sales Found</h3>
-          <p>Start by creating a new community sale using the button above.</p>
-          <button onClick={handleAddNew}>Add Community Sale</button>
         </div>
       ) : (
         <div className="sales-grid">
