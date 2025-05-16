@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 import communityMapImage from '../assets/community-map-example.jpg';
 import { useNavigation } from '../context/NavigationContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { setFromLanding, fromMap, setFromMap } = useNavigation();
+  const { currentCommunityId } = useCommunitySales();
   
   // Record that the user started on the landing page
   useEffect(() => {
@@ -62,7 +64,7 @@ const LandingPage = () => {
             {fromMap && (
               <div className="cta-button secondary" onClick={() => {
                 // Don't reset fromMap flag so the button remains visible when returning to this page
-                navigate('/');
+                navigate(`/admin/sales?communityId=${currentCommunityId || ''}`);
               }} style={{ marginLeft: '1rem' }}>
                 Return to Map
               </div>

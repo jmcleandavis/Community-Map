@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLocation as useLocationContext } from '../context/LocationContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import DisplayMode from './menuItems/DisplayMode';
 import './HamburgerMenu.css';
 
@@ -9,6 +10,7 @@ const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentCommunityId } = useCommunitySales();
   const { isAuthenticated, userId, userType, logout, userEmail, userInfo } = useAuth();
   const { centerOnUserLocation } = useLocationContext();
   const menuRef = useRef(null);
@@ -52,7 +54,7 @@ const HamburgerMenu = () => {
 
   // Handler for Map menu item click
   const handleMapMenuItemClick = () => {
-    navigate('/');
+    navigate(`/?communityId=${currentCommunityId || ''}`);
     setIsOpen(false);
   };
 
@@ -63,7 +65,7 @@ const HamburgerMenu = () => {
     
     // When on map view, stay there after logout
     if (location.pathname === '/') {
-      navigate('/'); // Stay on the map page
+      navigate(`/?communityId=${currentCommunityId || ''}`); // Stay on the map page
     } else {
       navigate('/landing'); // Otherwise go to landing page
     }

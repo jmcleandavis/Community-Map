@@ -3,14 +3,14 @@ import { GoogleMap, InfoWindow } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import './MapView.css';
-import { useLocation as useRouterLocation } from 'react-router-dom';
+import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import useWindowSize from '../hooks/useWindowSize';
 import { useLocation } from '../context/LocationContext';
+import { useAuth } from '../context/AuthContext';
+import { useSelection } from '../context/SelectionContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
+import api from '../utils/api';
 
-const COMMUNITY_NAME = 'BAY RIDGES';
-const EVENT_NAME = 'COMMUNITY SALE DAY';
-const currentYear = new Date().getFullYear();
-let communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2';
 
 // Fallback component when map fails to load
 const MapLoadError = ({ error }) => {
@@ -64,19 +64,31 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const markersRef = useRef([]);
   const userMarkerRef = useRef(null);
   const initialLoadRef = useRef(false);
+  const userSelectionsLoadedRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
+  const { isAuthenticated, userInfo } = useAuth();
+  const { handleCheckboxChange, handleDeselectAll } = useSelection();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
+  const { currentCommunityId, setCurrentCommunityId, communitySalesEventName } = useCommunitySales();
+  
+  // Use the community name from context instead of hardcoding it
+  const COMMUNITY_NAME = communitySalesEventName || 'Community Sales Day'; // Fallback to 'BAY RIDGES' if no name is set
   const location = useRouterLocation();
+  const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const urlCommunityId = urlParams.get('communityId');
 
-  // Use this effect to update the communityId
+  // Use this effect to update the communityId or navigate to landing page
   useEffect(() => {
     if(urlCommunityId) {
-      communityId = urlCommunityId;
+      setCurrentCommunityId(urlCommunityId);
+    } else if (!currentCommunityId) {
+      // If no community ID is provided, navigate to the landing page
+      console.log('MapView: No community ID provided, navigating to landing page');
+      navigate('/about');
     }
-  }, [urlCommunityId]);
+  }, [urlCommunityId, currentCommunityId, setCurrentCommunityId, navigate]);
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -93,12 +105,50 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Initial load of garage sales
   useEffect(() => {
-    if (!initialLoadRef.current) {
-      console.log('MapView: Initial load - fetching garage sales');
-      fetchGarageSales();
+    if (!initialLoadRef.current && currentCommunityId) {
+      console.log('MapView: Initial load - fetching garage sales with communityId:', currentCommunityId);
+      fetchGarageSales(currentCommunityId);
       initialLoadRef.current = true;
     }
-  }, [fetchGarageSales]);
+  }, [fetchGarageSales, currentCommunityId]);
+  
+  // Load user's saved garage sale selections if they're logged in
+  useEffect(() => {
+    const fetchUserSelections = async () => {
+      // Only fetch if user is logged in, we haven't already loaded selections,
+      // and we have the user's ID
+      if (isAuthenticated && !userSelectionsLoadedRef.current && userInfo?.userId) {
+        try {
+          console.log('MapView: User is logged in, fetching saved selections for user:', userInfo.userId);
+          const userAddressList = await api.getUserAddressList(userInfo.userId);
+          
+          if (userAddressList && userAddressList.addressList && userAddressList.addressList.length > 0) {
+            console.log('MapView: User has saved selections on server:', userAddressList.addressList);
+            
+            // Clear existing selections first
+            handleDeselectAll();
+            
+            // Add each server-side selection
+            userAddressList.addressList.forEach(saleId => {
+              handleCheckboxChange(saleId);
+            });
+            
+            console.log('MapView: Updated selections from server list');
+          } else {
+            console.log('MapView: User does not have saved selections on server, using local selections');
+          }
+          
+          // Mark that we've loaded user selections
+          userSelectionsLoadedRef.current = true;
+        } catch (error) {
+          console.error('MapView: Error fetching user selections:', error);
+          // If there's an error, we'll fall back to local storage selections
+        }
+      }
+    };
+    
+    fetchUserSelections();
+  }, [isAuthenticated, userInfo, handleCheckboxChange, handleDeselectAll]);
 
   // Cleanup function for markers
   const cleanupMarkers = useCallback(() => {
@@ -382,9 +432,6 @@ function MapView({ mapContainerStyle, mapOptions }) {
   else {
     renderContent = (
       <div className="map-container">
-        <div style={titleStyle}>
-          {`${COMMUNITY_NAME} ${EVENT_NAME} ${currentYear}`}
-        </div>
 
         <GoogleMap
           mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}
