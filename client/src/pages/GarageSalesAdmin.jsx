@@ -236,7 +236,8 @@ const GarageSalesAdmin = () => {
         description: ''
       });
       // Force refresh the list after adding/editing
-      await fetchGarageSales(true);
+      // Pass the communityId as the first parameter and true as the second parameter to force refresh
+      await fetchGarageSales(communityId, true);
     } catch (error) {
       console.error('Error submitting garage sale:', error);
       if (error.message === 'A garage sale already exists at this address') {
