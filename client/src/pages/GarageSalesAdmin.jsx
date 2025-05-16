@@ -254,7 +254,8 @@ const GarageSalesAdmin = () => {
         await api.deleteGarageSale(saleId);
         
         // Force refresh the garage sales list to update the UI
-        await fetchGarageSales(true);
+        // Pass the communityId to ensure we're fetching the correct sales
+        await fetchGarageSales(communityId, true);
       } catch (error) {
         console.error('Error deleting garage sale:', error);
       }
@@ -291,7 +292,8 @@ const GarageSalesAdmin = () => {
         await api.deleteGarageSale(selectedIds);
         
         // Force refresh the garage sales list to update the UI
-        await fetchGarageSales(true);
+        // Pass the communityId to ensure we're fetching the correct sales
+        await fetchGarageSales(communityId, true);
         handleAdminDeselectAll();
       } catch (error) {
         console.error('Error deleting selected garage sales:', error);
