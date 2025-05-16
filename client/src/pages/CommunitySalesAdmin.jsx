@@ -197,17 +197,25 @@ const CommunitySalesAdmin = () => {
         console.log('API Update Data:', apiData);
         console.log('Updating community sale with ID:', editingSale.id);
         
-        // Make API call to update community sale
-        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/create`;
+        // Make API call to update community sale using PATCH method
+        const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/update/${editingSale.id}`;
+        
+        // Prepare headers according to the API requirements
+        const headers = {
+          'app-name': 'web-service',
+          'app-key': import.meta.env.VITE_APP_SESSION_KEY,
+          'sessionId': sessionId || '',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        };
+        
+        console.log('Making PATCH request to update community sale with ID:', editingSale.id);
+        console.log('Request headers:', headers);
+        console.log('Request payload:', apiData);
         
         const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'app-name': 'web-service',
-            'app-key': import.meta.env.VITE_APP_SESSION_KEY,
-            'sessionId': sessionId || '',
-            'Content-Type': 'application/json'
-          },
+          method: 'PATCH',
+          headers: headers,
           body: JSON.stringify(apiData)
         });
         
