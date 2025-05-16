@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from '../context/NavigationContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import './Info.css';
 
 const InfoPage = () => {
   const navigate = useNavigate();
   const { fromMap, setFromMap } = useNavigation();
+  const { currentCommunityId } = useCommunitySales();
   
   // Record that the user started on the about page
   useEffect(() => {
@@ -56,7 +58,7 @@ const InfoPage = () => {
           <div 
             className="cta-button secondary" 
             onClick={() => {
-              navigate('/');
+              navigate(`/?communityId=${currentCommunityId || ''}`);
             }} 
             style={{ 
               display: 'inline-block',

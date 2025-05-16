@@ -136,7 +136,7 @@ const GarageSales = () => {
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
-    navigate('/');
+    navigate(`/?communityId=${currentCommunityId || ''}`);
   };
 
   const handleDeselectAllWithServerUpdate = async () => {
@@ -191,7 +191,7 @@ const GarageSales = () => {
       }
       
       // Navigate to the map page to view the selected sales
-      navigate('/');
+      navigate(`/?communityId=${currentCommunityId || ''}`);
     } else {
       alert('Please select at least one garage sale to view on the map.');
     }

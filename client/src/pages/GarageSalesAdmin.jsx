@@ -307,14 +307,14 @@ const GarageSalesAdmin = () => {
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
-    navigate('/');
+    navigate(`/?communityId=${currentCommunityId || ''}`);
   };
   
   // Function to handle QR code generation for the community map
   const handleCreateQRCode = () => {
     // Create a URL that points to the main map
     const baseUrl = window.location.origin;
-    const mapUrl = `${baseUrl}/`;
+    const mapUrl = `${baseUrl}/?communityId=${currentCommunityId || ''}`;
     
     // Use a free QR code generation service
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mapUrl)}`;

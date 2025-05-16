@@ -2,12 +2,14 @@ import React from 'react';
 import { useDisplay } from '../../context/DisplayContext';
 import { useSelection } from '../../context/SelectionContext';
 import { useGarageSales } from '../../context/GarageSalesContext';
+import { useCommunitySales } from '../../context/CommunitySalesContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const DisplayMode = ({ onSelect }) => {
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
   const { selectedSales } = useSelection();
   const { garageSales } = useGarageSales();
+  const { currentCommunityId } = useCommunitySales();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -40,8 +42,8 @@ const DisplayMode = ({ onSelect }) => {
         // Toggle the display mode
         toggleDisplayMode();
         
-        // Navigate to the map page
-        navigate('/');
+        // Navigate to the map page with community ID
+        navigate(`/?communityId=${currentCommunityId || ''}`);
       } else {
         // If no sales are selected, navigate to the GarageSales page where users can select sales
         navigate('/sales');
@@ -54,8 +56,8 @@ const DisplayMode = ({ onSelect }) => {
       // Toggle the display mode
       toggleDisplayMode();
       
-      // Always navigate to the map page for consistency
-      navigate('/');
+      // Always navigate to the map page for consistency with community ID
+      navigate(`/?communityId=${currentCommunityId || ''}`);
     }
 
     // Call the onSelect callback to close the menu
