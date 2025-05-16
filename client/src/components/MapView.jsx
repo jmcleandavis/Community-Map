@@ -98,9 +98,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Record that the user started on the map page
   useEffect(() => {
+    const initialPage = '/';
     // Store the initial page in sessionStorage
-    sessionStorage.setItem('initialPage', '/');
-    console.log('MapView: Recorded initial page as "/" in sessionStorage');
+    sessionStorage.setItem('initialPage', initialPage);
+    console.log(`MapView: Recorded initial page as "${initialPage}" in sessionStorage`);
   }, []);
 
   // Initial load of garage sales
@@ -432,6 +433,8 @@ function MapView({ mapContainerStyle, mapOptions }) {
   else {
     renderContent = (
       <div className="map-container">
+        {/* Display the community name at the top */}
+        <div style={titleStyle}>{COMMUNITY_NAME}</div>
 
         <GoogleMap
           mapContainerStyle={mapContainerStyle || { width: '100%', height: '100vh' }}

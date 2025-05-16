@@ -395,6 +395,10 @@ const CommunitySalesAdmin = () => {
 
   // Handle viewing a community sale on the map
   const handleViewOnMap = (sale) => {
+    // Store the community sale name and ID in the context
+    setCommunitySalesEventName(sale.name);
+    setCurrentCommunityId(sale.id);
+    
     // Navigate to the map with the specific community sale ID
     navigate(`/?communityId=${sale.id}`);
   };
