@@ -327,7 +327,7 @@ const GarageSalesAdmin = () => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Community Garage Sale QR Code</title>
+        <title>${communityName || 'Community Garage Sale'} QR Code</title>
         <style>
           body {
             background-color: white;
@@ -360,12 +360,12 @@ const GarageSalesAdmin = () => {
         </style>
       </head>
       <body>
-        <h1>Community Garage Sale</h1>
+        <h1>${communityName || 'Community Garage Sale'}</h1>
         <div class="qr-container">
           <img src="${qrCodeUrl}" alt="QR Code for Community Garage Sale" />
         </div>
         <div class="instructions">
-          <p>Scan this QR code to access the Community Garage Sale map on your mobile device.</p>
+          <p>Scan this QR code to access the ${communityName || 'Community Garage Sale'} map on your mobile device.</p>
           <p>You can print this page or save the QR code image for distribution.</p>
         </div>
       </body>
