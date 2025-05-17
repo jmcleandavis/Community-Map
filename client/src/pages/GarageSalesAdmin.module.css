@@ -261,7 +261,7 @@
   padding: 0;
   max-width: 1300px; /*Increase the maximum width*/
   width: 100%; /* Take up more of the available space */
-  min-height: 2350px; /* Set minimum height to desired value */
+  /* Removed min-height to let the grid size naturally */
 }
 
 .saleCard {
@@ -272,6 +272,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  max-height: 800px; /* Control the maximum height of cards */
 }
 
 .cardHeader {
@@ -292,6 +293,9 @@
   color: #666;
   line-height: 1.5;
   flex-grow: 1;
+  max-height: 150px; /* Fixed height for description area */
+  overflow-y: auto; /* Add vertical scrollbar when needed */
+  padding-right: 5px; /* Add some padding for the scrollbar */
 }
 
 .saleActions {

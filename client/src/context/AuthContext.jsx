@@ -227,7 +227,8 @@ export const AuthProvider = ({ children }) => {
     
     // Clear selected sales data
     localStorage.removeItem('selectedSaleIds');
-    // localStorage.removeItem('selectedSales');
+    localStorage.removeItem('selectedSales');
+    localStorage.removeItem('adminSelectedSaleIds');
     
     console.log('User logged out, cleared all user data and selections');
     
@@ -236,6 +237,11 @@ export const AuthProvider = ({ children }) => {
       console.log('User was on garage sales page, navigating to map page');
       navigate('/');
     }
+    
+    // Reload the page to ensure a clean state
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (

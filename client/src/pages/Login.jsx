@@ -28,7 +28,7 @@ const Login = () => {
 
   // Check for Google auth callback or password reset token
   useEffect(() => {
-    console.error('-------------------- useEffect in Login.jsx FIRED -----------------------');
+    console.log('-------------------- useEffect in Login.jsx FIRED -----------------------');
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get('code'); // Google returns 'code' not 'token'
     const resetTokenParam = searchParams.get('reset');

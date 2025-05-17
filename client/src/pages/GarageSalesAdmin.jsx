@@ -236,7 +236,8 @@ const GarageSalesAdmin = () => {
         description: ''
       });
       // Force refresh the list after adding/editing
-      await fetchGarageSales(true);
+      // Pass the communityId as the first parameter and true as the second parameter to force refresh
+      await fetchGarageSales(communityId, true);
     } catch (error) {
       console.error('Error submitting garage sale:', error);
       if (error.message === 'A garage sale already exists at this address') {
@@ -253,7 +254,8 @@ const GarageSalesAdmin = () => {
         await api.deleteGarageSale(saleId);
         
         // Force refresh the garage sales list to update the UI
-        await fetchGarageSales(true);
+        // Pass the communityId to ensure we're fetching the correct sales
+        await fetchGarageSales(communityId, true);
       } catch (error) {
         console.error('Error deleting garage sale:', error);
       }
@@ -290,7 +292,8 @@ const GarageSalesAdmin = () => {
         await api.deleteGarageSale(selectedIds);
         
         // Force refresh the garage sales list to update the UI
-        await fetchGarageSales(true);
+        // Pass the communityId to ensure we're fetching the correct sales
+        await fetchGarageSales(communityId, true);
         handleAdminDeselectAll();
       } catch (error) {
         console.error('Error deleting selected garage sales:', error);
@@ -312,8 +315,8 @@ const GarageSalesAdmin = () => {
   
   // Function to handle QR code generation for the community map
   const handleCreateQRCode = () => {
-    // Create a URL that points to the main map
-    const baseUrl = window.location.origin;
+    // Use the environment variable for the community map URL
+    const baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL;
     const mapUrl = `${baseUrl}/?communityId=${currentCommunityId || ''}`;
     
     // Use a free QR code generation service
@@ -324,7 +327,7 @@ const GarageSalesAdmin = () => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Community Garage Sale QR Code</title>
+        <title>${communityName || 'Community Garage Sale'} QR Code</title>
         <style>
           body {
             background-color: white;
@@ -357,12 +360,12 @@ const GarageSalesAdmin = () => {
         </style>
       </head>
       <body>
-        <h1>Community Garage Sale</h1>
+        <h1>${communityName || 'Community Garage Sale'}</h1>
         <div class="qr-container">
           <img src="${qrCodeUrl}" alt="QR Code for Community Garage Sale" />
         </div>
         <div class="instructions">
-          <p>Scan this QR code to access the Community Garage Sale map on your mobile device.</p>
+          <p>Scan this QR code to access the ${communityName || 'Community Garage Sale'} map on your mobile device.</p>
           <p>You can print this page or save the QR code image for distribution.</p>
         </div>
       </body>
