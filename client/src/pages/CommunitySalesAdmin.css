@@ -356,7 +356,7 @@
 }
 
 .edit-button:hover {
-  background-color: #f57c00;
+  background-color: #3367d6;
 }
 
 .delete-button {
@@ -368,7 +368,7 @@
 }
 
 .delete-button:hover {
-  background-color: #d32f2f;
+  background-color: #3367d6;
 }
 
 .manage-button {
@@ -393,7 +393,7 @@
 }
 
 .view-on-map-button:hover {
-  background-color: #388E3C;
+  background-color: #3367d6;
 }
 
 .loading-state,
