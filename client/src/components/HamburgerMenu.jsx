@@ -5,6 +5,7 @@ import { useLocation as useLocationContext } from '../context/LocationContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
 import DisplayMode from './menuItems/DisplayMode';
 import './HamburgerMenu.css';
+import './qr-modal.css';
 import CommunityQRCode from './CommunityQRCode';
 
 const HamburgerMenu = () => {
