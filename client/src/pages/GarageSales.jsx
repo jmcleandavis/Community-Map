@@ -25,10 +25,8 @@ const GarageSales = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
-  const { communitySalesEventName, setCommunitySalesEventName, currentCommunityId, setCurrentCommunityId } = useCommunitySales();
+  const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [communityId, setCommunityId] = useState(currentCommunityId || null);
-  const [communityName, setCommunityName] = useState(communitySalesEventName || '');
 
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
@@ -39,10 +37,10 @@ const GarageSales = () => {
       // Update local state
       setCommunityId(id);
       // Update context
-      setCurrentCommunityId(id);
+      setCommunityId(id);
       
       // If we don't have the community name in context, fetch it
-      if (!communitySalesEventName) {
+      if (!communityName) {
         console.log('GarageSales: Community name not in context, fetching from API');
         const fetchCommunityName = async () => {
           try {
@@ -59,7 +57,7 @@ const GarageSales = () => {
               const data = await response.json();
               const name = data.name || 'Community Sale';
               setCommunityName(name);
-              setCommunitySalesEventName(name); // Also update the context
+              setCommunityName(name); // Also update the context
             }
           } catch (error) {
             console.error('Error fetching community name:', error);
@@ -68,11 +66,11 @@ const GarageSales = () => {
         
         fetchCommunityName();
       } else {
-        console.log('GarageSales: Using community name from context:', communitySalesEventName);
-        setCommunityName(communitySalesEventName);
+        console.log('GarageSales: Using community name from context:', communityName);
+        setCommunityName(communityName);
       }
     }
-  }, [location, communitySalesEventName, setCurrentCommunityId, setCommunitySalesEventName]);
+  }, [location, communityName, setCommunityId, setCommunityName]);
 
   // Fetch garage sales, filtered by communityId if available
   useEffect(() => {
@@ -136,7 +134,7 @@ const GarageSales = () => {
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
-    navigate(`/?communityId=${currentCommunityId || ''}`);
+    navigate(`/?communityId=${communityId || ''}`);
   };
 
   const handleDeselectAllWithServerUpdate = async () => {
@@ -191,7 +189,7 @@ const GarageSales = () => {
       }
       
       // Navigate to the map page to view the selected sales
-      navigate(`/?communityId=${currentCommunityId || ''}`);
+      navigate(`/?communityId=${communityId || ''}`);
     } else {
       alert('Please select at least one garage sale to view on the map.');
     }

@@ -7,7 +7,7 @@ import './CommunitySalesAdmin.css';
 const CommunitySalesAdmin = () => {
   const navigate = useNavigate();
   const { userInfo, userEmail, sessionId } = useAuth(); // Get user info from auth context
-  const { setCommunitySalesEventName, setCurrentCommunityId } = useCommunitySales(); // Get community sales context
+  const { setCommunityName, setCommunityId } = useCommunitySales(); // Get community sales context
   const [communitySales, setCommunitySales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -394,8 +394,8 @@ const CommunitySalesAdmin = () => {
   // Handle navigating to manage a specific community sale
   const handleManageSale = (sale) => {
     // Store the community sale name and ID in the context
-    setCommunitySalesEventName(sale.name);
-    setCurrentCommunityId(sale.id);
+    setCommunityName(sale.name);
+    setCommunityId(sale.id);
     
     // Navigate to the garage sales admin page with the specific community sale ID
     navigate(`/admin/sales?communityId=${sale.id}`);
@@ -404,8 +404,8 @@ const CommunitySalesAdmin = () => {
   // Handle viewing a community sale on the map
   const handleViewOnMap = (sale) => {
     // Store the community sale name and ID in the context
-    setCommunitySalesEventName(sale.name);
-    setCurrentCommunityId(sale.id);
+    setCommunityName(sale.name);
+    setCommunityId(sale.id);
     
     // Navigate to the map with the specific community sale ID
     navigate(`/?communityId=${sale.id}`);

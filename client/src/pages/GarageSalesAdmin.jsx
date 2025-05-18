@@ -9,6 +9,7 @@ import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import api from '../utils/api';
 import styles from './GarageSalesAdmin.module.css';
+import CommunityQRCode from '../components/CommunityQRCode';
 
 const GarageSalesAdmin = () => {
   const {
@@ -22,15 +23,15 @@ const GarageSalesAdmin = () => {
   const location = useLocation();
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { searchTerm, handleSearchChange } = useSearch();
-  const { communitySalesEventName, currentCommunityId } = useCommunitySales();
+  const { communityName, communityId } = useCommunitySales();
   
-  // State for community ID and name
+  // State for query param only
   const queryParams = new URLSearchParams(location.search);
   const id = queryParams.get('communityId');
   console.warn('GarageSalesAdmin: Extracted communityId from URL:', id);
-  const [communityId, setCommunityId] = useState(id || currentCommunityId);
-  // Use the community name from context if available, otherwise it will be fetched
-  const [communityName, setCommunityName] = useState(communitySalesEventName || '');
+  // Use only context variables for communityId and communityName
+  // If you need to update them, use the context setters
+  // Remove local state to avoid redeclaration errors
   
   // Create a separate state for admin selections
   const [adminSelectedSales, setAdminSelectedSales] = useState(new Set());
@@ -44,34 +45,36 @@ const GarageSalesAdmin = () => {
   });
   const [submitError, setSubmitError] = useState('');
   
+  // --- QR Code Section ---
+  // Prefer context values if available, fallback to local state
+  const qrCommunityId = communityId;
+  const qrCommunityName = communityName;
+
+  // --- Render QR Code above admin content ---
+  // (This will be inserted at the top of the returned JSX)
+  // Usage: <CommunityQRCode communityId={qrCommunityId} communityName={qrCommunityName} size={220} />
+
   // Update state when context or URL parameters change
   useEffect(() => {
-    console.log('GarageSalesAdmin: Context values:', { communitySalesEventName, currentCommunityId });
-    
-    // If we have a community name from context, use it
-    if (communitySalesEventName && communitySalesEventName !== communityName) {
-      console.log('GarageSalesAdmin: Setting community name from context:', communitySalesEventName);
-      setCommunityName(communitySalesEventName);
-    }
+    console.log('GarageSalesAdmin: Context values:', { communityName, communityId });
     
     // Get communityId from URL or context
-    const newId = queryParams.get('communityId') || currentCommunityId;
+    const newId = queryParams.get('communityId') || communityId;
     if (newId && newId !== communityId) {
-      console.log('GarageSalesAdmin: Community ID changed, updating state:', newId);
-      setCommunityId(newId);
+      console.log('GarageSalesAdmin: Community ID changed, updating context:', newId);
+      if (typeof setCommunityId === 'function') setCommunityId(newId);
       // Reset selections when community changes
       setAdminSelectedSales(new Set());
       // Force a refresh of garage sales data with the new communityId
       fetchGarageSales(newId, true);
     }
-  }, [location.search, fetchGarageSales, communitySalesEventName, currentCommunityId]);
+  }, [location.search, fetchGarageSales, communityName, communityId]);
 
   // Extract communityId from URL parameters
   useEffect(() => {
     // Only fetch community name if it's not already available in the context
-    if (!communitySalesEventName && communityId) {
+    if (!communityName && communityId && typeof setCommunityName === 'function') {
       console.log('GarageSalesAdmin: Community name not in context, fetching from API');
-      
       // Fetch community name based on ID
       const fetchCommunityName = async () => {
         try {
@@ -83,7 +86,6 @@ const GarageSalesAdmin = () => {
               'app-key': import.meta.env.VITE_APP_SESSION_KEY
             }
           });
-          
           if (response.ok) {
             const data = await response.json();
             setCommunityName(data.name || 'Community Sale');
@@ -92,12 +94,11 @@ const GarageSalesAdmin = () => {
           console.error('Error fetching community name:', error);
         }
       };
-      
       fetchCommunityName();
-    } else if (communitySalesEventName) {
-      console.log('GarageSalesAdmin: Using community name from context:', communitySalesEventName);
+    } else if (communityName) {
+      console.log('GarageSalesAdmin: Using community name from context:', communityName);
     }
-  }, [communityId, communitySalesEventName]);
+  }, [communityId, communityName]);
   
   // Load any previously saved admin selections
   useEffect(() => {
@@ -310,14 +311,14 @@ const GarageSalesAdmin = () => {
     };
     
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
-    navigate(`/?communityId=${currentCommunityId || ''}`);
+    navigate(`/?communityId=${communityId || ''}`);
   };
   
   // Function to handle QR code generation for the community map
   const handleCreateQRCode = () => {
     // Use the environment variable for the community map URL
     const baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL;
-    const mapUrl = `${baseUrl}/?communityId=${currentCommunityId || ''}`;
+    const mapUrl = `${baseUrl}/?communityId=${communityId || ''}`;
     
     // Use a free QR code generation service
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mapUrl)}`;

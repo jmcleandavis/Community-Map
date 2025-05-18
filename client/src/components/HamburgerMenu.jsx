@@ -5,12 +5,14 @@ import { useLocation as useLocationContext } from '../context/LocationContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
 import DisplayMode from './menuItems/DisplayMode';
 import './HamburgerMenu.css';
+import CommunityQRCode from './CommunityQRCode';
 
 const HamburgerMenu = () => {
+  const [showQrModal, setShowQrModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentCommunityId } = useCommunitySales();
+  const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
   const { isAuthenticated, userId, userType, logout, userEmail, userInfo } = useAuth();
   const { centerOnUserLocation } = useLocationContext();
   const menuRef = useRef(null);
@@ -54,7 +56,7 @@ const HamburgerMenu = () => {
 
   // Handler for Map menu item click
   const handleMapMenuItemClick = () => {
-    navigate(`/?communityId=${currentCommunityId || ''}`);
+    navigate(`/?communityId=${communityId || ''}`);
     setIsOpen(false);
   };
 
@@ -65,7 +67,7 @@ const HamburgerMenu = () => {
     
     // When on map view, stay there after logout
     if (location.pathname === '/') {
-      navigate(`/?communityId=${currentCommunityId || ''}`); // Stay on the map page
+      navigate(`/?communityId=${communityId || ''}`); // Stay on the map page
     } else {
       navigate('/landing'); // Otherwise go to landing page
     }
@@ -73,6 +75,15 @@ const HamburgerMenu = () => {
 
   return (
     <div className="hamburger-container">
+      {/* QR Code Modal */}
+      {showQrModal && (
+        <div className="qr-modal-overlay" onClick={() => setShowQrModal(false)}>
+          <div className="qr-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="qr-modal-close" onClick={() => setShowQrModal(false)}>×</button>
+            <CommunityQRCode communityId={communityId} communityName={communityName} size={260} />
+          </div>
+        </div>
+      )}
       <button className="hamburger-button" onClick={() => setIsOpen(!isOpen)}>
         <div className={`hamburger-icon ${isOpen ? 'open' : ''}`}>
           <span></span>
@@ -95,6 +106,12 @@ const HamburgerMenu = () => {
         </div>
 
         <DisplayMode onSelect={() => setIsOpen(false)} />
+
+        {/* QR Code Menu Item */}
+        <div className="menu-item" onClick={() => { setShowQrModal(true); setIsOpen(false); }}>
+          <span className="menu-icon">📊 QR</span>
+          <span className="menu-text">Show Community QR Code</span>
+        </div>
 
         <div className="menu-item" onClick={() => {
           navigate('/sales');
@@ -150,5 +167,10 @@ const HamburgerMenu = () => {
     </div>
   );
 };
+
+// --- Minimal modal CSS (add to HamburgerMenu.css if not present) ---
+// .qr-modal-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1000; display:flex; align-items:center; justify-content:center; }
+// .qr-modal-content { background:#fff; border-radius:10px; padding:32px 24px 18px 24px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative; min-width:320px; max-width:90vw; }
+// .qr-modal-close { position:absolute; top:10px; right:18px; font-size:2rem; background:none; border:none; cursor:pointer; color:#333; }
 
 export default HamburgerMenu;
