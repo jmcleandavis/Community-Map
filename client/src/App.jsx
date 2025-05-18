@@ -6,6 +6,7 @@ import './App.css';
 import HamburgerMenu from './components/HamburgerMenu';
 import ConditionalMenu from './components/ConditionalMenu';
 import InfoPage from './pages/Info';
+import ListActiveCommunitySalesEvents from './pages/ListActiveCommunitySalesEvents';
 import Help from './pages/Help';
 import Login from './pages/Login';
 import LoginRedirect from './pages/LoginRedirect';
@@ -85,6 +86,12 @@ function App() {
                       <>
                         <ConditionalMenu />
                         <Help />
+                      </>
+                    } />
+                    <Route path="/list-active-community-sales-events" element={
+                      <>
+                        <ConditionalMenu />
+                        <ListActiveCommunitySalesEvents />
                       </>
                     } />
                     <Route path="/login" element={
