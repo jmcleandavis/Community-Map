@@ -70,10 +70,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const { isAuthenticated, userInfo } = useAuth();
   const { handleCheckboxChange, handleDeselectAll } = useSelection();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
-  const { currentCommunityId, setCurrentCommunityId, communitySalesEventName } = useCommunitySales();
+  const { communityId, setCommunityId, communityName } = useCommunitySales();
   
   // Use the community name from context instead of hardcoding it
-  const COMMUNITY_NAME = communitySalesEventName || 'Community Sales Day'; // Fallback to 'BAY RIDGES' if no name is set
+  const COMMUNITY_NAME = communityName || 'Community Sales Day'; // Fallback to 'Community Sales Day' if no name is set
   const location = useRouterLocation();
   const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
@@ -82,13 +82,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
   // Use this effect to update the communityId or navigate to landing page
   useEffect(() => {
     if(urlCommunityId) {
-      setCurrentCommunityId(urlCommunityId);
-    } else if (!currentCommunityId) {
+      setCommunityId(urlCommunityId);
+    } else if (!communityId) {
       // If no community ID is provided, navigate to the landing page
       console.log('MapView: No community ID provided, navigating to landing page');
       navigate('/about');
     }
-  }, [urlCommunityId, currentCommunityId, setCurrentCommunityId, navigate]);
+  }, [urlCommunityId, communityId, setCommunityId, navigate]);
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
@@ -106,12 +106,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Initial load of garage sales
   useEffect(() => {
-    if (!initialLoadRef.current && currentCommunityId) {
-      console.log('MapView: Initial load - fetching garage sales with communityId:', currentCommunityId);
-      fetchGarageSales(currentCommunityId);
+    if (!initialLoadRef.current && communityId) {
+      console.log('MapView: Initial load - fetching garage sales with communityId:', communityId);
+      fetchGarageSales(communityId);
       initialLoadRef.current = true;
     }
-  }, [fetchGarageSales, currentCommunityId]);
+  }, [fetchGarageSales, communityId]);
   
   // Load user's saved garage sale selections if they're logged in
   useEffect(() => {
