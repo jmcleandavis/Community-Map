@@ -59,11 +59,16 @@ const ListActiveCommunitySalesEvents = () => {
     fetchSales();
   }, []);
 
-  const filteredSales = sales.filter(sale =>
-    sale.name?.toLowerCase().includes(search.toLowerCase()) ||
-    sale.location?.toLowerCase().includes(search.toLowerCase()) ||
-    sale.description?.toLowerCase().includes(search.toLowerCase())
+  const filteredSales = sales.filter(sale => {
+  const searchText = search.toLowerCase();
+  return (
+    sale.name?.toLowerCase().includes(searchText) ||
+    sale.location?.toLowerCase().includes(searchText) ||
+    sale.description?.toLowerCase().includes(searchText) ||
+    formatDate(sale.startDate).toLowerCase().includes(searchText) ||
+    formatDate(sale.endDate).toLowerCase().includes(searchText)
   );
+});
 
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
