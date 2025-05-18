@@ -40,7 +40,8 @@ const ListActiveCommunitySalesEvents = () => {
 
   const filteredSales = sales.filter(sale =>
     sale.name?.toLowerCase().includes(search.toLowerCase()) ||
-    sale.location?.toLowerCase().includes(search.toLowerCase())
+    sale.location?.toLowerCase().includes(search.toLowerCase()) ||
+    sale.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
