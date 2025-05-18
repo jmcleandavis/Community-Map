@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import './ListActiveCommunitySalesEvents.css';
 
+function formatDate(dateString) {
+  if (!dateString) return '';
+  // Get only the date part if there's a T
+  const [datePart] = dateString.split('T');
+  const date = new Date(datePart);
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  // Add ordinal suffix
+  function ordinal(n) {
+    if (n > 3 && n < 21) return 'th';
+    switch (n % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+  return `${month} ${day}${ordinal(day)}, ${year}`;
+}
+
 const API_URL = import.meta.env.VITE_MAPS_API_URL;
 const APP_KEY = import.meta.env.VITE_APP_SESSION_KEY;
 
@@ -71,8 +92,8 @@ const ListActiveCommunitySalesEvents = () => {
       <div style={{ color: '#555', fontSize: 15 }}>
         <strong>Location:</strong> {sale.location} <br />
         <span style={{ display: 'block', margin: '8px 0', color: '#333' }}>{sale.description}</span>
-        <strong>Start:</strong> {sale.startDate.split('T')[0]} <br />
-        <strong>End:</strong> {sale.endDate.split('T')[0]}
+        <strong>Start:</strong> {formatDate(sale.startDate)} <br />
+        <strong>End:</strong> {formatDate(sale.endDate)}
       </div>
     </button>
   </li>
