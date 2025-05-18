@@ -16,17 +16,17 @@ const ListActiveCommunitySalesEvents = () => {
       try {
         const sessionId = sessionStorage.getItem('sessionId');
         const response = await fetch(`${API_URL}/v1/communitySales/all`, {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'app-name': 'web-service',
             'app-key': APP_KEY,
             'sessionId': sessionId || '',
-          },
-          body: '',
+          }
         });
         if (!response.ok) throw new Error('Failed to fetch sales');
         const data = await response.json();
+        console.log('Fetched community sales data:', data);
         setSales(data || []);
       } catch (err) {
         setError(err.message);
@@ -38,8 +38,8 @@ const ListActiveCommunitySalesEvents = () => {
   }, []);
 
   const filteredSales = sales.filter(sale =>
-    sale.communityName?.toLowerCase().includes(search.toLowerCase()) ||
-    sale.city?.toLowerCase().includes(search.toLowerCase())
+    sale.name?.toLowerCase().includes(search.toLowerCase()) ||
+    sale.location?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -58,10 +58,9 @@ const ListActiveCommunitySalesEvents = () => {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {filteredSales.map(sale => (
           <li key={sale.id} style={{ marginBottom: 24, padding: 18, border: '1px solid #eee', borderRadius: 8 }}>
-            <h2 style={{ margin: 0 }}>{sale.communityName}</h2>
+            <h2 style={{ margin: 0 }}>{sale.name}</h2>
             <div style={{ color: '#555', fontSize: 15 }}>
-              <strong>City:</strong> {sale.city} <br />
-              <strong>Status:</strong> {sale.status} <br />
+              <strong>Location:</strong> {sale.location} <br />
               <strong>Start:</strong> {sale.startDate} <br />
               <strong>End:</strong> {sale.endDate}
             </div>
