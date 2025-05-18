@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './ListActiveCommunitySalesEvents.css';
 
 const API_URL = import.meta.env.VITE_MAPS_API_URL;
 const APP_KEY = import.meta.env.VITE_APP_SESSION_KEY;
@@ -57,15 +58,23 @@ const ListActiveCommunitySalesEvents = () => {
       {!loading && !error && filteredSales.length === 0 && <p>No active community sales found.</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {filteredSales.map(sale => (
-          <li key={sale.id} style={{ marginBottom: 24, padding: 18, border: '1px solid #eee', borderRadius: 8 }}>
-            <h2 style={{ margin: 0 }}>{sale.name}</h2>
-            <div style={{ color: '#555', fontSize: 15 }}>
-              <strong>Location:</strong> {sale.location} <br />
-              <strong>Start:</strong> {sale.startDate} <br />
-              <strong>End:</strong> {sale.endDate}
-            </div>
-          </li>
-        ))}
+  <li key={sale.id} style={{ marginBottom: 24, padding: 0, border: 'none', borderRadius: 8, background: 'none' }}>
+    <button
+      className="community-sale-btn"
+      onClick={() => {
+        window.location.href = `/?communityId=${sale.id}`;
+      }}
+      aria-label={`View ${sale.name} on map`}
+    >
+      <h2 style={{ margin: 0 }}>{sale.name}</h2>
+      <div style={{ color: '#555', fontSize: 15 }}>
+        <strong>Location:</strong> {sale.location} <br />
+        <strong>Start:</strong> {sale.startDate} <br />
+        <strong>End:</strong> {sale.endDate}
+      </div>
+    </button>
+  </li>
+))}
       </ul>
     </div>
   );
