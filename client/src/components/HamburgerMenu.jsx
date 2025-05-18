@@ -109,7 +109,7 @@ const HamburgerMenu = () => {
 
         {/* QR Code Menu Item */}
         <div className="menu-item" onClick={() => { setShowQrModal(true); setIsOpen(false); }}>
-          <span className="menu-icon">📊 QR</span>
+          <span className="menu-icon">📊</span>
           <span className="menu-text">Show Community QR Code</span>
         </div>
 
