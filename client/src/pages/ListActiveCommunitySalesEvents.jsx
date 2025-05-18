@@ -69,8 +69,9 @@ const ListActiveCommunitySalesEvents = () => {
       <h2 style={{ margin: 0 }}>{sale.name}</h2>
       <div style={{ color: '#555', fontSize: 15 }}>
         <strong>Location:</strong> {sale.location} <br />
-        <strong>Start:</strong> {sale.startDate} <br />
-        <strong>End:</strong> {sale.endDate}
+        <span style={{ display: 'block', margin: '8px 0', color: '#333' }}>{sale.description}</span>
+        <strong>Start:</strong> {sale.startDate.split('T')[0]} <br />
+        <strong>End:</strong> {sale.endDate.split('T')[0]}
       </div>
     </button>
   </li>
