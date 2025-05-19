@@ -100,7 +100,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       const fetchCommunityName = async () => {
         try {
           // Use the same API endpoint as in GarageSalesAdmin
-          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
+          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/byId/${communityId}`;
           const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
