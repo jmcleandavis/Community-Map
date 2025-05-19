@@ -156,6 +156,8 @@ const GarageSales = () => {
   };
 
   const handleViewSelected = async () => {
+    // Filter sales to only include those from the current communityId
+    // and that are also in the selectedSales set
     const selectedSalesData = filteredSales
       .filter(sale => selectedSales.has(sale.id));
 
@@ -165,11 +167,14 @@ const GarageSales = () => {
         try {
           console.log('Saving selected sales to server for user:', userInfo.userId);
           
-          // Extract just the IDs for the server request
-          const selectedSaleIds = Array.from(selectedSales);
+          // Extract just the IDs for the server request, but only for the current communityId
+          // This ensures we're not including sales from other community events
+          const selectedSaleIds = selectedSalesData.map(sale => sale.id);
           
-          // Save the selected sales to the server
-          const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds);
+          console.log(`Filtered ${selectedSales.size} total selected sales to ${selectedSaleIds.length} sales for current community ID: ${communityId}`);
+          
+          // Save the selected sales to the server with the current communityId
+          const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds, communityId);
           console.log('Successfully saved selected sales to server:', response);
           
           // Optional: Show a success message
@@ -187,6 +192,9 @@ const GarageSales = () => {
       if (!showOnlySelected) {
         toggleDisplayMode();
       }
+      
+      // Store only the selected sales for this community in localStorage
+      localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
       
       // Navigate to the map page to view the selected sales
       navigate(`/?communityId=${communityId || ''}`);
