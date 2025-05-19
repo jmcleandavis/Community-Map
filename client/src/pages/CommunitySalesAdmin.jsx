@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
+import api from '../utils/api';
 import './CommunitySalesAdmin.css';
 
 const CommunitySalesAdmin = () => {
@@ -340,17 +341,33 @@ const CommunitySalesAdmin = () => {
   };
 
   // Handle deleting a community sale
-  const handleDelete = (saleId) => {
+  const handleDelete = async (saleId) => {
     if (window.confirm('Are you sure you want to delete this community sale?')) {
-      setCommunitySales(prev => prev.filter(sale => sale.id !== saleId));
-      
-      // Also remove from selected if it was selected
-      if (selectedSales.has(saleId)) {
-        setSelectedSales(prev => {
-          const newSelected = new Set(prev);
-          newSelected.delete(saleId);
-          return newSelected;
-        });
+      try {
+        // Call the API to delete the community sale
+        const result = await api.deleteCommunitySale(saleId);
+        
+        // If the result is true, the deletion was successful
+        if (result === true) {
+          // Update local state after successful API call
+          setCommunitySales(prev => prev.filter(sale => sale.id !== saleId));
+          
+          // Also remove from selected if it was selected
+          if (selectedSales.has(saleId)) {
+            setSelectedSales(prev => {
+              const newSelected = new Set(prev);
+              newSelected.delete(saleId);
+              return newSelected;
+            });
+          }
+        } else {
+          // Handle unexpected response
+          console.warn('Unexpected response from delete API:', result);
+          alert('Unexpected response when deleting community sale. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting community sale:', error);
+        alert(`Failed to delete community sale: ${error.message || 'Unknown error'}`);
       }
     }
   };
