@@ -30,6 +30,7 @@ const ListActiveCommunitySalesEvents = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortOrder, setSortOrder] = useState('upcoming'); // 'upcoming', 'recent', or 'alphabetical'
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -59,27 +60,64 @@ const ListActiveCommunitySalesEvents = () => {
     fetchSales();
   }, []);
 
-  const filteredSales = sales.filter(sale => {
-  const searchText = search.toLowerCase();
-  return (
-    sale.name?.toLowerCase().includes(searchText) ||
-    sale.location?.toLowerCase().includes(searchText) ||
-    sale.description?.toLowerCase().includes(searchText) ||
-    formatDate(sale.startDate).toLowerCase().includes(searchText) ||
-    formatDate(sale.endDate).toLowerCase().includes(searchText)
-  );
-});
+  // Sort and filter sales based on search text and sort order
+  const sortAndFilterSales = () => {
+    // First filter by search text
+    const filtered = sales.filter(sale => {
+      const searchText = search.toLowerCase();
+      return (
+        sale.name?.toLowerCase().includes(searchText) ||
+        sale.location?.toLowerCase().includes(searchText) ||
+        sale.description?.toLowerCase().includes(searchText) ||
+        formatDate(sale.startDate).toLowerCase().includes(searchText) ||
+        formatDate(sale.endDate).toLowerCase().includes(searchText)
+      );
+    });
+    
+    // Then sort based on selected sort order
+    return filtered.sort((a, b) => {
+      const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
+      const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
+      
+      switch (sortOrder) {
+        case 'upcoming':
+          // Sort by upcoming dates first (ascending order)
+          return dateA - dateB;
+        case 'recent':
+          // Sort by most recent dates first (descending order)
+          return dateB - dateA;
+        case 'alphabetical':
+          // Sort alphabetically by name
+          return (a.name || '').localeCompare(b.name || '');
+        default:
+          return dateA - dateB;
+      }
+    });
+  };
+  
+  const filteredSales = sortAndFilterSales();
 
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
       <h1>Active Community Sales Events</h1>
-      <input
-        type="text"
-        placeholder="Search by community or city..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{ width: '100%', padding: 10, margin: '16px 0 32px 0', borderRadius: 6, border: '1px solid #bbb', fontSize: 16 }}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <input
+          type="text"
+          placeholder="Search by community or city..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ flex: 1, padding: 10, borderRadius: 6, border: '1px solid #bbb', fontSize: 16, marginRight: '10px' }}
+        />
+        <select 
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+          style={{ padding: '10px', borderRadius: 6, border: '1px solid #bbb', fontSize: 16 }}
+        >
+          <option value="upcoming">Upcoming Events First</option>
+          <option value="recent">Most Recent First</option>
+          <option value="alphabetical">Alphabetical</option>
+        </select>
+      </div>
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && filteredSales.length === 0 && <p>No active community sales found.</p>}
