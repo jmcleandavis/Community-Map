@@ -70,10 +70,11 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const { isAuthenticated, userInfo } = useAuth();
   const { handleCheckboxChange, handleDeselectAll } = useSelection();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
-  const { communityId, setCommunityId, communityName } = useCommunitySales();
+  const { communityId, setCommunityId, communityName, setCommunityName } = useCommunitySales();
   
-  // Use the community name from context instead of hardcoding it
-  const COMMUNITY_NAME = communityName || 'Community Sales Day'; // Fallback to 'Community Sales Day' if no name is set
+  // Use the community name from context or API call
+  // The fallback is now handled in the fetch effect above
+  const COMMUNITY_NAME = communityName || 'Loading community...';
   const location = useRouterLocation();
   const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
@@ -89,6 +90,47 @@ function MapView({ mapContainerStyle, mapOptions }) {
       navigate('/about');
     }
   }, [urlCommunityId, communityId, setCommunityId, navigate]);
+
+  // Fetch community name via API if it's not available in context
+  useEffect(() => {
+    // Only fetch if we have a communityId but no communityName
+    if (communityId && !communityName) {
+      console.log('MapView: Community name not in context, fetching from API for communityId:', communityId);
+      
+      const fetchCommunityName = async () => {
+        try {
+          // Use the same API endpoint as in GarageSalesAdmin
+          const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
+          const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+              'app-name': 'web-service',
+              'app-key': import.meta.env.VITE_APP_SESSION_KEY
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.name) {
+              console.log('MapView: Successfully fetched community name:', data.name);
+              setCommunityName(data.name);
+            } else {
+              console.log('MapView: Community name not found in API response, using default');
+              setCommunityName('Community Sales Day');
+            }
+          } else {
+            console.error('MapView: Failed to fetch community name, status:', response.status);
+            setCommunityName('Community Sales Day');
+          }
+        } catch (error) {
+          console.error('MapView: Error fetching community name:', error);
+          setCommunityName('Community Sales Day');
+        }
+      };
+      
+      fetchCommunityName();
+    }
+  }, [communityId, communityName, setCommunityName]);
 
   // Get selected sale IDs from localStorage
   const selectedSaleIds = useMemo(() => {
