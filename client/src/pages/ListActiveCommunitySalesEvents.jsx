@@ -103,7 +103,7 @@ const ListActiveCommunitySalesEvents = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <input
           type="text"
-          placeholder="Search by community or city..."
+          placeholder="Search by community or location..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ flex: 1, padding: 10, borderRadius: 6, border: '1px solid #bbb', fontSize: 16, marginRight: '10px' }}
