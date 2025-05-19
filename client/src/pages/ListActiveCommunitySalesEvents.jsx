@@ -113,8 +113,8 @@ const ListActiveCommunitySalesEvents = () => {
           onChange={e => setSortOrder(e.target.value)}
           style={{ padding: '10px', borderRadius: 6, border: '1px solid #bbb', fontSize: 16 }}
         >
-          <option value="upcoming">Upcoming Events First</option>
-          <option value="recent">Most Recent First</option>
+          <option value="upcoming">Upcoming Events</option>
+          <option value="recent">Descending Order</option>
           <option value="alphabetical">Alphabetical</option>
         </select>
       </div>
