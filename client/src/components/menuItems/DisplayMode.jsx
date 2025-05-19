@@ -9,7 +9,7 @@ const DisplayMode = ({ onSelect }) => {
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
   const { selectedSales } = useSelection();
   const { garageSales } = useGarageSales();
-  const { currentCommunityId } = useCommunitySales();
+  const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -43,7 +43,7 @@ const DisplayMode = ({ onSelect }) => {
         toggleDisplayMode();
         
         // Navigate to the map page with community ID
-        navigate(`/?communityId=${currentCommunityId || ''}`);
+        navigate(`/?communityId=${communityId || ''}`);
       } else {
         // If no sales are selected, navigate to the GarageSales page where users can select sales
         navigate('/sales');
@@ -57,7 +57,7 @@ const DisplayMode = ({ onSelect }) => {
       toggleDisplayMode();
       
       // Always navigate to the map page for consistency with community ID
-      navigate(`/?communityId=${currentCommunityId || ''}`);
+      navigate(`/?communityId=${communityId || ''}`);
     }
 
     // Call the onSelect callback to close the menu

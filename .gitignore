@@ -14,7 +14,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Environment variables
-#.env
+.env
 client/.env
 client/.env.production
 .env.local

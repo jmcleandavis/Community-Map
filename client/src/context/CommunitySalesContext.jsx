@@ -2,21 +2,21 @@ import React, { createContext, useContext, useState } from 'react';
 
 // Create the context with default values
 const CommunitySalesContext = createContext({
-  communitySalesEventName: '',
-  setCommunitySalesEventName: () => {},
-  currentCommunityId: null,
-  setCurrentCommunityId: () => {}
+  communityName: '', // Display name of the current community
+  setCommunityName: () => {},
+  communityId: null, // Unique ID of the current community
+  setCommunityId: () => {}
 });
 
 export function CommunitySalesProvider({ children }) {
-  const [communitySalesEventName, setCommunitySalesEventName] = useState('');
-  const [currentCommunityId, setCurrentCommunityId] = useState(null);
+  const [communityName, setCommunityName] = useState('');
+  const [communityId, setCommunityId] = useState(null);
 
   const value = {
-    communitySalesEventName,
-    setCommunitySalesEventName,
-    currentCommunityId,
-    setCurrentCommunityId
+    communityName,
+    setCommunityName,
+    communityId,
+    setCommunityId
   };
 
   return (
@@ -26,6 +26,7 @@ export function CommunitySalesProvider({ children }) {
   );
 }
 
+// Custom hook to access community sales context
 export function useCommunitySales() {
   const context = useContext(CommunitySalesContext);
   if (!context) {
