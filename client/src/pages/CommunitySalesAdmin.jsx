@@ -206,8 +206,7 @@ const CommunitySalesAdmin = () => {
           'app-name': 'web-service',
           'app-key': import.meta.env.VITE_APP_SESSION_KEY,
           'sessionId': sessionId || '',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+          'Content-Type': 'application/json'
         };
         
         console.log('Making PATCH request to update community sale with ID:', editingSale.id);
