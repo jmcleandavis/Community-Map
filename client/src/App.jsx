@@ -10,6 +10,7 @@ import ListActiveCommunitySalesEvents from './pages/ListActiveCommunitySalesEven
 import Help from './pages/Help';
 import Login from './pages/Login';
 import LoginRedirect from './pages/LoginRedirect';
+import LanderRedirect from './components/LanderRedirect';
 import PasswordReset from './pages/PasswordReset';
 import GarageSales from './pages/GarageSales';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
@@ -129,6 +130,7 @@ function App() {
                         <LandingPage />
                       </>
                     } />
+                    <Route path="/lander" element={<LanderRedirect />} />
                     <Route path="/admin/community-sales" element={
                       <ProtectedRouteWrapper>
                         <>
