@@ -382,6 +382,45 @@ const deleteGarageSale = async (saleIds) => {
   }
 };
 
+// Delete a community sale
+const deleteCommunitySale = async (saleId) => {
+  try {
+    const currentSessionId = await getSessionId();
+    
+    console.log('API: Deleting community sale with ID:', saleId);
+    
+    const response = await mapsApi.delete(`/v1/communitySales/delete/${saleId}`, {
+      headers: {
+        'sessionId': currentSessionId,
+        'Content-Type': 'application/json',
+        'app-name': 'web-service',
+        'app-key': import.meta.env.VITE_APP_SESSION_KEY
+      }
+    });
+    
+    console.log('API: Delete community sale response:', response);
+    
+    // Backend returns 'true' for successful deletion, 'null' if not deleted or not found
+    if (response.data === true) {
+      return true;
+    } else if (response.data === null) {
+      throw new Error('Community sale could not be deleted or was not found');
+    } else {
+      // Handle any other unexpected response
+      console.warn('Unexpected response format from delete community sale:', response.data);
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Delete community sale error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    throw error;
+  }
+};
+
 // Get user's saved address list
 const getUserAddressList = async (userId) => {
   try {
@@ -735,6 +774,7 @@ const api = {
   getUserInfo,
   createGarageSale,
   deleteGarageSale,
+  deleteCommunitySale,
   updateGarageSale,
   register,
   login,
