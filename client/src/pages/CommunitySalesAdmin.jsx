@@ -457,7 +457,7 @@ const CommunitySalesAdmin = () => {
       
       <div className="admin-button-row">
         <button 
-          className="add-new-button"
+          className="create-community-sales-button"
           onClick={handleAddNew}
           disabled={isAddingNew}
         >
