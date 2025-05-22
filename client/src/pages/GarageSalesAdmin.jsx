@@ -558,7 +558,7 @@ const GarageSalesAdmin = () => {
         </form>
       )}
 
-      <div className={styles.salesGrid}>
+      <div className={`${styles.salesGrid} ${filteredSales.length === 1 ? styles.singleCard : ''}`}>
         {filteredSales && filteredSales.length > 0 ? (
           filteredSales.map(sale => (
             <div key={sale.id} className={styles.saleCard}>
