@@ -85,6 +85,7 @@
   font-size: 14px;
   font-weight: 500;
   transition: background-color 0.2s;
+  margin-top: 20px
 }
 
 .admin-controls button:hover, .create-community-sales-button:hover {
@@ -382,7 +383,6 @@
 .manage-button:hover {
   background-color: #3367d6;
 }
-
 
 
 .view-on-map-button {
