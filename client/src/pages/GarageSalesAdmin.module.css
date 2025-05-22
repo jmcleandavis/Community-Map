@@ -35,13 +35,13 @@
 .adminControls {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   gap: 0;
 }
 
 .searchContainer {
   width: 100%;
-  margin-bottom: 0px;
+  margin-bottom: 10px;
 }
 
 .searchInput {
@@ -257,7 +257,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin: 0;
+  margin: 0px;
   padding: 0;
   max-width: 1200px;
   width: 100%;
