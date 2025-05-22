@@ -9,7 +9,7 @@ const CommunityQRCode = ({ communityId, communityName = '', size = 300 }) => {
 
   // Build the map URL using the environment variable
   const baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL || window.location.origin;
-  const mapUrl = `${baseUrl}/garage-sales/${communityId}`;
+  const mapUrl = `${baseUrl}/?communityId=${communityId}`;
 
   // Use qrserver.com API to generate the QR code image
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(mapUrl)}`;
