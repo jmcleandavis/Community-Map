@@ -25,6 +25,7 @@ import { LocationProvider } from './context/LocationContext';
 import { NavigationProvider } from './context/NavigationContext';
 import { CommunitySalesProvider } from './context/CommunitySalesContext';
 import { InitialPageProvider } from './context/InitialPageContext';
+import DocumentTitle from './components/DocumentTitle';
 
 function App() {
   
@@ -69,7 +70,8 @@ function App() {
               <NavigationProvider>
                 <InitialPageProvider>
                 <CommunitySalesProvider>
-                <div className="app">
+                  <DocumentTitle />
+                  <div className="app">
                   <Routes>
                     <Route path="/loginRedirect" element={<LoginRedirect />} />
                     <Route path="/about" element={
