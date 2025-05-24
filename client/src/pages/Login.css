@@ -9,21 +9,23 @@
 
 .login-box {
   background: white;
-  padding: 20px; /* Increased internal padding */
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 30px; /* Further increased internal padding */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px; /* Increased maximum width */
+  max-width: 600px; /* Further increased maximum width */
 }
 
 .login-box h2 {
-  margin: 0 0 30px;
+  margin: 0 0 40px;
   text-align: center;
   color: #333;
+  font-size: 32px; /* Larger heading */
 }
 
 .login-container .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* Increased spacing between form elements */
+  width: 100%;
 }
 
 .login-container .form-group label {
@@ -34,11 +36,13 @@
 }
 
 .login-container .form-group input {
-  width: 93%;
-  padding: 10px;
+  width: 100%; /* Full width */
+  padding: 16px; /* Further increased padding */
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 8px; /* Larger border radius */
+  font-size: 20px; /* Even larger font size */
+  margin-bottom: 5px;
+  box-sizing: border-box; /* Ensures padding doesn't increase element width */
 }
 
 .login-container .form-group input:focus {
@@ -58,14 +62,16 @@
 
 .login-container .submit-button {
   width: 100%;
-  padding: 12px;
+  padding: 18px; /* Further increased padding */
   background-color: #2196F3;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 8px; /* Larger border radius */
+  font-size: 22px; /* Even larger font size */
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 25px; /* Increased margin */
+  font-weight: 600; /* Bolder text */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
 .login-container .submit-button:hover {
@@ -90,14 +96,17 @@
 
 .login-container .toggle-form-button {
   width: 100%;
-  padding: 12px;
+  padding: 18px; /* Further increased padding */
   background-color: transparent;
   color: #2196F3;
   border: 1px solid #2196F3;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 8px; /* Larger border radius */
+  font-size: 20px; /* Even larger font size */
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-bottom: 15px; /* Increased margin */
+  font-weight: 600; /* Bolder text */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle shadow */
 }
 
 .login-container .toggle-form-button:hover {
@@ -110,11 +119,12 @@
   color: #2196F3;
   text-decoration: underline;
   cursor: pointer;
-  font-size: 14px;
-  padding: 0;
+  font-size: 16px; /* Larger font size */
+  padding: 8px 0; /* Added vertical padding */
   margin-top: 10px;
   display: block;
   text-align: center;
+  font-weight: 500; /* Slightly bolder text */
 }
 
 .login-container .forgot-password-button:hover {
@@ -145,18 +155,20 @@
 
 .login-container .google-button {
   width: 100%;
-  padding: 12px;
+  padding: 18px; /* Further increased padding */
   background-color: white;
   color: #757575;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 8px; /* Larger border radius */
+  font-size: 22px; /* Even larger font size */
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 25px; /* Increased margin */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
+  font-weight: 600; /* Bolder text */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
 .login-container .google-button:hover {
@@ -198,12 +210,13 @@
   color: #2196F3;
   background: none;
   border: none;
-  padding: 0;
-  font-size: 14px;
+  padding: 8px 0; /* Added vertical padding */
+  font-size: 16px; /* Larger font size */
   text-decoration: underline;
   cursor: pointer;
   margin-top: 15px;
   display: inline-block;
+  font-weight: 500; /* Slightly bolder text */
 }
 
 .login-container .loading-spinner {
@@ -221,16 +234,56 @@
   100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .login-box {
-    padding: 20px;
+    padding: 25px;
+    max-width: 90%;
+  }
+
+  .login-box h2 {
+    font-size: 28px;
+    margin: 0 0 30px;
   }
 
   .login-container .form-group input {
-    font-size: 14px;
+    font-size: 18px; /* Still larger than original but appropriate for mobile */
+    padding: 14px;
   }
 
-  .submit-button {
-    font-size: 14px;
+  .login-container .submit-button,
+  .login-container .google-button,
+  .login-container .toggle-form-button {
+    font-size: 18px;
+    padding: 16px;
+  }
+
+  .login-container .forgot-password-button,
+  .login-container .back-button {
+    font-size: 16px;
+  }
+}
+
+/* Smaller mobile devices */
+@media (max-width: 480px) {
+  .login-box {
+    padding: 20px;
+    max-width: 95%;
+  }
+
+  .login-box h2 {
+    font-size: 24px;
+    margin: 0 0 25px;
+  }
+
+  .login-container .form-group input {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .login-container .submit-button,
+  .login-container .google-button,
+  .login-container .toggle-form-button {
+    font-size: 16px;
+    padding: 14px;
   }
 }
