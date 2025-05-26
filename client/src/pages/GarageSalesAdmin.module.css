@@ -272,7 +272,7 @@
 /* Center a single card in the grid */
 .salesGrid.singleCard {
   grid-template-columns: 1fr;
-  justify-items: center;
+  justify-items: left;
 }
 
 .saleCard {
