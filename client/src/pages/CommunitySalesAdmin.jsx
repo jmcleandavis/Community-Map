@@ -583,8 +583,8 @@ const CommunitySalesAdmin = () => {
                   />
                   <span className="checkmark"></span>
                 </label>
+                <h3 className="card-title">{sale.name}</h3>
               </div>
-              <h3>{sale.name}</h3>
               {sale.date && (
                 <div className="card-date">
                   Date: {new Date(sale.date).toLocaleDateString()}

@@ -236,9 +236,21 @@
 }
 
 .card-header {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.card-title {
+  margin: 0;
+  padding-right: 35px; /* Make room for the checkbox */
+  flex: 1;
+  text-align: center;
+  font-size: 1.2em;
+  color: #333;
 }
 
 .checkbox-container {
@@ -247,6 +259,8 @@
   padding-left: 25px;
   cursor: pointer;
   user-select: none;
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .checkbox-container input {
