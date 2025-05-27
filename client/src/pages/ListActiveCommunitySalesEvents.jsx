@@ -76,16 +76,23 @@ const ListActiveCommunitySalesEvents = () => {
     
     // Then sort based on selected sort order
     return filtered.sort((a, b) => {
+      const now = new Date();
       const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
       const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
       
       switch (sortOrder) {
         case 'upcoming':
-          // Sort by upcoming dates first (ascending order)
-          return dateA - dateB;
+          // Sort by closest upcoming dates first (ascending from today)
+          // Events in the past will be at the end
+          if (dateA < now && dateB >= now) return 1; // B is upcoming, A is past
+          if (dateA >= now && dateB < now) return -1; // A is upcoming, B is past
+          return dateA - dateB; // Both in same category, sort by date
         case 'recent':
-          // Sort by most recent dates first (descending order)
-          return dateB - dateA;
+          // Sort by most distant future dates first (descending from furthest in future)
+          // Events in the past will be at the end
+          if (dateA < now && dateB >= now) return 1; // B is upcoming, A is past
+          if (dateA >= now && dateB < now) return -1; // A is upcoming, B is past
+          return dateB - dateA; // Both in same category, sort by date in reverse
         case 'alphabetical':
           // Sort alphabetically by name
           // Handle null or undefined names by converting to empty strings
@@ -117,7 +124,7 @@ const ListActiveCommunitySalesEvents = () => {
           style={{ padding: '10px', borderRadius: 6, border: '1px solid #bbb', fontSize: 16 }}
         >
           <option value="upcoming">Upcoming Events</option>
-          <option value="recent">Descending Order</option>
+          <option value="recent">Latest Events</option>
           <option value="alphabetical">Alphabetical</option>
         </select>
       </div>
