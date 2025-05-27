@@ -574,15 +574,15 @@ const CommunitySalesAdmin = () => {
         <div className="sales-grid">
           {filteredSales.map(sale => (
             <div key={sale.id} className="sale-card">
+              <label className="checkbox-container">
+                <input
+                  type="checkbox"
+                  checked={selectedSales.has(sale.id)}
+                  onChange={() => handleCheckboxChange(sale.id)}
+                />
+                <span className="checkmark"></span>
+              </label>
               <div className="card-header">
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    checked={selectedSales.has(sale.id)}
-                    onChange={() => handleCheckboxChange(sale.id)}
-                  />
-                  <span className="checkmark"></span>
-                </label>
                 <h3 className="card-title">{sale.name}</h3>
               </div>
               {sale.date && (
