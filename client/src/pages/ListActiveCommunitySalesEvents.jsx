@@ -88,7 +88,10 @@ const ListActiveCommunitySalesEvents = () => {
           return dateB - dateA;
         case 'alphabetical':
           // Sort alphabetically by name
-          return (a.name || '').localeCompare(b.name || '');
+          // Handle null or undefined names by converting to empty strings
+          const nameA = (a.name || '').toLowerCase();
+          const nameB = (b.name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
         default:
           return dateA - dateB;
       }
