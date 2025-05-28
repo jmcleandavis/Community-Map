@@ -816,7 +816,7 @@ const api = {
   // Google SSO login
   googleLogin: async () => {
     try {
-      // Google OAuth parameters
+      // Google OAuth parametersd
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_PLACEHOLDER';
       const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/loginRedirect';
       const scope = 'email profile';
