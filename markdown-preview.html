@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Preview</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 0.2em 0.4em;
+            font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        blockquote {
+            border-left: 4px solid #dfe2e5;
+            padding-left: 16px;
+            color: #6a737d;
+            margin-left: 0;
+        }
+        img {
+            max-width: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table th, table td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        #editor, #preview {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        #editor {
+            height: 300px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        #preview {
+            border: 1px solid #ddd;
+            padding: 20px;
+            min-height: 300px;
+        }
+        h1 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        h2 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #0366d6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0250a0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Markdown Preview</h1>
+        <button class="btn" id="loadFile">Load GITHUB_PAGE.md</button>
+    </div>
+    <div class="container">
+        <textarea id="editor" placeholder="Type or paste your Markdown here..."></textarea>
+        <div id="preview"></div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const loadFileBtn = document.getElementById('loadFile');
+
+        // Update preview when editor content changes
+        function updatePreview() {
+            preview.innerHTML = marked.parse(editor.value);
+        }
+
+        editor.addEventListener('input', updatePreview);
+
+        // Load the Markdown file
+        loadFileBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('GITHUB_PAGE.md');
+                if (!response.ok) {
+                    throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
+                }
+                const text = await response.text();
+                editor.value = text;
+                updatePreview();
+            } catch (error) {
+                alert(`Error loading file: ${error.message}`);
+                console.error(error);
+            }
+        });
+
+        // Initial preview
+        updatePreview();
+    </script>
+</body>
+</html>
