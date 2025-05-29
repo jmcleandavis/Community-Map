@@ -1,7 +1,7 @@
 # [Community Map Project](https://community-map-207215937730.us-central1.run.app/)
 
 ## Overview
-When I first moverd into the Bay Ridges area a few years ago, I was delighted to find a flyer advertising the yearly community garage sales event.  I was excited and looked forward to going for a walk that lovely summer day and get a chance to meet my neighbours. The flyer had a map on it showing where all the garage sales were located.  I had my cellphone in one had, and the paper map in the other hand, and I thought to myself, well, this is stupid, why can't we have an app that maps out all the garage sales?  My neighbour, Jamie, agreed with me, and so we decided to make a website that would allow the organizers to enter in each of the sales and map them out on google maps.
+When I first moved into the Bay Ridges area a few years ago, I was delighted to find a flyer advertising the yearly community garage sales event.  I was excited and looked forward to going for a walk that lovely summer day and get a chance to meet my neighbours. The flyer had a map on it showing where all the garage sales were located.  I had my cellphone in one had, and the paper map in the other hand, and I thought to myself, well, this is stupid, why can't we have an app that maps out all the garage sales?  My neighbour, Jamie, agreed with me, and so we decided to make a website that would allow the organizers to enter in each of the sales and map them out on google maps.
 
 ## Main Objective
 We have successfully managed to reach our goal of having a website that allows the organizers to enter in each of the sales and map them out on google maps.  We would like some help from you to get your opinions on work flow and design elements to make this a polished website.
@@ -36,8 +36,8 @@ Our next goals are as follows:
 ### Main Screen
 ![Main Screen](Screenshots/Screenshot%202025-05-12%20105204%20main%20screen.png)
 
-### Bay Ridges Community Sales Map
-![Bay Ridges Community Sales Map](Screenshots/Bay%20Ridges%20Community%20Sales%20Map%202025%20Final.jpg)
+### Bay Ridges Community Sales Flyer
+![Bay Ridges Community Sales Flyer](Screenshots/Bay%20Ridges%20Community%20Sales%20Map%202025%20Final.jpg)
 
 ## Installation
 
