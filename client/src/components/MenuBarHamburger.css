@@ -1,0 +1,129 @@
+/* MenuBar Hamburger Menu Styles */
+.menubar-hamburger-container {
+  position: relative;
+  z-index: 1000;
+}
+
+.menubar-hamburger-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menubar-hamburger-icon {
+  width: 24px;
+  height: 18px;
+  position: relative;
+  transform: rotate(0deg);
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.menubar-hamburger-icon span {
+  display: block;
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background: #333;
+  border-radius: 3px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: 0.25s ease-in-out;
+}
+
+.menubar-hamburger-icon span:nth-child(1) {
+  top: 0px;
+}
+
+.menubar-hamburger-icon span:nth-child(2) {
+  top: 7px;
+}
+
+.menubar-hamburger-icon span:nth-child(3) {
+  top: 14px;
+}
+
+.menubar-hamburger-icon.open span:nth-child(1) {
+  top: 7px;
+  transform: rotate(135deg);
+}
+
+.menubar-hamburger-icon.open span:nth-child(2) {
+  opacity: 0;
+  left: -60px;
+}
+
+.menubar-hamburger-icon.open span:nth-child(3) {
+  top: 7px;
+  transform: rotate(-135deg);
+}
+
+.menubar-menu-items {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+.menubar-menu-items.open {
+  max-height: 400px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menubar-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.menubar-menu-item:last-child {
+  border-bottom: none;
+}
+
+.menubar-menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+.menubar-menu-icon {
+  margin-right: 12px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.menubar-menu-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .menubar-menu-items {
+    min-width: 250px;
+    right: -10px;
+  }
+  
+  .menubar-menu-text {
+    font-size: 13px;
+  }
+}

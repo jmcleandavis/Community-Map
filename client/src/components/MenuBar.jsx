@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '../context/NavigationContext';
+import useWindowSize from '../hooks/useWindowSize';
+import MenuBarHamburger from './MenuBarHamburger';
 import './MenuBar.css';
 
 const MenuBar = () => {
@@ -9,6 +11,10 @@ const MenuBar = () => {
   const location = useLocation();
   const { isAuthenticated, logout, userEmail } = useAuth();
   const { setFromLanding } = useNavigation();
+  
+  // Get window dimensions
+  const { width } = useWindowSize();
+  const isCompactView = width < 1045;
 
   const handleNavigation = (path) => {
     setFromLanding(true); // Set that navigation came from landing/menu bar
@@ -26,6 +32,11 @@ const MenuBar = () => {
       navigate('/landing'); // Otherwise go to landing page
     }
   };
+
+  // If screen is small, render hamburger menu instead
+  if (isCompactView) {
+    return <MenuBarHamburger />;
+  }
 
   return (
     <nav className="menu-bar">
