@@ -193,7 +193,10 @@ const GarageSalesAdmin = () => {
     try {
       if (editingSale) {
         // Prepare the update data based on what changed
-        const updateData = {};
+        const updateData = {
+          // Always include the community ID in the payload
+          community: communityId
+        };
         
         // Check if address was updated
         if (formData.address !== editingSale.address) {
@@ -214,10 +217,8 @@ const GarageSalesAdmin = () => {
           updateData.description = formData.description;
         }
         
-        // Only make the API call if there are changes to update
-        if (Object.keys(updateData).length > 0) {
-          await api.updateGarageSale(editingSale.id, updateData);
-        }
+        // Only make the API call if there are changes to update (community ID is always included)
+        await api.updateGarageSale(editingSale.id, updateData);
       } else {
         // Create new garage sale
         const addressData = parseAddress(formData.address);
