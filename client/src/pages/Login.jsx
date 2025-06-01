@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useInitialPage } from '../context/InitialPageContext';
+import ReactGA from 'react-ga4';
 import './Login.css';
 
 const Login = () => {
@@ -33,13 +34,13 @@ const Login = () => {
     const code = searchParams.get('code'); // Google returns 'code' not 'token'
     const resetTokenParam = searchParams.get('reset');
     const userEmailParam = searchParams.get('email');
-    
+
     if (code) {
       // Immediately remove the code from URL to prevent reprocessing
       // This must happen synchronously before any async operations
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
-      
+
       // Handle Google auth callback
       const handleCallback = async () => {
         try {
@@ -47,10 +48,18 @@ const Login = () => {
           setError('');
           console.log('GOOGLE AUTH: Processing Google authorization code');
           await handleGoogleCallback(code);
-          
+
+          // --- GA Tracking for Google Login Success ---
+          ReactGA.event({
+            category: 'Authentication',
+            action: 'Login',
+            label: 'Google',
+            value: 1
+          });
+
           // Force a delay to ensure context is properly loaded
           console.log('GOOGLE AUTH: Authentication complete, preparing navigation');
-          
+
           // Always navigate to community sales admin after Google login
           // This is a direct approach that bypasses the initial page checking
           console.log('GOOGLE AUTH: Navigating to /admin/community-sales');
@@ -58,11 +67,17 @@ const Login = () => {
         } catch (err) {
           setError('Failed to authenticate with Google. Please try again.');
           console.error('Google authentication error:', err);
+          ReactGA.event({
+            category: 'Authentication',
+            action: 'Login Failed',
+            label: 'Google',
+            value: 0 // You can use 0 for failures, 1 for success if you map values
+          });
         } finally {
           setLoading(false);
         }
       };
-      
+
       handleCallback();
     } else if (resetTokenParam) {
       // Handle password reset token
@@ -72,7 +87,7 @@ const Login = () => {
           await verifyResetToken(resetTokenParam);
           setIsResetPassword(true);
           setResetToken(resetTokenParam);
-          
+
           // Save the email from the query parameter if available
           if (userEmailParam) {
             setFormData(prev => ({
@@ -86,7 +101,7 @@ const Login = () => {
           setLoading(false);
         }
       };
-      
+
       verifyToken();
     }
   }, [location, handleGoogleCallback, navigate, verifyResetToken]);
@@ -110,7 +125,14 @@ const Login = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        
+
+        // --- GA Tracking for Email/Password Login Success ---
+        ReactGA.event({
+          category: 'Authentication',
+          action: 'Login',
+          label: 'Email/Password'
+        });
+
         // Use the initial page tracker to determine where to navigate
         if (wasInitialPageAbout()) {
           // If they started on the about/landing page, go to Manage Community Sales
@@ -127,10 +149,10 @@ const Login = () => {
         if (!formData.email) {
           throw new Error('Please enter your email address');
         }
-        
+
         const response = await requestPasswordReset(formData.email);
         setSuccessMessage('Password reset link has been sent to your email. Please check your inbox and spam folder. Due to email provider limitations, the email may appear in your spam folder.');
-        
+
         // Clear the email field after successful submission
         setFormData({
           ...formData,
@@ -141,24 +163,24 @@ const Login = () => {
         if (!formData.newPassword || !formData.confirmNewPassword) {
           throw new Error('Please fill in all password fields');
         }
-        
+
         if (formData.newPassword !== formData.confirmNewPassword) {
           throw new Error('Passwords do not match');
         }
-        
+
         // Basic password validation
         if (formData.newPassword.length < 8) {
           throw new Error('Password must be at least 8 characters long');
         }
-        
+
         // Use the email that was saved from the URL or entered by the user
         if (!formData.email) {
           throw new Error('Email address is missing. Please contact support.');
         }
-        
+
         await resetPassword(resetToken, formData.newPassword, formData.email);
         setSuccessMessage('Your password has been reset successfully. You can now log in with your new password.');
-        
+
         // Reset the form state after successful reset
         setTimeout(() => {
           setIsResetPassword(false);
@@ -185,7 +207,13 @@ const Login = () => {
           formData.firstName,
           formData.lastName
         );
-        
+
+        // --- GA Tracking for Registration Success ---
+        ReactGA.event({
+          category: 'Authentication',
+          action: 'Register',
+          label: 'Email/Password'
+        });
         // Use the initial page tracker to determine where to navigate
         if (wasInitialPageAbout()) {
           // If they started on the about/landing page, go to Manage Community Sales
@@ -223,6 +251,10 @@ const Login = () => {
       // No need to navigate here as googleLogin will redirect to Google OAuth
     } catch (err) {
       setError('Failed to initiate Google login. Please try again.');
+      ReactGA.event({
+        category: 'Authentication',
+        action: 'Google Login Initiation Failed'
+      });
       setLoading(false);
     }
   };
@@ -255,7 +287,7 @@ const Login = () => {
           <h2>Forgot Password</h2>
           {error && <div className="error-message">{error}</div>}
           {successMessage && <div className="success-message">{successMessage}</div>}
-          
+
           {!successMessage && (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -269,8 +301,8 @@ const Login = () => {
                   required
                 />
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="submit-button"
                 disabled={loading}
               >
@@ -278,8 +310,8 @@ const Login = () => {
               </button>
             </form>
           )}
-          
-          <button 
+
+          <button
             className="back-button"
             onClick={backToLogin}
             disabled={loading}
@@ -317,8 +349,8 @@ const Login = () => {
                 required
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="submit-button"
               disabled={loading}
             >
@@ -333,22 +365,22 @@ const Login = () => {
           <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
           {error && <div className="error-message">{error}</div>}
           {successMessage && <div className="success-message">{successMessage}</div>}
-          
-          <button 
+
+          <button
             className="google-button"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
-            <img 
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" 
-              alt="Google" 
-              className="google-icon" 
+            <img
+              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+              alt="Google"
+              className="google-icon"
             />
             Sign in with Google
           </button>
-          
+
           <div className="or-divider">OR</div>
-          
+
           <form onSubmit={handleSubmit}>
             {!isLogin && (
               <>
@@ -376,7 +408,7 @@ const Login = () => {
                 </div>
               </>
             )}
-            
+
             <div className="form-group">
               <input
                 type="email"
@@ -412,19 +444,19 @@ const Login = () => {
                 />
               </div>
             )}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="submit-button"
               disabled={loading}
             >
               {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
             </button>
           </form>
-          
+
           <div className="form-footer">
             {isLogin ? (
               <>
-                <button 
+                <button
                   className="toggle-form-button"
                   onClick={() => {
                     setIsLogin(false);
@@ -435,7 +467,7 @@ const Login = () => {
                 >
                   Need an account? Sign Up
                 </button>
-                <button 
+                <button
                   className="forgot-password-button"
                   onClick={toggleForgotPassword}
                   disabled={loading}
@@ -444,7 +476,7 @@ const Login = () => {
                 </button>
               </>
             ) : (
-              <button 
+              <button
                 className="toggle-form-button"
                 onClick={() => {
                   setIsLogin(true);
