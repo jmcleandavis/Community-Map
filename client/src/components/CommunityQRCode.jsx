@@ -8,7 +8,15 @@ const CommunityQRCode = ({ communityId, communityName = '', size = 300 }) => {
   if (!communityId) return null;
 
   // Build the map URL using the environment variable
-  const baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL || window.location.origin;
+  let baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL || window.location.origin;
+  
+  // Ensure the URL includes 'www' if it's not already there
+  if (baseUrl.includes('://') && !baseUrl.includes('://www.')) {
+    baseUrl = baseUrl.replace('://', '://www.');
+  } else if (!baseUrl.includes('://')) {
+    baseUrl = `https://www.${baseUrl}`;
+  }
+  
   const mapUrl = `${baseUrl}/?communityId=${communityId}`;
 
   // Use qrserver.com API to generate the QR code image

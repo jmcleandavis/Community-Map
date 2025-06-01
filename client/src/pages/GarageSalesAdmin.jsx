@@ -318,7 +318,15 @@ const GarageSalesAdmin = () => {
   // Function to handle QR code generation for the community map
   const handleCreateQRCode = () => {
     // Use the environment variable for the community map URL
-    const baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL;
+    let baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL;
+    
+    // Ensure the URL includes 'www' if it's not already there
+    if (baseUrl.includes('://') && !baseUrl.includes('://www.')) {
+      baseUrl = baseUrl.replace('://', '://www.');
+    } else if (!baseUrl.includes('://')) {
+      baseUrl = `https://www.${baseUrl}`;
+    }
+    
     const mapUrl = `${baseUrl}/?communityId=${communityId || ''}`;
     
     // Use a free QR code generation service
