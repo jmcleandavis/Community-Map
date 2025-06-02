@@ -218,7 +218,7 @@ const getSessionId = async () => {
 };
 
 // Custom get method for addresses - defaults to Bay Ridges Community Sales if no ID provided
-const getAddresses = async (communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
+const getAddresses = async (communityId = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
   try {
     console.log('API: Starting getAddresses call...');
     
@@ -319,7 +319,7 @@ async function getUserInfo(email) {
 }
 
 // Create a new garage sale
-const createGarageSale = async (addressData, description, name, highlightedItems, communityId = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
+const createGarageSale = async (addressData, description, name, highlightedItems, communityId = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
   try {
     const currentSessionId = await getSessionId();
     const response = await mapsApi.post('/v1/createAddress', {
@@ -781,7 +781,7 @@ const api = {
   logout,
   
   // Create or update user's saved address list
-  createUpdateUserAddressList: async (userId, addressList, community = 'd31a9eec-0dda-469d-8565-692ef9ad55c2') => {
+  createUpdateUserAddressList: async (userId, addressList, community = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
     try {
       console.log('Saving user address list for user:', userId);
       const sessionId = await getSessionId();
