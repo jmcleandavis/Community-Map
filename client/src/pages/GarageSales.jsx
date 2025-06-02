@@ -208,11 +208,43 @@ const GarageSales = () => {
     setShowOptimizeRoute(true);
   };
 
-  const handleSelectFirstVisit = (saleId) => {
-    // Handle the selection of first visit
-    console.log('Selected first visit:', saleId);
-    // You can implement the route optimization logic here
-    setShowOptimizeRoute(false);
+  const handleSelectFirstVisit = async (saleId) => {
+    try {
+      console.log('Selected first visit:', saleId);
+      
+      // Get sessionId from localStorage
+      const sessionId = localStorage.getItem('sessionId');
+      
+      // Make API call to get optimized route
+      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/optimizeRoute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'app-key': import.meta.env.VITE_APP_API_KEY,
+          'app-name': 'web-service',
+          'sessionId': sessionId
+        },
+        body: JSON.stringify({
+          startingAddressId: saleId,
+          communityId: communityId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const optimizedRouteData = await response.json();
+      console.log('Optimized route received:', optimizedRouteData);
+      
+      // TODO: Handle the optimized route data (display it, navigate to map, etc.)
+      // For now, just close the optimize route view
+      setShowOptimizeRoute(false);
+      
+    } catch (error) {
+      console.error('Error getting optimized route:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   const handleBackToSelection = () => {
