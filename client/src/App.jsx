@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import ReactGA from 'react-ga4'; // Import react-ga4
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './App.css';
@@ -28,7 +29,11 @@ import { InitialPageProvider } from './context/InitialPageContext';
 import DocumentTitle from './components/DocumentTitle';
 
 function App() {
-  
+  const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID; // Make sure you have this in your .env file
+  ReactGA.initialize(GA_MEASUREMENT_ID);
+  const location = useLocation(); // Get the current location object
+
+
   // Google Maps libraries
   const libraries = useMemo(() => ['places', 'marker'], []);
 
@@ -57,10 +62,16 @@ function App() {
     }
   }), []); // Empty dependency array since these options don't change
 
+    // Track page views with Google Analytics
+    useEffect(() => {
+      ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    }, [location]); // Re-run this effect whenever the location changes
+  
+
   return (
     <AuthProvider>
-      <LoadScript 
-        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} 
+      <LoadScript
+        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
         libraries={libraries}
         loadingElement={<div>Loading Google Maps...</div>}
       >
@@ -69,98 +80,98 @@ function App() {
             <LocationProvider>
               <NavigationProvider>
                 <InitialPageProvider>
-                <CommunitySalesProvider>
-                  <DocumentTitle />
-                  <div className="app">
-                  <Routes>
-                    <Route path="/loginRedirect" element={<LoginRedirect />} />
-                    <Route path="/about" element={
-                      <>
-                        <ConditionalMenu />
-                        <LandingPage />
-                      </>
-                    } />
-                    <Route path="/info" element={
-                      <>
-                        <ConditionalMenu />
-                        <InfoPage />
-                      </>
-                    } />
-                    <Route path="/help" element={
-                      <>
-                        <ConditionalMenu />
-                        <Help />
-                      </>
-                    } />
-                    <Route path="/list-active-community-sales-events" element={
-                      <>
-                        <ConditionalMenu />
-                        <ListActiveCommunitySalesEvents />
-                      </>
-                    } />
-                    <Route path="/login" element={
-                      <>
-                        <ConditionalMenu />
-                        <Login />
-                      </>
-                    } />
-                    <Route path="/reset-password" element={
-                      <>
-                        <ConditionalMenu />
-                        <PasswordReset />
-                      </>
-                    } />
-                    <Route path="/sales" element={
-                      <>
-                        <ConditionalMenu />
-                        <GarageSales />
-                      </>
-                    } />
-                    <Route path="/" element={
-                      <>
-                        <ConditionalMenu />
-                        <div className="map-container">
-                          <MapView 
-                            mapContainerStyle={mapContainerStyle}
-                            mapOptions={mapOptions}
-                          />
-                        </div>
-                      </>
-                    } />
-                    <Route path="/landing" element={
-                      <>
-                        <ConditionalMenu />
-                        <LandingPage />
-                      </>
-                    } />
-                    <Route path="/lander" element={<LanderRedirect />} />
-                    <Route path="/admin/community-sales" element={
-                      <ProtectedRouteWrapper>
-                        <>
-                          <ConditionalMenu />
-                          <CommunitySalesAdmin />
-                        </>
-                      </ProtectedRouteWrapper>
-                    } />
-                    <Route path="/admin/sales" element={
-                      <ProtectedRouteWrapper>
-                        <>
-                          <ConditionalMenu />
-                          <GarageSalesAdmin />
-                        </>
-                      </ProtectedRouteWrapper>
-                    } />
-                    <Route path="/admin/bulk-upload" element={
-                      <ProtectedRouteWrapper>
-                        <>
-                          <ConditionalMenu />
-                          <GarageSalesBulkUpload />
-                        </>
-                      </ProtectedRouteWrapper>
-                    } />
-                  </Routes>
-                </div>
-                </CommunitySalesProvider>
+                  <CommunitySalesProvider>
+                    <DocumentTitle />
+                    <div className="app">
+                      <Routes>
+                        <Route path="/loginRedirect" element={<LoginRedirect />} />
+                        <Route path="/about" element={
+                          <>
+                            <ConditionalMenu />
+                            <LandingPage />
+                          </>
+                        } />
+                        <Route path="/info" element={
+                          <>
+                            <ConditionalMenu />
+                            <InfoPage />
+                          </>
+                        } />
+                        <Route path="/help" element={
+                          <>
+                            <ConditionalMenu />
+                            <Help />
+                          </>
+                        } />
+                        <Route path="/list-active-community-sales-events" element={
+                          <>
+                            <ConditionalMenu />
+                            <ListActiveCommunitySalesEvents />
+                          </>
+                        } />
+                        <Route path="/login" element={
+                          <>
+                            <ConditionalMenu />
+                            <Login />
+                          </>
+                        } />
+                        <Route path="/reset-password" element={
+                          <>
+                            <ConditionalMenu />
+                            <PasswordReset />
+                          </>
+                        } />
+                        <Route path="/sales" element={
+                          <>
+                            <ConditionalMenu />
+                            <GarageSales />
+                          </>
+                        } />
+                        <Route path="/" element={
+                          <>
+                            <ConditionalMenu />
+                            <div className="map-container">
+                              <MapView
+                                mapContainerStyle={mapContainerStyle}
+                                mapOptions={mapOptions}
+                              />
+                            </div>
+                          </>
+                        } />
+                        <Route path="/landing" element={
+                          <>
+                            <ConditionalMenu />
+                            <LandingPage />
+                          </>
+                        } />
+                        <Route path="/lander" element={<LanderRedirect />} />
+                        <Route path="/admin/community-sales" element={
+                          <ProtectedRouteWrapper>
+                            <>
+                              <ConditionalMenu />
+                              <CommunitySalesAdmin />
+                            </>
+                          </ProtectedRouteWrapper>
+                        } />
+                        <Route path="/admin/sales" element={
+                          <ProtectedRouteWrapper>
+                            <>
+                              <ConditionalMenu />
+                              <GarageSalesAdmin />
+                            </>
+                          </ProtectedRouteWrapper>
+                        } />
+                        <Route path="/admin/bulk-upload" element={
+                          <ProtectedRouteWrapper>
+                            <>
+                              <ConditionalMenu />
+                              <GarageSalesBulkUpload />
+                            </>
+                          </ProtectedRouteWrapper>
+                        } />
+                      </Routes>
+                    </div>
+                  </CommunitySalesProvider>
                 </InitialPageProvider>
               </NavigationProvider>
             </LocationProvider>
@@ -174,12 +185,12 @@ function App() {
 // Move ProtectedRoute inside App to avoid circular dependency
 const ProtectedRouteWrapper = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   // Only check if the user is authenticated, no longer requiring admin status
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
