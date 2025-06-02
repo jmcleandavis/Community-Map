@@ -49,6 +49,7 @@ const MapLoadError = ({ error }) => {
 function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [componentMounted, setComponentMounted] = useState(false);
   const [center] = useState({
     lat: 43.8384,
     lng: -79.0868
@@ -80,16 +81,35 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const urlCommunityId = urlParams.get('communityId');
 
+  // Ensure component is fully mounted before making navigation decisions
+  useEffect(() => {
+    setComponentMounted(true);
+  }, []);
+
   // Use this effect to update the communityId or navigate to landing page
   useEffect(() => {
+    // Don't make navigation decisions until component is fully mounted
+    // and we've had a chance to parse the URL
+    if (!componentMounted) {
+      return;
+    }
+    
+    // Give URLSearchParams a chance to be processed by checking if location.search exists
+    if (location.search && !urlCommunityId) {
+      // URL has search params but communityId wasn't found - might still be parsing
+      console.log('MapView: URL has search params but communityId not found yet, waiting...');
+      return;
+    }
+    
     if(urlCommunityId) {
+      console.log('MapView: Setting community ID from URL:', urlCommunityId);
       setCommunityId(urlCommunityId);
-    } else if (!communityId) {
-      // If no community ID is provided, navigate to the landing page
-      console.log('MapView: No community ID provided, navigating to landing page');
+    } else if (!communityId && !location.search) {
+      // Only navigate away if there are no search params at all
+      console.log('MapView: No community ID provided and no URL params, navigating to landing page');
       navigate('/about');
     }
-  }, [urlCommunityId, communityId, setCommunityId, navigate]);
+  }, [urlCommunityId, communityId, setCommunityId, navigate, componentMounted, location.search]);
 
   // Fetch community name via API if it's not available in context
   useEffect(() => {
