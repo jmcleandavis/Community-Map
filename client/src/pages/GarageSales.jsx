@@ -27,6 +27,7 @@ const GarageSales = () => {
   const { isAuthenticated, userEmail, userInfo } = useAuth();
   const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
 
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
@@ -203,6 +204,21 @@ const GarageSales = () => {
     }
   };
 
+  const handleOptimizeRoute = () => {
+    setShowOptimizeRoute(true);
+  };
+
+  const handleSelectFirstVisit = (saleId) => {
+    // Handle the selection of first visit
+    console.log('Selected first visit:', saleId);
+    // You can implement the route optimization logic here
+    setShowOptimizeRoute(false);
+  };
+
+  const handleBackToSelection = () => {
+    setShowOptimizeRoute(false);
+  };
+
   const filteredSales = garageSales.filter(sale => 
     (sale.address || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (sale.description || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -223,6 +239,47 @@ const GarageSales = () => {
         <button className="retry-button" onClick={fetchGarageSales}>
           Retry
         </button>
+      </div>
+    );
+  }
+
+  // Get selected sales for display
+  const selectedSalesData = garageSales.filter(sale => selectedSales.has(sale.id));
+
+  // Show optimize route view if active
+  if (showOptimizeRoute) {
+    return (
+      <div className="garage-sales-container">
+        <h1>{communityName ? `${communityName} - Optimize Route` : 'Optimize Route'}</h1>
+        <div className="optimize-route-instructions">
+          <p><strong>Click on the address which will be your first visit</strong></p>
+        </div>
+        
+        <button 
+          className="back-button"
+          onClick={handleBackToSelection}
+        >
+          ← Back to Selection
+        </button>
+
+        <div className="garage-sales-list">
+          {selectedSalesData.map((sale) => (
+            <div 
+              key={sale.id} 
+              className="garage-sale-card clickable-card"
+              onClick={() => handleSelectFirstVisit(sale.id)}
+            >
+              <div className="sale-content">
+                <h3>{sale.address || 'No Address Available'}</h3>
+                <p>{sale.description || 'No Description Available'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="total-count">
+          Showing {selectedSalesData.length} selected garage sales
+        </div>
       </div>
     );
   }
@@ -265,7 +322,7 @@ const GarageSales = () => {
               </button>
               <button 
                 className="view-selected-button"
-                onClick={() => {/* TODO: Implement optimize route functionality */}}
+                onClick={handleOptimizeRoute}
               >
                 Optimize Route
               </button>

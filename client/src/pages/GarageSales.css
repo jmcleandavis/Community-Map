@@ -232,9 +232,10 @@
 
 .total-count {
   text-align: center;
-  margin-top: 30px;
   color: #666;
-  font-size: 0.9em;
+  font-size: 14px;
+  margin-top: 20px;
+  padding: 20px 0;
 }
 
 .user-info {
@@ -257,6 +258,56 @@
 .user-email {
   color: #666;
   font-size: 0.9em;
+}
+
+.optimize-route-instructions {
+  background-color: #f8f9fa;
+  border: 2px solid #4285f4;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.optimize-route-instructions p {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.back-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border-color: #4285f4;
+}
+
+.clickable-card .card-header {
+  display: none; /* Hide checkbox in optimize route view */
+}
+
+.clickable-card .sale-content {
+  padding-left: 20px; /* Remove extra padding since no checkbox */
 }
 
 @media (max-width: 768px) {
