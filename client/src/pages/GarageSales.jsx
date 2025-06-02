@@ -263,6 +263,12 @@ const GarageSales = () => {
               >
                 View and Save Selected ({selectedSales.size})
               </button>
+              <button 
+                className="view-selected-button"
+                onClick={() => {/* TODO: Implement optimize route functionality */}}
+              >
+                Optimize Route
+              </button>
             </>
           )}
         </div>
