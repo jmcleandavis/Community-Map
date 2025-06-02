@@ -28,6 +28,8 @@ const GarageSales = () => {
   const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
+  const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
+  const [showRouteList, setShowRouteList] = useState(false);
 
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
@@ -216,12 +218,12 @@ const GarageSales = () => {
       const sessionId = localStorage.getItem('sessionId');
       
       // Make API call to get optimized route
-      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/optimizeRoute`, {
+      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'app-key': import.meta.env.VITE_APP_API_KEY,
-          'app-name': 'web-service',
+          'app-name': 'postman-call',
           'sessionId': sessionId
         },
         body: JSON.stringify({
@@ -230,25 +232,72 @@ const GarageSales = () => {
         })
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      const optimizedRouteData = await response.json();
+      // Get response as text first to debug
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      // Try to parse JSON
+      let optimizedRouteData;
+      try {
+        optimizedRouteData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        console.error('Response text that failed to parse:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
+
       console.log('Optimized route received:', optimizedRouteData);
       
-      // TODO: Handle the optimized route data (display it, navigate to map, etc.)
-      // For now, just close the optimize route view
-      setShowOptimizeRoute(false);
+      // Handle the successful response
+      if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
+        console.log('Route summary:', optimizedRouteData.summary);
+        console.log('Ordered waypoints:', optimizedRouteData.orderedWaypoints);
+        console.log('Full route:', optimizedRouteData.fullRoute);
+        
+        // Store the optimized route data in localStorage
+        localStorage.setItem('optimizedRoute', JSON.stringify(optimizedRouteData));
+        
+        // Set the optimized route addresses for display
+        setOptimizedRouteAddresses(optimizedRouteData.orderedWaypoints);
+        
+        // Close the optimize route view and show the route list
+        setShowOptimizeRoute(false);
+        setShowRouteList(true);
+      } else {
+        // Close the optimize route view if there's no valid data
+        setShowOptimizeRoute(false);
+      }
       
     } catch (error) {
       console.error('Error getting optimized route:', error);
-      // You might want to show an error message to the user here
+      // Show user-friendly error message
+      alert(`Error optimizing route: ${error.message}`);
     }
   };
 
   const handleBackToSelection = () => {
     setShowOptimizeRoute(false);
+    setShowRouteList(false);
+  };
+  
+  const handleProceedToMap = () => {
+    // Set display mode to show optimized route
+    toggleDisplayMode('optimizedRoute');
+    
+    // Navigate to map view with parameters
+    navigate(`/?communityId=${communityId}&showOptimizedRoute=true`);
+    
+    // Close the route list view
+    setShowRouteList(false);
   };
 
   const filteredSales = garageSales.filter(sale => 
@@ -278,6 +327,43 @@ const GarageSales = () => {
   // Get selected sales for display
   const selectedSalesData = garageSales.filter(sale => selectedSales.has(sale.id));
 
+  // Show optimized route list if active
+  if (showRouteList && optimizedRouteAddresses.length > 0) {
+    return (
+      <div className="garage-sales-container">
+        <h1>{communityName ? `${communityName} - Optimized Route` : 'Optimized Route'}</h1>
+        
+        <div className="optimize-route-instructions">
+          <p><strong>Your optimized route in order of visits:</strong></p>
+        </div>
+        
+        <div className="optimized-addresses-list">
+          {optimizedRouteAddresses.map((address, index) => (
+            <div key={index} className="optimized-address-item">
+              <div className="address-number">{index + 1}</div>
+              <div className="address-text">{address}</div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="optimize-buttons">
+          <button 
+            className="back-button"
+            onClick={handleBackToSelection}
+          >
+            ← Back to Selection
+          </button>
+          <button 
+            className="proceed-button"
+            onClick={handleProceedToMap}
+          >
+            View on Map
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   // Show optimize route view if active
   if (showOptimizeRoute) {
     return (

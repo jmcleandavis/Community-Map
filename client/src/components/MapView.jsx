@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { GoogleMap, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useDisplay } from '../context/DisplayContext';
 import './MapView.css';
@@ -10,7 +10,6 @@ import { useAuth } from '../context/AuthContext';
 import { useSelection } from '../context/SelectionContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
 import api from '../utils/api';
-
 
 // Fallback component when map fails to load
 const MapLoadError = ({ error }) => {
@@ -50,6 +49,9 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [componentMounted, setComponentMounted] = useState(false);
+  const [directions, setDirections] = useState(null);
+  const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
+  const [optimizedRouteData, setOptimizedRouteData] = useState(null);
   const [center] = useState({
     lat: 43.8384,
     lng: -79.0868
@@ -80,11 +82,26 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const urlCommunityId = urlParams.get('communityId');
+  const urlShowOptimizedRoute = urlParams.get('showOptimizedRoute') === 'true';
 
   // Ensure component is fully mounted before making navigation decisions
   useEffect(() => {
     setComponentMounted(true);
-  }, []);
+    
+    // Check if we should show optimized route
+    if (urlShowOptimizedRoute) {
+      const storedRoute = localStorage.getItem('optimizedRoute');
+      if (storedRoute) {
+        try {
+          const routeData = JSON.parse(storedRoute);
+          setOptimizedRouteData(routeData);
+          setShowOptimizedRoute(true);
+        } catch (error) {
+          console.error('Error parsing optimized route data:', error);
+        }
+      }
+    }
+  }, [urlShowOptimizedRoute]);
 
   // Use this effect to update the communityId or navigate to landing page
   useEffect(() => {
@@ -459,6 +476,31 @@ function MapView({ mapContainerStyle, mapOptions }) {
     createMarkers();
   }, [isLoaded, garageSales, createMarkers]);
 
+  // Effect to display optimized route when data changes
+  useEffect(() => {
+    if (isLoaded && showOptimizedRoute && optimizedRouteData && window.google) {
+      displayOptimizedRoute(optimizedRouteData);
+    }
+  }, [isLoaded, showOptimizedRoute, optimizedRouteData]);
+
+  // Handle map load event
+  const handleMapLoad = useCallback((map) => {
+    console.log('MapView: Map loaded');
+    mapRef.current = map;
+    setIsLoaded(true);
+  }, []);
+
+  // Handle map click to close info windows
+  const handleMapClick = useCallback(() => {
+    // Close InfoWindow when clicking on the map
+    if (selectedSale) setSelectedSale(null);
+    
+    // Close hamburger menu if it's open
+    if (window.closeHamburgerMenu) {
+      window.closeHamburgerMenu();
+    }
+  }, [selectedSale]);
+
   const titleStyle = {
     textAlign: 'center',
     padding: '15px',
@@ -538,7 +580,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
                   },
                   // Enable standard Google Maps controls
                   streetViewControl: true,
-                  scaleControl: true,
+                  scaleControl: true
                 });
               } else {
                 // For larger screens (>=1045px): Normal horizontal positioning
