@@ -476,12 +476,59 @@ function MapView({ mapContainerStyle, mapOptions }) {
     createMarkers();
   }, [isLoaded, garageSales, createMarkers]);
 
+  // Function to display the optimized route on the map
+  const displayOptimizedRoute = useCallback((routeData) => {
+    if (!mapRef.current || !window.google || !routeData) {
+      console.error('MapView: Cannot display optimized route - missing requirements');
+      return;
+    }
+
+    console.log('MapView: Displaying optimized route with data:', routeData);
+    
+    try {
+      const DirectionsService = new window.google.maps.DirectionsService();
+      
+      // Extract waypoints from the route data
+      const waypoints = routeData.orderedWaypoints || [];
+      
+      if (waypoints.length < 2) {
+        console.error('MapView: Not enough waypoints to create a route');
+        return;
+      }
+      
+      // Create waypoint objects for the DirectionsService
+      const googleWaypoints = waypoints.slice(1, waypoints.length - 1).map(address => ({
+        location: address,
+        stopover: true
+      }));
+      
+      // Request directions
+      DirectionsService.route({
+        origin: waypoints[0],
+        destination: waypoints[waypoints.length - 1],
+        waypoints: googleWaypoints,
+        optimizeWaypoints: false, // Already optimized
+        travelMode: window.google.maps.TravelMode.DRIVING
+      }, (result, status) => {
+        if (status === window.google.maps.DirectionsStatus.OK) {
+          console.log('MapView: Successfully received directions for optimized route');
+          setDirections(result);
+        } else {
+          console.error('MapView: Error getting directions for optimized route:', status);
+          alert(`Error getting directions: ${status}`);
+        }
+      });
+    } catch (error) {
+      console.error('MapView: Error displaying optimized route:', error);
+    }
+  }, []);
+
   // Effect to display optimized route when data changes
   useEffect(() => {
     if (isLoaded && showOptimizedRoute && optimizedRouteData && window.google) {
       displayOptimizedRoute(optimizedRouteData);
     }
-  }, [isLoaded, showOptimizedRoute, optimizedRouteData]);
+  }, [isLoaded, showOptimizedRoute, optimizedRouteData, displayOptimizedRoute]);
 
   // Handle map load event
   const handleMapLoad = useCallback((map) => {
@@ -646,14 +693,32 @@ function MapView({ mapContainerStyle, mapOptions }) {
           }}
           options={mapOptions}
         >
+          {/* Render directions if available */}
+          {directions && showOptimizedRoute && (
+            <DirectionsRenderer
+              directions={directions}
+              options={{
+                suppressMarkers: false,
+                polylineOptions: {
+                  strokeColor: '#4285F4',
+                  strokeWeight: 5,
+                  strokeOpacity: 0.8
+                }
+              }}
+            />
+          )}
+          
           {selectedSale && (
             <InfoWindow
-              position={selectedSale.position}
+              position={{
+                lat: selectedSale.position.lat,
+                lng: selectedSale.position.lng
+              }}
               onCloseClick={() => setSelectedSale(null)}
             >
-              <div>
+              <div className="info-window-content">
                 <h3>{selectedSale.address}</h3>
-                <p>{selectedSale.description}</p>
+                <p>{selectedSale.description || 'No description available'}</p>
               </div>
             </InfoWindow>
           )}

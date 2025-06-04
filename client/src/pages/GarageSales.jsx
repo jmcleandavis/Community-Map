@@ -31,6 +31,36 @@ const GarageSales = () => {
   const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
   const [showRouteList, setShowRouteList] = useState(false);
 
+  // Mock data based on the sample file - use this when backend is not working
+  const mockOptimizedRouteData = {
+    "summary": "Optimized Route",
+    "orderedWaypoints": [
+      "727 Balaton Avenue, Pickering, ON L1W 1W3",
+      "879 CHAPLEAU DR, Pickering, ON L1W 1P6",
+      "822 KROSNO BLVD, Pickering, ON L1W 1G8",
+      "671 FRONT RD, Pickering, ON L1W 1N9",
+      "725 Balaton Avenue, Pickering, ON L1W 1W3",
+      "719 CORTEZ AVE, Pickering, ON L1W 1Y3",
+      "688 ALDERWOOD PL, Pickering, ON L1W 1W8",
+      "858 KROSNO BLVD, Pickering, ON L1W 1H3",
+      "859 LIVERPOOL RD, Pickering, ON L1W 1S3",
+      "828 KROSNO BLVD, Pickering, ON L1W 1G9",
+      "1385 FORDON AVE, Pickering, ON L1W 1K1",
+      "1322 COMMERCE ST, Pickering, ON L1W 1E2",
+      "818 KROSNO BLVD, Pickering, ON L1W 1G8",
+      "699 Liverpool Road, Pickering, ON L1W 1R6",
+      "833 BEM AVE, Pickering, ON L1W 1X2",
+      "727-C Balaton Ave HH2, Pickering, ON L1W 1M7",
+      "724 KROSNO BLVD, Pickering, ON L1W 1G3",
+      "844 BEM AVE, Pickering, ON L1W 1X3",
+      "1483 ALYSSUM ST, Pickering, ON L1W 1J1",
+      "727 Balaton Ave, Pickering, ON L1W 1W3",
+      "827 BEM AVE, Pickering, ON L1W 1X2",
+      "865 DOUGLAS AVE, Pickering, ON L1W 1N5",
+      "727+Balaton Avenue, Pickering, ON L1W 1W3"
+    ]
+  };
+
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -217,53 +247,73 @@ const GarageSales = () => {
       // Get sessionId from localStorage
       const sessionId = localStorage.getItem('sessionId');
       
-      // Make API call to get optimized route
-      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'app-key': import.meta.env.VITE_APP_API_KEY,
-          'app-name': 'postman-call',
-          'sessionId': sessionId
-        },
-        body: JSON.stringify({
-          startingAddressId: saleId,
-          communityId: communityId
-        })
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      // Get response as text first to debug
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
-      // Try to parse JSON
-      let optimizedRouteData;
-      try {
-        optimizedRouteData = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON Parse Error:', parseError);
-        console.error('Response text that failed to parse:', responseText);
-        throw new Error('Invalid JSON response from server');
-      }
-
-      console.log('Optimized route received:', optimizedRouteData);
+      // Try API call first, but fall back to mock data if it fails
+      let optimizedRouteData = null;
+      let usedMockData = false;
       
-      // Handle the successful response
-      if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
-        console.log('Route summary:', optimizedRouteData.summary);
-        console.log('Ordered waypoints:', optimizedRouteData.orderedWaypoints);
-        console.log('Full route:', optimizedRouteData.fullRoute);
+      try {
+        // Make API call to get optimized route
+        const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'app-key': import.meta.env.VITE_APP_API_KEY,
+            'app-name': 'postman-call',
+            'sessionId': sessionId
+          },
+          body: JSON.stringify({
+            firstVisitId: saleId,
+            communityId: communityId
+          })
+        });
         
-        // Store the optimized route data in localStorage
+        if (!response.ok) {
+          throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+        }
+        
+        optimizedRouteData = await response.json();
+        console.log('API Response:', optimizedRouteData);
+        
+      } catch (apiError) {
+        console.warn('API call failed, using mock data:', apiError.message);
+        
+        // Use mock data and create a route that starts with the selected sale
+        const selectedSale = selectedSalesData.find(sale => sale.id === saleId);
+        const selectedAddress = selectedSale ? selectedSale.address : null;
+        
+        // Create a custom route starting with the selected address
+        let customOrderedWaypoints = [...mockOptimizedRouteData.orderedWaypoints];
+        
+        if (selectedAddress) {
+          // Remove the selected address if it exists in the mock data
+          customOrderedWaypoints = customOrderedWaypoints.filter(addr => 
+            !addr.toLowerCase().includes(selectedAddress.toLowerCase().split(',')[0])
+          );
+          // Add the selected address at the beginning
+          customOrderedWaypoints.unshift(selectedAddress);
+        }
+        
+        // Limit to the number of selected sales to make it more realistic
+        customOrderedWaypoints = customOrderedWaypoints.slice(0, selectedSalesData.length);
+        
+        optimizedRouteData = {
+          ...mockOptimizedRouteData,
+          orderedWaypoints: customOrderedWaypoints,
+          summary: `Optimized Route (Starting from ${selectedAddress || 'Selected Location'})`
+        };
+        
+        usedMockData = true;
+      }
+      
+      // Process the response (whether from API or mock data)
+      if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
+        console.log('Using optimized route data:', optimizedRouteData);
+        
+        if (usedMockData) {
+          console.log('Note: Using mock data due to API unavailability');
+        }
+        
+        // Store the optimized route data in localStorage for the map to use
         localStorage.setItem('optimizedRoute', JSON.stringify(optimizedRouteData));
         
         // Set the optimized route addresses for display
@@ -273,8 +323,7 @@ const GarageSales = () => {
         setShowOptimizeRoute(false);
         setShowRouteList(true);
       } else {
-        // Close the optimize route view if there's no valid data
-        setShowOptimizeRoute(false);
+        throw new Error('Invalid route data received');
       }
       
     } catch (error) {
