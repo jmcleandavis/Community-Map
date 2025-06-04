@@ -719,6 +719,41 @@ function MapView({ mapContainerStyle, mapOptions }) {
               <div className="info-window-content">
                 <h3>{selectedSale.address}</h3>
                 <p>{selectedSale.description || 'No description available'}</p>
+                <button 
+                  onClick={() => {
+                    // Create Google Maps URL with directions from current location to this address
+                    const destination = encodeURIComponent(selectedSale.address);
+                    let navigationUrl;
+                    
+                    if (userLocation) {
+                      // If we have user's location, use it as the starting point
+                      const origin = `${userLocation.lat},${userLocation.lng}`;
+                      navigationUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+                    } else {
+                      // Otherwise, let Google Maps determine the current location
+                      navigationUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+                    }
+                    
+                    // Open in a new tab
+                    window.open(navigationUrl, '_blank');
+                  }}
+                  style={{
+                    backgroundColor: '#4285F4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 12px',
+                    marginTop: '10px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%'
+                  }}
+                >
+                  <span style={{ marginRight: '5px' }}>📍</span> Navigate here
+                </button>
               </div>
             </InfoWindow>
           )}
