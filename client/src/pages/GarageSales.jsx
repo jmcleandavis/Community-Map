@@ -253,7 +253,7 @@ const GarageSales = () => {
       
       try {
         // Make API call to get optimized route
-        const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimizedRoute`, {
+        const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ const GarageSales = () => {
             'sessionId': sessionId
           },
           body: JSON.stringify({
-            firstVisitId: saleId,
+            startingAddressId: saleId,
             communityId: communityId
           })
         });
