@@ -253,7 +253,7 @@ const GarageSales = () => {
       
       try {
         // Make API call to get optimized route
-        const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
+        const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimizedRoute`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

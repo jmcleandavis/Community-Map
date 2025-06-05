@@ -381,39 +381,45 @@
 }
 
 .delete-button {
-  background-color: #4285f4;
-  color: white;
+  background-color: white !important;
+  color: #dc3545 !important;
+  border: 1px solid #dc3545 !important;
   margin-top: 0px;
   width: 100%;
   height: 40px;
 }
 
 .delete-button:hover {
-  background-color: #3367d6;
+  background-color: #dc3545 !important;
+  color: white !important;
 }
 
 .manage-button {
-  background-color: #4285f4;
-  color: white;
+  background-color: white !important;
+  color: #28a745 !important;
+  border: 1px solid #28a745 !important;
   margin-top: 0px;
   width: 100%;
   height: 40px;
 }
 
 .manage-button:hover {
-  background-color: #3367d6;
+  background-color: #28a745 !important;
+  color: white !important;
 }
 
 
 .view-on-map-button {
-  background-color: #4285f4;
-  color: white;
+  background-color: white !important;
+  color: #4285f4 !important;
+  border: 1px solid #4285f4 !important;
   width: 100%;
   height: 40px;
 }
 
 .view-on-map-button:hover {
-  background-color: #3367d6;
+  background-color: #4285f4 !important;
+  color: white !important;
 }
 
 .loading-state,

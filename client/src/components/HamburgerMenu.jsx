@@ -108,12 +108,6 @@ const HamburgerMenu = () => {
 
         <DisplayMode onSelect={() => setIsOpen(false)} />
 
-        {/* QR Code Menu Item */}
-        <div className="menu-item" onClick={() => { setShowQrModal(true); setIsOpen(false); }}>
-          <span className="menu-icon">📊</span>
-          <span className="menu-text">Show Community QR Code</span>
-        </div>
-
         <div className="menu-item" onClick={() => {
           navigate('/sales');
           setIsOpen(false);
@@ -122,8 +116,11 @@ const HamburgerMenu = () => {
           <span className="menu-text">Garage Sales</span>
         </div>
 
-        {/* Community Sales Administration menu item removed */}
-
+        {/* QR Code Menu Item */}
+        <div className="menu-item" onClick={() => { setShowQrModal(true); setIsOpen(false); }}>
+          <span className="menu-icon">📊</span>
+          <span className="menu-text">Show Community QR Code</span>
+        </div>
 
         {/* <div className="menu-item" onClick={() => {
           navigate('/settings');
