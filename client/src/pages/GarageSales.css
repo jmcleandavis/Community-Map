@@ -164,8 +164,27 @@
 }
 
 .sale-content {
-  flex-grow: 1;
+  flex: 1;
   padding-left: 35px;
+  padding-right: 10px;
+}
+
+.sale-content h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #333;
+}
+
+.sale-address-details {
+  margin-bottom: 12px;
+}
+
+.address-line {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
 }
 
 .garage-sale-card h3 {
