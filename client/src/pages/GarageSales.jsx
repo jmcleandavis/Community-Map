@@ -209,7 +209,62 @@ const GarageSales = () => {
   };
 
   const handleOptimizeRoute = () => {
+    // Always show the optimize route view to let the user select a starting point
     setShowOptimizeRoute(true);
+  };
+  
+  const handleFullRouteOptimization = async () => {
+    try {
+      console.log('Getting full route optimization');
+      
+      // Get sessionId from localStorage
+      const sessionId = localStorage.getItem('sessionId');
+      
+      // Make API call to get optimized route without a specific starting point
+      let optimizedRouteData = null;
+      
+      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'app-key': import.meta.env.VITE_APP_API_KEY,
+          'app-name': 'postman-call',
+          'sessionId': sessionId
+        },
+        body: JSON.stringify({
+          communityId: communityId
+          // No startingAddressId means the API will optimize the full route
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      }
+      
+      optimizedRouteData = await response.json();
+      console.log('API Response:', optimizedRouteData);
+      
+      // Process the response
+      if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
+        console.log('Using optimized route data:', optimizedRouteData);
+        
+        // Store the optimized route data in localStorage for the map to use
+        localStorage.setItem('optimizedRoute', JSON.stringify(optimizedRouteData));
+        
+        // Set the optimized route addresses for display
+        setOptimizedRouteAddresses(optimizedRouteData.orderedWaypoints);
+        
+        // Show the route list
+        setShowRouteList(true);
+      } else {
+        throw new Error('Invalid route data received');
+      }
+      
+    } catch (error) {
+      console.error('Error getting optimized route:', error);
+      // Show user-friendly error message
+      alert(`Error optimizing route: ${error.message}`);
+    }
   };
 
   const handleSelectFirstVisit = async (saleId) => {
@@ -248,11 +303,83 @@ const GarageSales = () => {
       if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
         console.log('Using optimized route data:', optimizedRouteData);
         
-        // Store the optimized route data in localStorage for the map to use
-        localStorage.setItem('optimizedRoute', JSON.stringify(optimizedRouteData));
+        // Create a map of addresses to sale data for matching
+        const addressToSaleMap = {};
+        
+        // Build a map of normalized addresses to their corresponding sale data
+        garageSales.forEach(sale => {
+          if (sale.address) {
+            // Normalize the address by removing extra spaces and converting to lowercase
+            const normalizedAddress = sale.address.toLowerCase().replace(/\s+/g, ' ').trim();
+            addressToSaleMap[normalizedAddress] = sale;
+          }
+        });
+        
+        console.log('Address to sale map created with', Object.keys(addressToSaleMap).length, 'entries');
+        
+        // Process the ordered waypoints from the API
+        const filteredWaypoints = [];
+        console.log('Ordered waypoints from API:', optimizedRouteData.orderedWaypoints);
+        
+        // Process each waypoint in the optimized route
+        optimizedRouteData.orderedWaypoints.forEach((waypoint, index) => {
+          // Get the address from the waypoint
+          let waypointAddress = '';
+          
+          // Handle different possible formats of the waypoint data
+          if (typeof waypoint === 'string') {
+            waypointAddress = waypoint;
+          } else if (waypoint && typeof waypoint === 'object') {
+            waypointAddress = waypoint.address || waypoint.location || '';
+          }
+          
+          console.log(`Processing waypoint ${index + 1}:`, waypointAddress);
+          
+          if (waypointAddress) {
+            // Normalize the address for matching
+            const normalizedAddress = waypointAddress.toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            // Find the matching sale by address
+            const matchingSale = addressToSaleMap[normalizedAddress];
+            
+            if (matchingSale) {
+              console.log('Found matching sale with ID:', matchingSale.id);
+              
+              // Add the waypoint with the correct ID and position information
+              filteredWaypoints.push({
+                id: matchingSale.id,
+                address: matchingSale.address,
+                description: matchingSale.description,
+                position: matchingSale.position,
+                // Add the position in the optimized route
+                routeOrder: index + 1
+              });
+            } else {
+              console.log('No matching sale found for address:', waypointAddress);
+              
+              // Include the waypoint even without a matching sale
+              filteredWaypoints.push({
+                address: waypointAddress,
+                description: `Stop ${index + 1}`,
+                routeOrder: index + 1
+              });
+            }
+          }
+        });
+        
+        console.log('Filtered waypoints with route order:', filteredWaypoints);
+        
+        // Create a modified optimized route data with only selected sales
+        const filteredOptimizedRouteData = {
+          ...optimizedRouteData,
+          orderedWaypoints: filteredWaypoints
+        };
+        
+        // Store the filtered optimized route data in localStorage for the map to use
+        localStorage.setItem('optimizedRoute', JSON.stringify(filteredOptimizedRouteData));
         
         // Set the optimized route addresses for display
-        setOptimizedRouteAddresses(optimizedRouteData.orderedWaypoints);
+        setOptimizedRouteAddresses(filteredWaypoints);
         
         // Close the optimize route view and show the route list
         setShowOptimizeRoute(false);
@@ -322,10 +449,13 @@ const GarageSales = () => {
         </div>
         
         <div className="optimized-addresses-list">
-          {optimizedRouteAddresses.map((address, index) => (
+          {optimizedRouteAddresses.map((waypoint, index) => (
             <div key={index} className="optimized-address-item">
               <div className="address-number">{index + 1}</div>
-              <div className="address-text">{address}</div>
+              <div className="address-content">
+                <div className="address-text">{waypoint.address || 'No Address Available'}</div>
+                <div className="address-description">{waypoint.description || ''}</div>
+              </div>
             </div>
           ))}
         </div>
@@ -350,6 +480,12 @@ const GarageSales = () => {
   
   // Show optimize route view if active
   if (showOptimizeRoute) {
+    // Use all sales data if there are no selections, otherwise use selected sales
+    const salesToDisplay = selectedSales.size > 0 ? selectedSalesData : filteredSales;
+    const displayMessage = selectedSales.size > 0 ? 
+      `Showing ${salesToDisplay.length} selected garage sales` : 
+      `Showing all ${salesToDisplay.length} garage sales`;
+    
     return (
       <div className="garage-sales-container">
         <h1>{communityName ? `${communityName} - Optimize Route` : 'Optimize Route'}</h1>
@@ -365,7 +501,7 @@ const GarageSales = () => {
         </button>
 
         <div className="garage-sales-list">
-          {selectedSalesData.map((sale) => (
+          {salesToDisplay.map((sale) => (
             <div 
               key={sale.id} 
               className="garage-sale-card clickable-card"
@@ -380,7 +516,7 @@ const GarageSales = () => {
         </div>
 
         <div className="total-count">
-          Showing {selectedSalesData.length} selected garage sales
+          {displayMessage}
         </div>
       </div>
     );
@@ -408,7 +544,7 @@ const GarageSales = () => {
         </div>
 
         <div className="selection-controls">
-          {selectedSales.size > 0 && (
+          {selectedSales.size > 0 ? (
             <>
               <button 
                 className="select-all-button"
@@ -422,14 +558,14 @@ const GarageSales = () => {
               >
                 View and Save Selected ({selectedSales.size})
               </button>
-              <button 
-                className="view-selected-button"
-                onClick={handleOptimizeRoute}
-              >
-                Optimize Route
-              </button>
             </>
-          )}
+          ) : null}
+          <button 
+            className="view-selected-button"
+            onClick={handleOptimizeRoute}
+          >
+            {selectedSales.size > 0 ? 'Optimize Selected Route' : 'Optimize Full Route'}
+          </button>
         </div>
       </div>
 

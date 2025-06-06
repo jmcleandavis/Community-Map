@@ -287,7 +287,7 @@
 
 .optimized-address-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px 15px;
   border-bottom: 1px solid #eee;
   background-color: #f9f9f9;
@@ -314,10 +314,23 @@
   flex-shrink: 0;
 }
 
-.address-text {
+.address-content {
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.address-text {
   font-size: 16px;
+  font-weight: 600;
   color: #333;
+  margin-bottom: 4px;
+}
+
+.address-description {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
 }
 
 .optimize-buttons {
