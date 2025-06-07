@@ -301,7 +301,7 @@ const GarageSales = () => {
       
       // Process the response
       if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
-        console.log('Using optimized route data:', optimizedRouteData);
+        console.log('Using optimised route data:', optimizedRouteData);
         
         // Create a map of addresses to sale data for matching
         const addressToSaleMap = {};
@@ -389,9 +389,9 @@ const GarageSales = () => {
       }
       
     } catch (error) {
-      console.error('Error getting optimized route:', error);
+      console.error('Error getting optimised route:', error);
       // Show user-friendly error message
-      alert(`Error optimizing route: ${error.message}`);
+      alert(`Error optimising route: ${error.message}`);
     }
   };
 
@@ -442,10 +442,10 @@ const GarageSales = () => {
   if (showRouteList && optimizedRouteAddresses.length > 0) {
     return (
       <div className="garage-sales-container">
-        <h1>{communityName ? `${communityName} - Optimized Route` : 'Optimized Route'}</h1>
+        <h1>{communityName ? `${communityName} - Optimised Route` : 'Optimised Route'}</h1>
         
         <div className="optimize-route-instructions">
-          <p><strong>Your optimized route in order of visits:</strong></p>
+          <p><strong>Your optimised route in order of visits:</strong></p>
         </div>
         
         <div className="optimized-addresses-list">
@@ -488,7 +488,7 @@ const GarageSales = () => {
     
     return (
       <div className="garage-sales-container">
-        <h1>{communityName ? `${communityName} - Optimize Route` : 'Optimize Route'}</h1>
+        <h1>{communityName ? `${communityName} - Optimised Route` : 'Optimised Route'}</h1>
         <div className="optimize-route-instructions">
           <p><strong>Click on the address which will be your first visit</strong></p>
         </div>
@@ -564,7 +564,7 @@ const GarageSales = () => {
             className="view-selected-button"
             onClick={handleOptimizeRoute}
           >
-            {selectedSales.size > 0 ? 'Optimize Selected Route' : 'Optimize Full Route'}
+            {selectedSales.size > 0 ? 'Optimise Selected Route' : 'Optimise Full Route'}
           </button>
         </div>
       </div>
