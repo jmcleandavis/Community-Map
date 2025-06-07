@@ -233,7 +233,7 @@ const GarageSales = () => {
         },
         body: JSON.stringify({
           communityId: communityId,
-          userId: userInfo?.id || ''
+          userId: userInfo?.userId || ''
           // No startingAddressId means the API will optimize the full route
         })
       });
@@ -290,7 +290,7 @@ const GarageSales = () => {
         body: JSON.stringify({
           startingAddressId: saleId,
           communityId: communityId,
-          userId: userInfo?.id || ''
+          userId: userInfo?.userId || ''
         })
       });
       
