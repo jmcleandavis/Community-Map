@@ -319,25 +319,12 @@ async function getUserInfo(email) {
 }
 
 // Create a new garage sale
-const createGarageSale = async (addressData, description, name, highlightedItems, communityId = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
+const createGarageSale = async (saleData) => {
   try {
-    const currentSessionId = await getSessionId();
-    const response = await mapsApi.post('/v1/createAddress', {
-      address: {
-        postalZipCode: addressData.postalCode || "",
-        street: addressData.street || "",
-        streetNum: addressData.streetNumber || "",
-        city: addressData.city || "",
-        provState: addressData.state || "",
-        unit: addressData.unit || ""
-      },
-      description: description,
-      highlightedItems: highlightedItems || [],
-      name: name || "Garage Sale",
-      community: communityId
-    }, {
+    const sessionId = await getSessionId();
+    const response = await mapsApi.post('/v1/createGarageSale', saleData, {
       headers: {
-        'sessionId': currentSessionId
+        'sessionId': sessionId
       }
     });
     return response.data;
@@ -347,6 +334,22 @@ const createGarageSale = async (addressData, description, name, highlightedItems
         error.response?.data?.errorMsg === 'Existing Address') {
       throw new Error('A garage sale already exists at this address');
     }
+    throw error;
+  }
+};
+
+// Get garage sales for a specific user
+const getUserGarageSale = async (userId) => {
+  try {
+    const sessionId = await getSessionId();
+    const response = await mapsApi.get(`/v1/getUserGarageSales/${userId}`, {
+      headers: {
+        'sessionId': sessionId
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Get user garage sale error:', error);
     throw error;
   }
 };
@@ -771,10 +774,11 @@ const api = {
   getSessionId,
   verifySession,
   getAddresses,
+  getAddressesByCommunity,
   getUserInfo,
   createGarageSale,
+  getUserGarageSale,
   deleteGarageSale,
-  deleteCommunitySale,
   updateGarageSale,
   register,
   login,

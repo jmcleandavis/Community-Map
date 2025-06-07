@@ -58,6 +58,18 @@ const MenuBar = () => {
     }
   };
 
+  const handleRegisterGarageSaleClick = () => {
+    setFromLanding(true);
+    
+    // Check if user is authenticated before allowing registration
+    if (isAuthenticated) {
+      navigate('/register-garage-sale');
+    } else {
+      // Redirect to login with a return path to the registration page
+      navigate('/login?returnTo=/register-garage-sale');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     setFromLanding(true); // Maintain the menu bar even after logout
@@ -80,6 +92,7 @@ const MenuBar = () => {
       <div className="menu-bar-item" onClick={() => handleNavigation('/about')}>About</div>
       <div className="menu-bar-item" onClick={() => handleNavigation('/list-active-community-sales-events')}>List of Active Community Sales Events</div>
       <div className="menu-bar-item" onClick={handleGarageSalesClick}>List of Individual Garage Sales</div>
+      <div className="menu-bar-item" onClick={handleRegisterGarageSaleClick}>Register a Garage Sale</div>
       <div className="menu-bar-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
       {isAuthenticated ? (
         <div className="menu-bar-item" onClick={handleLogout}>Logout</div>

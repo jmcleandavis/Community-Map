@@ -15,6 +15,7 @@ import LanderRedirect from './components/LanderRedirect';
 import PasswordReset from './pages/PasswordReset';
 import GarageSales from './pages/GarageSales';
 import SingleGarageSales from './pages/SingleGarageSales';
+import RegisterGarageSale from './pages/RegisterGarageSale';
 import GarageSalesAdmin from './pages/GarageSalesAdmin';
 import GarageSalesBulkUpload from './pages/GarageSalesBulkUpload';
 import CommunitySalesAdmin from './pages/CommunitySalesAdmin';
@@ -173,6 +174,14 @@ function App() {
                             <>
                               <ConditionalMenu />
                               <GarageSalesBulkUpload />
+                            </>
+                          </ProtectedRouteWrapper>
+                        } />
+                        <Route path="/register-garage-sale" element={
+                          <ProtectedRouteWrapper>
+                            <>
+                              <ConditionalMenu />
+                              <RegisterGarageSale />
                             </>
                           </ProtectedRouteWrapper>
                         } />
