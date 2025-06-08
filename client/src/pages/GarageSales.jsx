@@ -208,8 +208,35 @@ const GarageSales = () => {
     }
   };
 
-  const handleOptimizeRoute = () => {
-    // Always show the optimize route view to let the user select a starting point
+  const handleOptimizeRoute = async () => {
+    // If there are selected sales and the user is authenticated, save them to the backend first
+    if (selectedSales.size > 0 && isAuthenticated && userInfo?.userId) {
+      try {
+        console.log('Saving selected sales to server before optimization for user:', userInfo.userId);
+        
+        // Filter sales to only include those from the current communityId
+        // and that are also in the selectedSales set
+        const selectedSalesData = filteredSales
+          .filter(sale => selectedSales.has(sale.id));
+        
+        // Extract just the IDs for the server request
+        const selectedSaleIds = selectedSalesData.map(sale => sale.id);
+        
+        console.log(`Saving ${selectedSaleIds.length} selected sales for current community ID: ${communityId}`);
+        
+        // Save the selected sales to the server with the current communityId
+        const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds, communityId);
+        console.log('Successfully saved selected sales to server before optimization:', response);
+      } catch (error) {
+        console.error('Error saving selected sales to server before optimization:', error);
+        // Continue with optimization even if server save fails
+        // We don't want to block the user from optimizing their route
+      }
+    }
+    
+    // Show the optimize route view to let the user select a starting point
+    // This will eventually call handleSelectFirstVisit with the appropriate endpoint
+    // based on whether there are selected sales or not
     setShowOptimizeRoute(true);
   };
   
@@ -223,7 +250,7 @@ const GarageSales = () => {
       // Make API call to get optimized route without a specific starting point
       let optimizedRouteData = null;
       
-      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`, {
+      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,8 +259,7 @@ const GarageSales = () => {
           'sessionId': sessionId
         },
         body: JSON.stringify({
-          communityId: communityId,
-          userId: userInfo?.userId || ''
+          communityId: communityId
           // No startingAddressId means the API will optimize the full route
         })
       });
@@ -279,7 +305,24 @@ const GarageSales = () => {
       let optimizedRouteData = null;
       
       // Make API call to get optimized route
-      const response = await fetch(`${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`, {
+      // Use different endpoints based on whether there are selected sales or not
+      const endpoint = selectedSales.size > 0 
+        ? `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`
+        : `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`;
+      
+      // Prepare the request payload based on the endpoint
+      const payload = selectedSales.size > 0
+        ? {
+            startingAddressId: saleId,
+            communityId: communityId,
+            userId: userInfo?.userId || ''
+          }
+        : {
+            startingAddressId: saleId,
+            communityId: communityId
+          };
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -287,11 +330,7 @@ const GarageSales = () => {
           'app-name': 'postman-call',
           'sessionId': sessionId
         },
-        body: JSON.stringify({
-          startingAddressId: saleId,
-          communityId: communityId,
-          userId: userInfo?.userId || ''
-        })
+        body: JSON.stringify(payload)
       });
       
       if (!response.ok) {
