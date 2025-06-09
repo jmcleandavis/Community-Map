@@ -208,7 +208,15 @@ const GarageSales = () => {
     }
   };
 
+  const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
+
   const handleOptimizeRoute = async () => {
+    // Determine if we're optimizing the full route or just selected sales
+    const isFullRouteOptimization = selectedSales.size === 0;
+    setOptimizeFullRoute(isFullRouteOptimization);
+    
+    console.log(`Optimizing ${isFullRouteOptimization ? 'FULL route' : 'SELECTED sales route'}`);
+    
     // If there are selected sales and the user is authenticated, save them to the backend first
     if (selectedSales.size > 0 && isAuthenticated && userInfo?.userId) {
       try {
@@ -305,13 +313,16 @@ const GarageSales = () => {
       let optimizedRouteData = null;
       
       // Make API call to get optimized route
-      // Use different endpoints based on whether there are selected sales or not
-      const endpoint = selectedSales.size > 0 
+      // Use different endpoints based on whether we're optimizing full route or selected sales
+      // If optimizeFullRoute is true, we always use the regular endpoint regardless of selections
+      const endpoint = !optimizeFullRoute && selectedSales.size > 0 
         ? `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`
         : `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`;
       
+      console.log(`Using endpoint: ${endpoint} (optimizeFullRoute=${optimizeFullRoute}, selectedSales.size=${selectedSales.size})`);
+      
       // Prepare the request payload based on the endpoint
-      const payload = selectedSales.size > 0
+      const payload = !optimizeFullRoute && selectedSales.size > 0
         ? {
             startingAddressId: saleId,
             communityId: communityId,

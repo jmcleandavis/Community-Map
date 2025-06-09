@@ -52,7 +52,8 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const [directions, setDirections] = useState(null);
   const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
   const [optimizedRouteData, setOptimizedRouteData] = useState(null);
-  const [center] = useState({
+  // Default center (will be updated when garage sales are loaded)
+  const [center, setCenter] = useState({
     lat: 43.8384,
     lng: -79.0868
   });
@@ -292,18 +293,131 @@ function MapView({ mapContainerStyle, mapOptions }) {
     console.log('MapView: Starting to create', salesToShow.length, 'markers');
     let markersCreated = 0;
 
+    // Create a map of addresses to their position in the optimized route
+    const addressOrderMap = {};
+    
+    // If we have optimized route data, use it to determine the order numbers
+    if (showOptimizedRoute && optimizedRouteData && optimizedRouteData.orderedWaypoints) {
+      console.log('MapView: Using optimized route data for marker numbering');
+      
+      // Create a map of sale IDs to their corresponding addresses for better matching
+      const saleIdToAddressMap = {};
+      garageSales.forEach(sale => {
+        saleIdToAddressMap[sale.id] = sale.address;
+      });
+      
+      // Map each address to its position in the ordered waypoints
+      optimizedRouteData.orderedWaypoints.forEach((address, index) => {
+        try {
+          // Handle case where address might be an object or other non-string
+          const addressStr = typeof address === 'string' ? address : 
+                            (address && address.address ? address.address : 
+                            (address && address.id && saleIdToAddressMap[address.id] ? saleIdToAddressMap[address.id] : ''));
+          
+          if (!addressStr) {
+            console.log('MapView: Could not extract address string from waypoint:', address);
+            return; // Skip this waypoint
+          }
+          
+          // Normalize the address to improve matching
+          const normalizedAddress = addressStr.toLowerCase().replace(/\s+/g, ' ').trim();
+          
+          // Store both the full address and parts of it to improve matching chances
+          addressOrderMap[normalizedAddress] = index + 1; // +1 so numbering starts at 1 instead of 0
+          
+          // Also store without street suffix (Rd, St, Ave, etc.) for more flexible matching
+          const simplifiedAddress = normalizedAddress
+            .replace(/\b(road|rd|street|st|avenue|ave|drive|dr|court|ct|place|pl|lane|ln|way|circle|cir|boulevard|blvd)\b/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          if (simplifiedAddress !== normalizedAddress) {
+            addressOrderMap[simplifiedAddress] = index + 1;
+          }
+          
+          // Also store just the house number and street name for even more flexible matching
+          const addressParts = normalizedAddress.split(',');
+          if (addressParts.length > 0) {
+            const streetPart = addressParts[0].trim();
+            addressOrderMap[streetPart] = index + 1;
+          }
+          
+          // Log for debugging
+          console.log(`MapView: Mapped waypoint ${index + 1}:`, addressStr);
+        } catch (error) {
+          console.error('MapView: Error processing waypoint address:', error, address);
+        }
+      });
+    }
+
     salesToShow.forEach(sale => {
       const markerColor = selectedSaleIds.includes(sale.id) ? '#4CAF50' : '#FF0000';
       
+      // Create the pin container element
       const pinElement = document.createElement('div');
       pinElement.className = 'custom-pin';
       pinElement.style.cursor = 'pointer';
-      pinElement.style.width = '24px';
-      pinElement.style.height = '24px';
+      pinElement.style.width = '28px'; // Slightly larger to accommodate number
+      pinElement.style.height = '28px';
       pinElement.style.borderRadius = '50%';
       pinElement.style.backgroundColor = markerColor;
       pinElement.style.border = '2px solid white';
       pinElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      pinElement.style.display = 'flex';
+      pinElement.style.justifyContent = 'center';
+      pinElement.style.alignItems = 'center';
+      pinElement.style.position = 'relative';
+      
+      // Check if this sale has a position in the optimized route
+      let orderNumber = null;
+      
+      if (sale.address) {
+        try {
+          // Try multiple variations of the address to improve matching chances
+          const normalizedSaleAddress = sale.address.toLowerCase().replace(/\s+/g, ' ').trim();
+          
+          // Try exact match first
+          orderNumber = addressOrderMap[normalizedSaleAddress];
+          
+          // If no match, try without street suffix
+          if (!orderNumber) {
+            const simplifiedSaleAddress = normalizedSaleAddress
+              .replace(/\b(road|rd|street|st|avenue|ave|drive|dr|court|ct|place|pl|lane|ln|way|circle|cir|boulevard|blvd)\b/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            
+            orderNumber = addressOrderMap[simplifiedSaleAddress];
+          }
+          
+          // If still no match, try just the house number and street name
+          if (!orderNumber) {
+            const addressParts = normalizedSaleAddress.split(',');
+            if (addressParts.length > 0) {
+              const streetPart = addressParts[0].trim();
+              orderNumber = addressOrderMap[streetPart];
+            }
+          }
+          
+          // If we found a match, log it for debugging
+          if (orderNumber) {
+            console.log(`MapView: Found order number ${orderNumber} for sale at ${sale.address}`);
+          }
+        } catch (error) {
+          console.error('MapView: Error matching sale address:', error, sale.address);
+        }
+      }
+      
+      // Only add numbers if we're showing the optimized route and this address is in the route
+      if (showOptimizedRoute && orderNumber) {
+        // Create the number element
+        const numberElement = document.createElement('span');
+        numberElement.textContent = orderNumber.toString();
+        numberElement.style.color = 'white';
+        numberElement.style.fontSize = '12px';
+        numberElement.style.fontWeight = 'bold';
+        numberElement.style.userSelect = 'none';
+        pinElement.appendChild(numberElement);
+      }
 
       try {
         const marker = new AdvancedMarkerElement({
@@ -325,7 +439,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     console.log('MapView: Successfully created', markersCreated, 'markers');
-  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers]);
+  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers, showOptimizedRoute, optimizedRouteData]);
 
   // Watch for when both map and data are ready and create markers
   useEffect(() => {
@@ -338,6 +452,53 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
   }, [mapRef.current, garageSales, createMarkers]);
 
+  // Function to calculate and center on community sales
+  const centerOnCommunitySales = useCallback(() => {
+    if (!garageSales?.length || !mapRef.current) return;
+    
+    // Calculate the average lat/lng of all garage sales
+    let totalLat = 0;
+    let totalLng = 0;
+    let validPositions = 0;
+    
+    // Also track bounds to determine appropriate zoom level
+    const bounds = new window.google.maps.LatLngBounds();
+    
+    garageSales.forEach(sale => {
+      if (sale.position && sale.position.lat && sale.position.lng) {
+        totalLat += sale.position.lat;
+        totalLng += sale.position.lng;
+        validPositions++;
+        
+        // Add to bounds for zoom calculation
+        bounds.extend({
+          lat: sale.position.lat,
+          lng: sale.position.lng
+        });
+      }
+    });
+    
+    if (validPositions > 0) {
+      const communityCenter = {
+        lat: totalLat / validPositions,
+        lng: totalLng / validPositions
+      };
+      
+      console.log('MapView: Centering on community sales at', communityCenter);
+      setCenter(communityCenter);
+      
+      // Center the map and fit to bounds
+      mapRef.current.panTo(communityCenter);
+      mapRef.current.fitBounds(bounds);
+      
+      // Limit max zoom to avoid excessive zooming on small areas
+      const currentZoom = mapRef.current.getZoom();
+      if (currentZoom > 15) {
+        mapRef.current.setZoom(15);
+      }
+    }
+  }, [garageSales]);
+
   // Effect to handle centering on user location
   useEffect(() => {
     if (shouldCenterOnUser && userLocation && mapRef.current) {
@@ -347,6 +508,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
       clearCenterOnUser();
     }
   }, [shouldCenterOnUser, userLocation, clearCenterOnUser]);
+  
+  // Effect to center on community sales when garage sales data is loaded
+  useEffect(() => {
+    if (garageSales?.length > 0 && mapRef.current && window.google) {
+      centerOnCommunitySales();
+    }
+  }, [garageSales, centerOnCommunitySales]);
 
   // Effect to update user location marker
   useEffect(() => {
@@ -684,7 +852,11 @@ function MapView({ mapContainerStyle, mapOptions }) {
             // Directly create markers if garage sales data is available
             if (garageSales?.length && window.google) {
               console.log("Map loaded with data available, creating markers immediately");
-              setTimeout(() => {createMarkers(); centerOnUserLocation();}, 100); // Small timeout to ensure state is updated
+              setTimeout(() => {
+                createMarkers();
+                // Center on the community sales instead of user location
+                centerOnCommunitySales();
+              }, 100); // Small timeout to ensure state is updated
             }
           }}
           onUnmount={(map) => {
