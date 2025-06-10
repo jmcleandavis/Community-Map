@@ -453,13 +453,26 @@ const GarageSales = () => {
   };
   
   const handleProceedToMap = () => {
-    // Set display mode based on whether we're optimizing the full route or just selected sales
-    if (optimizeFullRoute) {
-      // For full route optimization, make sure to show all markers
+    // Get the optimized route data from localStorage
+    const optimizedRouteData = JSON.parse(localStorage.getItem('optimizedRoute') || '{}');
+    
+    // If we have optimized route data and we're not doing a full route optimization
+    if (optimizedRouteData.orderedWaypoints && !optimizeFullRoute) {
+      // Filter the garage sales to only include those in the optimized route
+      const optimizedSales = garageSales.filter(sale => 
+        optimizedRouteData.orderedWaypoints.some(wp => wp.id === sale.id)
+      );
+      
+      // Store only the optimized sales in localStorage
+      localStorage.setItem('selectedSales', JSON.stringify(optimizedSales));
+      
+      // Make sure we're in selected sales mode
+      if (!showOnlySelected) {
+        toggleDisplayMode();
+      }
+    } else if (optimizeFullRoute) {
+      // For full route optimization, show all markers
       toggleDisplayMode('showAll');
-    } else {
-      // For selected sales optimization, keep the current behavior
-      toggleDisplayMode('optimizedRoute');
     }
     
     // Navigate to map view with parameters
