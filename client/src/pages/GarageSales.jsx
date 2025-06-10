@@ -453,8 +453,14 @@ const GarageSales = () => {
   };
   
   const handleProceedToMap = () => {
-    // Set display mode to show optimized route
-    toggleDisplayMode('optimizedRoute');
+    // Set display mode based on whether we're optimizing the full route or just selected sales
+    if (optimizeFullRoute) {
+      // For full route optimization, make sure to show all markers
+      toggleDisplayMode('showAll');
+    } else {
+      // For selected sales optimization, keep the current behavior
+      toggleDisplayMode('optimizedRoute');
+    }
     
     // Navigate to map view with parameters
     navigate(`/?communityId=${communityId}&showOptimizedRoute=true`);

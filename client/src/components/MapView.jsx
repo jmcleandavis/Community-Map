@@ -295,6 +295,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
     // Create a map of addresses to their position in the optimized route
     const addressOrderMap = {};
+    const saleIdOrderMap = {};
     
     // If we have optimized route data, use it to determine the order numbers
     if (showOptimizedRoute && optimizedRouteData && optimizedRouteData.orderedWaypoints) {
@@ -303,49 +304,64 @@ function MapView({ mapContainerStyle, mapOptions }) {
       // Create a map of sale IDs to their corresponding addresses for better matching
       const saleIdToAddressMap = {};
       garageSales.forEach(sale => {
-        saleIdToAddressMap[sale.id] = sale.address;
+        if (sale && sale.id && sale.address) {
+          saleIdToAddressMap[sale.id] = sale.address;
+        }
       });
       
       // Map each address to its position in the ordered waypoints
-      optimizedRouteData.orderedWaypoints.forEach((address, index) => {
+      optimizedRouteData.orderedWaypoints.forEach((waypoint, index) => {
         try {
-          // Handle case where address might be an object or other non-string
-          const addressStr = typeof address === 'string' ? address : 
-                            (address && address.address ? address.address : 
-                            (address && address.id && saleIdToAddressMap[address.id] ? saleIdToAddressMap[address.id] : ''));
-          
-          if (!addressStr) {
-            console.log('MapView: Could not extract address string from waypoint:', address);
-            return; // Skip this waypoint
+          // First, check if the waypoint has an ID (for filtered waypoints with routeOrder)
+          if (typeof waypoint === 'object' && waypoint.id) {
+            // This is likely from the filtered waypoints with routeOrder
+            saleIdOrderMap[waypoint.id] = waypoint.routeOrder || (index + 1);
+            console.log(`MapView: Mapped sale ID ${waypoint.id} to order ${saleIdOrderMap[waypoint.id]}`);
+            
+            // Also map the address if available
+            if (waypoint.address) {
+              const normalizedAddress = waypoint.address.toLowerCase().replace(/\s+/g, ' ').trim();
+              addressOrderMap[normalizedAddress] = waypoint.routeOrder || (index + 1);
+            }
+          } else {
+            // Handle case where address might be an object or other non-string
+            const addressStr = typeof waypoint === 'string' ? waypoint : 
+                              (waypoint && waypoint.address ? waypoint.address : 
+                              (waypoint && waypoint.id && saleIdToAddressMap[waypoint.id] ? saleIdToAddressMap[waypoint.id] : ''));
+            
+            if (!addressStr) {
+              console.log('MapView: Could not extract address string from waypoint:', waypoint);
+              return; // Skip this waypoint
+            }
+            
+            // Normalize the address to improve matching
+            const normalizedAddress = addressStr.toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            // Store both the full address and parts of it to improve matching chances
+            addressOrderMap[normalizedAddress] = index + 1; // +1 so numbering starts at 1 instead of 0
+            
+            // Also store without street suffix (Rd, St, Ave, etc.) for more flexible matching
+            const simplifiedAddress = normalizedAddress
+              .replace(/\b(road|rd|street|st|avenue|ave|drive|dr|court|ct|place|pl|lane|ln|way|circle|cir|boulevard|blvd)\b/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            
+            if (simplifiedAddress !== normalizedAddress) {
+              addressOrderMap[simplifiedAddress] = index + 1;
+            }
+            
+            // Also store just the house number and street name for even more flexible matching
+            const addressParts = normalizedAddress.split(',');
+            if (addressParts.length > 0) {
+              const streetPart = addressParts[0].trim();
+              addressOrderMap[streetPart] = index + 1;
+            }
+            
+            // Log for debugging
+            console.log(`MapView: Mapped waypoint ${index + 1}:`, addressStr);
           }
-          
-          // Normalize the address to improve matching
-          const normalizedAddress = addressStr.toLowerCase().replace(/\s+/g, ' ').trim();
-          
-          // Store both the full address and parts of it to improve matching chances
-          addressOrderMap[normalizedAddress] = index + 1; // +1 so numbering starts at 1 instead of 0
-          
-          // Also store without street suffix (Rd, St, Ave, etc.) for more flexible matching
-          const simplifiedAddress = normalizedAddress
-            .replace(/\b(road|rd|street|st|avenue|ave|drive|dr|court|ct|place|pl|lane|ln|way|circle|cir|boulevard|blvd)\b/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-          
-          if (simplifiedAddress !== normalizedAddress) {
-            addressOrderMap[simplifiedAddress] = index + 1;
-          }
-          
-          // Also store just the house number and street name for even more flexible matching
-          const addressParts = normalizedAddress.split(',');
-          if (addressParts.length > 0) {
-            const streetPart = addressParts[0].trim();
-            addressOrderMap[streetPart] = index + 1;
-          }
-          
-          // Log for debugging
-          console.log(`MapView: Mapped waypoint ${index + 1}:`, addressStr);
         } catch (error) {
-          console.error('MapView: Error processing waypoint address:', error, address);
+          console.error('MapView: Error processing waypoint address:', error, waypoint);
         }
       });
     }
@@ -371,7 +387,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
       // Check if this sale has a position in the optimized route
       let orderNumber = null;
       
-      if (sale.address) {
+      // First check if we have a direct sale ID match (most reliable)
+      if (sale.id && saleIdOrderMap[sale.id]) {
+        orderNumber = saleIdOrderMap[sale.id];
+        console.log(`MapView: Found order number ${orderNumber} for sale ID ${sale.id}`);
+      }
+      // If no match by ID, try matching by address
+      else if (sale.address) {
         try {
           // Try multiple variations of the address to improve matching chances
           const normalizedSaleAddress = sale.address.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -444,13 +466,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
   // Watch for when both map and data are ready and create markers
   useEffect(() => {
     // Only proceed if we have all necessary data
-    if (mapRef.current && garageSales?.length && window.google) {
+    if (mapRef.current && garageSales?.length && window.google && isLoaded) {
       console.log("DIRECT EFFECT: Map and data both ready, creating markers now!");
-      if (markersRef.current.length === 0) { // Only create if not already created
-        createMarkers();
-      }
+      // Always recreate markers when this effect runs to ensure they're up to date
+      createMarkers();
     }
-  }, [mapRef.current, garageSales, createMarkers]);
+  }, [mapRef, garageSales, createMarkers, isLoaded, showOptimizedRoute]);
 
   // Function to calculate and center on community sales
   const centerOnCommunitySales = useCallback(() => {
@@ -664,16 +685,31 @@ function MapView({ mapContainerStyle, mapOptions }) {
         return;
       }
       
+      // Process waypoints based on their format
+      const processedWaypoints = waypoints.map(waypoint => {
+        if (typeof waypoint === 'string') {
+          return waypoint;
+        } else if (waypoint && waypoint.address) {
+          return waypoint.address;
+        } else if (waypoint && waypoint.position) {
+          return new window.google.maps.LatLng(
+            waypoint.position.lat,
+            waypoint.position.lng
+          );
+        }
+        return waypoint; // Return as is if we can't process it
+      });
+      
       // Create waypoint objects for the DirectionsService
-      const googleWaypoints = waypoints.slice(1, waypoints.length - 1).map(address => ({
-        location: address,
+      const googleWaypoints = processedWaypoints.slice(1, processedWaypoints.length - 1).map(location => ({
+        location,
         stopover: true
       }));
       
       // Request directions
       DirectionsService.route({
-        origin: waypoints[0],
-        destination: waypoints[waypoints.length - 1],
+        origin: processedWaypoints[0],
+        destination: processedWaypoints[processedWaypoints.length - 1],
         waypoints: googleWaypoints,
         optimizeWaypoints: false, // Already optimized
         travelMode: window.google.maps.TravelMode.DRIVING
@@ -694,9 +730,17 @@ function MapView({ mapContainerStyle, mapOptions }) {
   // Effect to display optimized route when data changes
   useEffect(() => {
     if (isLoaded && showOptimizedRoute && optimizedRouteData && window.google) {
+      console.log('MapView: Optimized route data changed, displaying route and recreating markers');
       displayOptimizedRoute(optimizedRouteData);
+      
+      // Recreate markers to show the sequence numbers
+      setTimeout(() => {
+        if (mapRef.current) {
+          createMarkers();
+        }
+      }, 100); // Small delay to ensure route is processed first
     }
-  }, [isLoaded, showOptimizedRoute, optimizedRouteData, displayOptimizedRoute]);
+  }, [isLoaded, showOptimizedRoute, optimizedRouteData, displayOptimizedRoute, createMarkers]);
 
   // Handle map load event
   const handleMapLoad = useCallback((map) => {
@@ -870,9 +914,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
             <DirectionsRenderer
               directions={directions}
               options={{
-                suppressMarkers: false,
+                /**
+                 * If true, prevents the rendering of default markers on the map.
+                 */
+                suppressMarkers: true,
+                suppressPolylines: true,
                 polylineOptions: {
-                  strokeColor: '#4285F4',
+                  strokeColor: '#4285F4', // Google Maps blue color
                   strokeWeight: 5,
                   strokeOpacity: 0.8
                 }

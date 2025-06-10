@@ -5,8 +5,18 @@ const DisplayContext = createContext();
 export function DisplayProvider({ children }) {
   const [showOnlySelected, setShowOnlySelected] = useState(false);
 
-  const toggleDisplayMode = () => {
-    setShowOnlySelected(prev => !prev);
+  const toggleDisplayMode = (mode) => {
+    if (mode === 'showAll') {
+      setShowOnlySelected(false);
+    } else if (mode === 'showSelected') {
+      setShowOnlySelected(true);
+    } else if (mode === 'optimizedRoute') {
+      // For optimized route, we don't change the showOnlySelected state
+      // This is handled separately via the showOptimizedRoute parameter
+    } else {
+      // Default toggle behavior when no specific mode is provided
+      setShowOnlySelected(prev => !prev);
+    }
   };
 
   const value = {
