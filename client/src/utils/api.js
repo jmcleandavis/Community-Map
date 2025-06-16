@@ -322,7 +322,7 @@ async function getUserInfo(email) {
 const createGarageSale = async (saleData) => {
   try {
     const sessionId = await getSessionId();
-    const response = await mapsApi.post('/v1/createGarageSale', saleData, {
+    const response = await mapsApi.post('/v1/createAddress', saleData, {
       headers: {
         'sessionId': sessionId
       }

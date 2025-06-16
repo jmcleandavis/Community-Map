@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import './RegisterGarageSale.css'; // Use dedicated CSS for this component
 import api from '../utils/api';
 
@@ -12,15 +13,16 @@ const RegisterGarageSale = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    streetNum: '',
     street: '',
     city: '',
     provState: '',
     postalZipCode: '',
-    highlightedItems: '',
     startDate: '',
     endDate: ''
   });
+  
+  // Featured items as separate array
+  const [featuredItems, setFeaturedItems] = useState(['']);
   
   // Additional state
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,8 @@ const RegisterGarageSale = () => {
   const [success, setSuccess] = useState(false);
   const [existingSale, setExistingSale] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [useManualAddress, setUseManualAddress] = useState(false);
 
   // Check if user is authenticated and fetch their existing garage sale if any
   useEffect(() => {
@@ -49,17 +53,14 @@ const RegisterGarageSale = () => {
           setFormData({
             name: sale.name || '',
             description: sale.description || '',
-            streetNum: sale.address?.streetNum || '',
             street: sale.address?.street || '',
             city: sale.address?.city || '',
             provState: sale.address?.provState || '',
             postalZipCode: sale.address?.postalZipCode || '',
-            highlightedItems: Array.isArray(sale.highlightedItems) 
-              ? sale.highlightedItems.join(', ') 
-              : sale.highlightedItems || '',
             startDate: sale.startDate || '',
             endDate: sale.endDate || ''
           });
+          setFeaturedItems(sale.highlightedItems || ['']);
         }
       } catch (err) {
         console.error('Error fetching user garage sale:', err);
@@ -81,6 +82,91 @@ const RegisterGarageSale = () => {
     }));
   };
 
+  // Handle address selection from Google Places Autocomplete
+  const handleAddressSelect = (place) => {
+    if (!place) {
+      // Handle clearing the selection (when X is clicked)
+      setSelectedPlace(null);
+      setFormData(prev => ({
+        ...prev,
+        street: '',
+        city: '',
+        provState: '',
+        postalZipCode: ''
+      }));
+      return;
+    }
+    
+    setSelectedPlace(place);
+    
+    // Get place details to extract address components
+    const placeId = place.value.place_id;
+    
+    // Use Google Places service to get detailed address components
+    if (window.google && window.google.maps && window.google.maps.places) {
+      const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+      
+      service.getDetails({
+        placeId: placeId,
+        fields: ['address_components', 'formatted_address']
+      }, (result, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && result) {
+          const addressComponents = result.address_components;
+          
+          // Parse address components
+          let streetName = '';
+          let streetNumber = '';
+          let city = '';
+          let state = '';
+          let postalCode = '';
+          
+          addressComponents.forEach(component => {
+            const types = component.types;
+            
+            if (types.includes('street_number')) {
+              streetNumber = component.long_name;
+            } else if (types.includes('route')) {
+              streetName = component.long_name;
+            } else if (types.includes('locality')) {
+              city = component.long_name;
+            } else if (types.includes('administrative_area_level_1')) {
+              state = component.short_name;
+            } else if (types.includes('postal_code')) {
+              postalCode = component.long_name;
+            }
+          });
+          
+          // Combine street number and street name
+          const fullStreetAddress = streetNumber && streetName 
+            ? `${streetNumber} ${streetName}` 
+            : streetName || streetNumber || '';
+          
+          // Update form data with parsed address
+          setFormData(prev => ({
+            ...prev,
+            street: fullStreetAddress,
+            city: city,
+            provState: state,
+            postalZipCode: postalCode
+          }));
+          
+          // Create a custom display value for the selected place that shows only street address
+          setSelectedPlace({
+            label: fullStreetAddress,
+            value: { place_id: placeId, description: fullStreetAddress }
+          });
+        } else {
+          console.error('Error getting place details:', status);
+          setError('Failed to get address details. Please try entering manually.');
+        }
+      });
+    } else {
+      console.error('Google Maps Places API not loaded');
+      setError('Address search is not available. Please enter your address manually.');
+      setUseManualAddress(true);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,13 +179,12 @@ const RegisterGarageSale = () => {
         name: formData.name,
         description: formData.description,
         address: {
-          streetNum: formData.streetNum,
           street: formData.street,
           city: formData.city,
           provState: formData.provState,
           postalZipCode: formData.postalZipCode
         },
-        highlightedItems: formData.highlightedItems.split(',').map(item => item.trim()),
+        highlightedItems: featuredItems.filter(item => item.trim() !== ''),
         startDate: formData.startDate,
         endDate: formData.endDate,
         community: 'GENPUB', // Default community for individual garage sales
@@ -154,15 +239,14 @@ const RegisterGarageSale = () => {
         setFormData({
           name: '',
           description: '',
-          streetNum: '',
           street: '',
           city: '',
           provState: '',
           postalZipCode: '',
-          highlightedItems: '',
           startDate: '',
           endDate: ''
         });
+        setFeaturedItems(['']);
         setSuccess('Your garage sale has been deleted successfully.');
       } catch (err) {
         console.error('Error deleting garage sale:', err);
@@ -186,20 +270,34 @@ const RegisterGarageSale = () => {
       setFormData({
         name: existingSale.name || '',
         description: existingSale.description || '',
-        streetNum: existingSale.address?.streetNum || '',
         street: existingSale.address?.street || '',
         city: existingSale.address?.city || '',
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
-        highlightedItems: Array.isArray(existingSale.highlightedItems) 
-          ? existingSale.highlightedItems.join(', ') 
-          : existingSale.highlightedItems || '',
         startDate: existingSale.startDate || '',
         endDate: existingSale.endDate || ''
       });
+      setFeaturedItems(existingSale.highlightedItems || ['']);
     }
     setIsEditing(false);
     setError(null);
+  };
+
+  // Handle adding new featured item input
+  const handleAddFeaturedItem = () => {
+    setFeaturedItems([...featuredItems, '']);
+  };
+
+  // Handle removing featured item input
+  const handleRemoveFeaturedItem = (index) => {
+    setFeaturedItems(featuredItems.filter((item, i) => i !== index));
+  };
+
+  // Handle featured item input change
+  const handleFeaturedItemChange = (e, index) => {
+    const updatedItems = [...featuredItems];
+    updatedItems[index] = e.target.value;
+    setFeaturedItems(updatedItems);
   };
 
   return (
@@ -231,7 +329,7 @@ const RegisterGarageSale = () => {
                 {existingSale.address && (
                   <>
                     <p className="address-line">
-                      {existingSale.address.streetNum} {existingSale.address.street}
+                      {existingSale.address.street}
                     </p>
                     <p className="address-line">
                       {existingSale.address.city}, {existingSale.address.provState} {existingSale.address.postalZipCode}
@@ -292,50 +390,162 @@ const RegisterGarageSale = () => {
             />
           </div>
           
+          <div className="form-group">
+            <label>Featured Items</label>
+            {featuredItems.map((item, index) => (
+              <div 
+                key={index} 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '8px',
+                  gap: '8px'
+                }}
+              >
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => handleFeaturedItemChange(e, index)}
+                  placeholder="e.g., Furniture, Electronics, Toys"
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                {featuredItems.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFeaturedItem(index)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#666',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      padding: '4px',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Remove item"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddFeaturedItem}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#1a73e8',
+                cursor: 'pointer',
+                fontSize: '14px',
+                padding: '8px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>+</span> Add item
+            </button>
+          </div>
+          
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="streetNum">Street Number</label>
-              <input
-                type="text"
-                id="streetNum"
-                name="streetNum"
-                value={formData.streetNum}
-                onChange={handleInputChange}
-                placeholder="123"
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="street">Street Name</label>
-              <input
-                type="text"
-                id="street"
-                name="street"
-                value={formData.street}
-                onChange={handleInputChange}
-                placeholder="Main St"
-                required
-              />
+              <label htmlFor="street">
+                Street Address <span style={{ color: 'red' }}>*</span>
+              </label>
+              {useManualAddress ? (
+                <input
+                  type="text"
+                  id="street"
+                  name="street"
+                  value={formData.street}
+                  onChange={handleInputChange}
+                  placeholder="Street Address"
+                  required
+                />
+              ) : (
+                <GooglePlacesAutocomplete
+                  apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                  autocompletionRequest={{
+                    types: ['address'],
+                    componentRestrictions: {
+                      country: ['us', 'ca'] // Restrict to US and Canada
+                    }
+                  }}
+                  selectProps={{
+                    value: selectedPlace,
+                    onChange: handleAddressSelect,
+                    placeholder: 'Start typing an address...',
+                    isClearable: true,
+                    styles: {
+                      input: (provided) => ({
+                        ...provided,
+                        fontSize: '16px',
+                      }),
+                      option: (provided) => ({
+                        ...provided,
+                        fontSize: '14px',
+                      })
+                    }
+                  }}
+                />
+              )}
+              <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                {useManualAddress 
+                  ? 'Enter your street address manually' 
+                  : 'Search for your address to auto-fill all fields below'
+                }
+              </small>
+              <button
+                type="button"
+                onClick={() => setUseManualAddress(!useManualAddress)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#007bff',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  marginTop: '4px',
+                  padding: '0'
+                }}
+              >
+                {useManualAddress ? 'Use address search instead' : 'Enter address manually'}
+              </button>
             </div>
           </div>
           
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="city">City</label>
+              <label htmlFor="city">
+                City <span style={{ color: 'red' }}>*</span>
+              </label>
               <input
                 type="text"
                 id="city"
                 name="city"
                 value={formData.city}
                 onChange={handleInputChange}
-                placeholder="Cityville"
+                placeholder="City, village, town, etc"
                 required
               />
             </div>
             
             <div className="form-group">
-              <label htmlFor="provState">Province/State</label>
+              <label htmlFor="provState">
+                Province/State <span style={{ color: 'red' }}>*</span>
+              </label>
               <input
                 type="text"
                 id="provState"
@@ -348,7 +558,9 @@ const RegisterGarageSale = () => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="postalZipCode">Postal/Zip Code</label>
+              <label htmlFor="postalZipCode">
+                Postal/Zip Code <span style={{ color: 'red' }}>*</span>
+              </label>
               <input
                 type="text"
                 id="postalZipCode"
@@ -362,41 +574,29 @@ const RegisterGarageSale = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="highlightedItems">Featured Items (comma separated)</label>
+            <label htmlFor="startDate">
+              Start Date <span style={{ color: 'red' }}>*</span>
+            </label>
             <input
-              type="text"
-              id="highlightedItems"
-              name="highlightedItems"
-              value={formData.highlightedItems}
+              type="date"
+              id="startDate"
+              name="startDate"
+              value={formData.startDate}
               onChange={handleInputChange}
-              placeholder="Furniture, Electronics, Toys"
+              required
             />
           </div>
           
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="startDate">Start Date</label>
-              <input
-                type="date"
-                id="startDate"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="endDate">End Date</label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleInputChange}
+              required
+            />
           </div>
           
           <div className="form-actions">
