@@ -33,6 +33,7 @@ const RegisterGarageSale = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [useManualAddress, setUseManualAddress] = useState(false);
+  const [genpubSales, setGenpubSales] = useState([]); // New state to store GENPUB garage sales
 
   // Check if user is authenticated and fetch their existing garage sale if any
   useEffect(() => {
@@ -274,6 +275,30 @@ const RegisterGarageSale = () => {
         
         // Update the existingSale state with the new data
         setExistingSale(response.data);
+        
+        // Fetch GENPUB garage sales after successful creation
+        const fetchGenpubSales = async () => {
+          try {
+            const response = await api.getAddressesByCommunity('GENPUB');
+            console.log('GENPUB garage sales response:', response.data);
+            
+            // Find the user's garage sale from the GENPUB sales
+            const userGarageSale = response.data.find(sale => sale.userId === userId);
+            console.log('User garage sale found:', userGarageSale);
+            
+            if (userGarageSale) {
+              setExistingSale(userGarageSale);
+              setGenpubSales([userGarageSale]); // Only show the user's garage sale
+            }
+          } catch (err) {
+            console.error('Error fetching GENPUB garage sales:', err);
+          }
+        };
+        
+        // Only fetch if this was a new garage sale creation (not an edit)
+        if (!isEditing) {
+          fetchGenpubSales();
+        }
       } catch (err) {
         console.error('Error in form submission:', err);
         setError(err.response?.data?.message || 'An error occurred. Please try again.');
@@ -283,38 +308,16 @@ const RegisterGarageSale = () => {
       
       // Store in session storage for immediate use in other components
       const currentData = JSON.parse(sessionStorage.getItem('garageSalesData') || '[]');
-      const updatedData = isEditing 
+      const updatedData = existingSale && isEditing 
         ? currentData.map(sale => sale.id === existingSale.id ? response.data : sale)
         : [...currentData, response.data];
       sessionStorage.setItem('garageSalesData', JSON.stringify(updatedData));
       
-    } catch (err) {
-      console.error('Error saving garage sale:', err);
-      setError(err.response?.data?.message || 'Failed to save your garage sale. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle delete garage sale
-  const handleDelete = async () => {
-    if (!existingSale) return;
-    
-    if (window.confirm('Are you sure you want to delete your garage sale? This action cannot be undone.')) {
-      setLoading(true);
-      try {
-        await api.deleteGarageSale(existingSale.id);
-        
-        // Remove from session storage
-        const currentData = JSON.parse(sessionStorage.getItem('garageSalesData') || '[]');
-        const updatedData = currentData.filter(sale => sale.id !== existingSale.id);
-        sessionStorage.setItem('garageSalesData', JSON.stringify(updatedData));
-        
-        setExistingSale(null);
+      // Clear form if it was a new garage sale
+      if (!isEditing) {
         setFormData({
-          name: '',
+          name: 'Garage Sale',
           description: '',
-          streetNum: '',
           street: '',
           unit: '',
           city: '',
@@ -324,24 +327,20 @@ const RegisterGarageSale = () => {
           endDate: ''
         });
         setFeaturedItems(['']);
-        setSuccess('Your garage sale has been deleted successfully.');
-      } catch (err) {
-        console.error('Error deleting garage sale:', err);
-        setError(err.response?.data?.message || 'Failed to delete your garage sale. Please try again.');
-      } finally {
-        setLoading(false);
       }
+    } catch (err) {
+      console.error('Error saving garage sale:', err);
+      setError(err.response?.data?.message || 'Failed to save your garage sale. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  // Toggle edit mode
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setSuccess(null);
   };
 
   // Cancel editing
   const handleCancelEdit = () => {
+    setIsEditing(false);
+    setError(null);
+    
     if (existingSale) {
       // Reset form to existing sale data
       setFormData({
@@ -354,13 +353,86 @@ const RegisterGarageSale = () => {
         city: existingSale.address?.city || '',
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
-        startDate: existingSale.startDate || '',
-        endDate: existingSale.endDate || ''
+        startDate: existingSale.dateTime?.start ? existingSale.dateTime.start.split('T')[0] : '',
+        endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : ''
       });
       setFeaturedItems(existingSale.highlightedItems || ['']);
     }
-    setIsEditing(false);
+  };
+
+  // Handle delete garage sale
+  const handleDelete = async () => {
+    if (!existingSale || !existingSale.id) {
+      setError('No garage sale to delete');
+      return;
+    }
+
+    const confirmDelete = window.confirm('Are you sure you want to delete your garage sale? This action cannot be undone.');
+    if (!confirmDelete) {
+      return;
+    }
+
+    setLoading(true);
     setError(null);
+
+    try {
+      await api.deleteGarageSale([existingSale.id]);
+      
+      // Clear the existing sale and GENPUB sales display
+      setExistingSale(null);
+      setGenpubSales([]);
+      
+      // Reset form
+      setFormData({
+        name: 'Garage Sale',
+        description: '',
+        street: '',
+        unit: '',
+        city: '',
+        provState: '',
+        postalZipCode: '',
+        startDate: '',
+        endDate: ''
+      });
+      setFeaturedItems(['']);
+      setIsEditing(false);
+      
+      setSuccess('Your garage sale has been successfully deleted.');
+    } catch (err) {
+      console.error('Error deleting garage sale:', err);
+      setError(err.response?.data?.message || 'Failed to delete your garage sale. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle edit garage sale
+  const handleEditClick = () => {
+    if (existingSale) {
+      setIsEditing(true);
+      setSuccess(false);
+      setError(null);
+      
+      // Pre-fill form with existing data
+      setFormData({
+        name: existingSale.name || '',
+        description: existingSale.description || '',
+        street: existingSale.address?.streetNum && existingSale.address?.street
+          ? `${existingSale.address.streetNum} ${existingSale.address.street}`
+          : existingSale.address?.street || '',
+        unit: existingSale.address?.unit || '',
+        city: existingSale.address?.city || '',
+        provState: existingSale.address?.provState || '',
+        postalZipCode: existingSale.address?.postalZipCode || '',
+        startDate: existingSale.dateTime?.start ? existingSale.dateTime.start.split('T')[0] : '',
+        endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : ''
+      });
+      
+      // Pre-fill featured items
+      if (existingSale.highlightedItems && existingSale.highlightedItems.length > 0) {
+        setFeaturedItems([...existingSale.highlightedItems, '']);
+      }
+    }
   };
 
   // Handle adding new featured item input
@@ -434,8 +506,8 @@ const RegisterGarageSale = () => {
               )}
               
               <div className="sale-dates">
-                <p><strong>Start Date:</strong> {new Date(existingSale.startDate).toLocaleDateString()}</p>
-                <p><strong>End Date:</strong> {new Date(existingSale.endDate).toLocaleDateString()}</p>
+                <p><strong>Start Date:</strong> {new Date(existingSale.dateTime.start).toLocaleDateString()}</p>
+                <p><strong>End Date:</strong> {new Date(existingSale.dateTime.end).toLocaleDateString()}</p>
               </div>
             </div>
           </div>
@@ -715,6 +787,93 @@ const RegisterGarageSale = () => {
             </button>
           </div>
         </form>
+      )}
+      
+      {/* Display User's Garage Sale */}
+      {genpubSales.length > 0 && (
+        <div className="user-garage-sale-container" style={{
+          backgroundColor: '#f7f7f7',
+          padding: '20px',
+          borderRadius: '10px',
+          boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h2 style={{ marginBottom: '20px' }}>Your Garage Sale</h2>
+          {genpubSales.map((sale) => (
+            <div key={sale.id} className="user-garage-sale-card" style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '10px',
+              boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+              marginBottom: '20px'
+            }}>
+              <div className="sale-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{sale.name}</h3>
+                <div className="sale-actions">
+                  <button className="edit-button" onClick={handleEditClick} style={{
+                    backgroundColor: '#4CAF50',
+                    color: '#fff',
+                    padding: '10px 20px',
+                    borderRadius: '5px',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}>Edit</button>
+                  <button className="delete-button" onClick={handleDelete} style={{
+                    backgroundColor: '#e74c3c',
+                    color: '#fff',
+                    padding: '10px 20px',
+                    borderRadius: '5px',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}>Delete</button>
+                </div>
+              </div>
+              
+              <div className="sale-details">
+                <div className="address-section" style={{
+                  marginBottom: '20px'
+                }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Address:</h4>
+                  <p style={{ fontSize: '14px' }}>{sale.address.streetNum} {sale.address.street}</p>
+                  {sale.address.unit && <p style={{ fontSize: '14px' }}>Unit: {sale.address.unit}</p>}
+                  <p style={{ fontSize: '14px' }}>{sale.address.city}, {sale.address.provState} {sale.address.postalZipCode}</p>
+                </div>
+                
+                <div className="dates-section" style={{
+                  marginBottom: '20px'
+                }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Dates:</h4>
+                  <p style={{ fontSize: '14px' }}><strong>Start:</strong> {new Date(sale.dateTime.start).toLocaleDateString()}</p>
+                  <p style={{ fontSize: '14px' }}><strong>End:</strong> {new Date(sale.dateTime.end).toLocaleDateString()}</p>
+                </div>
+                
+                {sale.description && (
+                  <div className="description-section" style={{
+                    marginBottom: '20px'
+                  }}>
+                    <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Description:</h4>
+                    <p style={{ fontSize: '14px' }}>{sale.description}</p>
+                  </div>
+                )}
+                
+                {sale.highlightedItems && sale.highlightedItems.length > 0 && (
+                  <div className="featured-items-section">
+                    <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Featured Items:</h4>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {sale.highlightedItems.map((item, index) => (
+                        <li key={index} style={{ fontSize: '14px', marginBottom: '10px' }}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
