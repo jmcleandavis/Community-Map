@@ -13,7 +13,7 @@ const RegisterGarageSale = () => {
   const [formData, setFormData] = useState({
     name: 'Garage Sale',
     description: '',
-    street: '',  // Combined street number and name
+    street: '',     // Full street address (e.g., '123 Main St')
     unit: '',
     city: '',
     provState: '',
@@ -148,22 +148,25 @@ const RegisterGarageSale = () => {
             }
           });
           
+          // Combine street number and name for the street field
+          const fullStreet = streetNum ? `${streetNum} ${streetName}`.trim() : streetName;
+          
           // Update form data with parsed address
           setFormData(prev => ({
             ...prev,
-            street: streetNum ? `${streetNum} ${streetName}`.trim() : streetName,
-            unit: unit,
-            city: city,
-            provState: state,
-            postalZipCode: postalCode
+            street: fullStreet,
+            unit: unit || '',
+            city: city || '',
+            provState: state || '',
+            postalZipCode: postalCode || ''
           }));
           
-          // Create a custom display value for the selected place that shows only street address
+          // Create a custom display value for the selected place that shows the full street address
           setSelectedPlace({
-            label: streetNum ? `${streetNum} ${streetName}`.trim() : streetName,
+            label: fullStreet,
             value: { 
               place_id: placeId, 
-              description: streetNum ? `${streetNum} ${streetName}`.trim() : streetName 
+              description: fullStreet
             }
           });
         } else {
@@ -194,17 +197,51 @@ const RegisterGarageSale = () => {
         return `${dateString}T${time}`;
       };
       
-      // Format data for API
+      // Parse street number and name from the full street address
+      const parseStreetAddress = (address) => {
+        if (!address) return { streetNum: '', street: '' };
+        
+        // Match the first sequence of digits at the start of the string
+        const match = address.match(/^(\d+)\s*(.*)/);
+        if (match) {
+          return {
+            streetNum: match[1],
+            street: match[2].trim()
+          };
+        }
+        return { streetNum: '', street: address };
+      };
+      
+      const { streetNum, street } = parseStreetAddress(formData.street);
+      
+      // Debug user info
+      console.log('User Info Object:', userInfo);
+      console.log('User Info Keys:', Object.keys(userInfo));
+      console.log('User Info Values:', Object.values(userInfo));
+      console.log('User ID from userInfo:', userInfo?.id);
+      console.log('User ID from userInfo.sub:', userInfo?.sub);
+      console.log('User ID from userInfo.userId:', userInfo?.userId);
+      console.log('User ID from userInfo.user_id:', userInfo?.user_id);
+      
+      // Get user ID with fallback to session storage if needed
+      const userId = userInfo?.id || userInfo?.sub || userInfo?.userId || userInfo?.user_id || JSON.parse(sessionStorage.getItem('userInfo'))?.id;
+      console.log('Final User ID to be used:', userId);
+      
+      if (!userId) {
+        console.error('No user ID found!');
+        throw new Error('User authentication error: No user ID available');
+      }
+      
       const saleData = {
         name: formData.name || "",
         description: formData.description || "",
         address: {
-          streetNum: formData.streetNum,
-          street: formData.street,
+          streetNum: streetNum,
+          street: street,
           unit: formData.unit || "",
-          city: formData.city,
-          provState: formData.provState,
-          postalZipCode: formData.postalZipCode
+          city: formData.city || "",
+          provState: formData.provState || "",
+          postalZipCode: formData.postalZipCode || ""
         },
         highlightedItems: featuredItems.filter(item => item.trim() !== ''),
         dateTime: {
@@ -212,23 +249,36 @@ const RegisterGarageSale = () => {
           end: formatDateForAPI(formData.endDate || formData.startDate, true),
           timezone: "America/Toronto"
         },
-        community: 'GENPUB', // Default community for individual garage sales
-        userId: userInfo.id
+        community: 'GENPUB',
+        userId: userId // Use the explicitly obtained user ID
       };
       
-      let response;
-      if (existingSale && isEditing) {
-        // Update existing garage sale
-        response = await api.updateGarageSale(existingSale.id, saleData);
-        setSuccess('Your garage sale has been updated successfully!');
-      } else {
-        // Create new garage sale
-        response = await api.createGarageSale(saleData);
-        setSuccess('Your garage sale has been registered successfully!');
-      }
+      console.log('Sale Data Payload:', JSON.stringify(saleData, null, 2)); // Debug log
       
-      // Update the existingSale state with the new data
-      setExistingSale(response.data);
+      let response;
+      try {
+        let apiResponse;
+        if (existingSale && isEditing) {
+          // Update existing garage sale
+          console.log('Updating existing garage sale with data:', JSON.stringify(saleData, null, 2));
+          apiResponse = await api.updateGarageSale(existingSale.id, saleData);
+          setSuccess('Your garage sale has been updated successfully!');
+        } else {
+          // Create new garage sale
+          console.log('Creating new garage sale with data:', JSON.stringify(saleData, null, 2));
+          apiResponse = await api.createGarageSale(saleData);
+          setSuccess('Your garage sale has been registered successfully!');
+        }
+        console.log('API Response:', apiResponse);
+        response = apiResponse;
+        
+        // Update the existingSale state with the new data
+        setExistingSale(response.data);
+      } catch (err) {
+        console.error('Error in form submission:', err);
+        setError(err.response?.data?.message || 'An error occurred. Please try again.');
+        throw err;
+      }
       setIsEditing(false);
       
       // Store in session storage for immediate use in other components
@@ -297,8 +347,9 @@ const RegisterGarageSale = () => {
       setFormData({
         name: existingSale.name || '',
         description: existingSale.description || '',
-        street: existingSale.address?.street || (existingSale.address?.streetNum ? 
-          `${existingSale.address.streetNum} ${existingSale.address.street || ''}`.trim() : ''),
+        street: existingSale.address?.streetNum && existingSale.address?.street
+          ? `${existingSale.address.streetNum} ${existingSale.address.street}`
+          : existingSale.address?.street || '',
         unit: existingSale.address?.unit || '',
         city: existingSale.address?.city || '',
         provState: existingSale.address?.provState || '',
@@ -358,7 +409,7 @@ const RegisterGarageSale = () => {
                 {existingSale.address && (
                   <>
                     <p className="address-line">
-                      {existingSale.address.street}
+                      {existingSale.address.streetNum} {existingSale.address.street}
                     </p>
                     <p className="address-line">
                       {existingSale.address.unit && (
@@ -489,6 +540,7 @@ const RegisterGarageSale = () => {
             </button>
           </div>
           
+          {/* Street Address */}
           <div className="form-row">
             <div className="form-group" style={{ width: '100%' }}>
               <label htmlFor="street">
@@ -501,7 +553,7 @@ const RegisterGarageSale = () => {
                   name="street"
                   value={formData.street}
                   onChange={handleInputChange}
-                  placeholder="e.g., 123 Main St"
+                  placeholder="e.g., Main St"
                   required
                   style={{ width: '100%' }}
                 />
@@ -511,7 +563,7 @@ const RegisterGarageSale = () => {
                   autocompletionRequest={{
                     types: ['address'],
                     componentRestrictions: {
-                      country: ['us', 'ca'] // Restrict to US and Canada
+                      country: ['us', 'ca']
                     }
                   }}
                   selectProps={{
@@ -537,29 +589,32 @@ const RegisterGarageSale = () => {
                   }}
                 />
               )}
-              <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                {useManualAddress 
-                  ? 'Enter your full street address (e.g., 123 Main St)' 
-                  : 'Search for your address to auto-fill all fields below'
-                }
-              </small>
-              <button
-                type="button"
-                onClick={() => setUseManualAddress(!useManualAddress)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#007bff',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  marginTop: '4px',
-                  padding: '0'
-                }}
-              >
-                {useManualAddress ? 'Use address search instead' : 'Enter address manually'}
-              </button>
             </div>
+          </div>
+
+          {/* Address Search Toggle */}
+          <div style={{ marginBottom: '1rem' }}>
+            <button
+              type="button"
+              onClick={() => setUseManualAddress(!useManualAddress)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#007bff',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontSize: '12px',
+                padding: '0',
+                marginTop: '4px'
+              }}
+            >
+              {useManualAddress ? 'Use address search instead' : 'Enter address manually'}
+            </button>
+            {!useManualAddress && (
+              <small style={{ color: '#666', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                Search for your address to auto-fill all fields below
+              </small>
+            )}
           </div>
           
           <div className="form-row">
