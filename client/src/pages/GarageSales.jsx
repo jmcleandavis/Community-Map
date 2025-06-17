@@ -30,8 +30,8 @@ const GarageSales = () => {
   const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
   const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
   const [showRouteList, setShowRouteList] = useState(false);
-
-
+  const [userAddressList, setUserAddressList] = useState(null);
+  const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
 
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
@@ -88,30 +88,19 @@ const GarageSales = () => {
       if (isAuthenticated && userInfo?.userId) {
         try {
           console.log('Fetching user address list for user:', userInfo.userId);
-          const userAddressList = await api.getUserAddressList(userInfo.userId);
+          const userAddressListResponse = await api.getUserAddressList(userInfo.userId);
           
-          if (userAddressList && userAddressList.addressList && userAddressList.addressList.length > 0) {
-            console.log('User has saved address list on server:', userAddressList.addressList);
-            
-            // Convert the array to a Set for the selection context
-            const serverSelectedSales = new Set(userAddressList.addressList);
-            
-            // Update the selected sales in the selection context
-            // This will override any locally stored selections
-            handleDeselectAll(); // Clear existing selections first
-            
-            // Add each server-side selection
-            serverSelectedSales.forEach(saleId => {
-              handleCheckboxChange(saleId);
-            });
-            
-            console.log('Updated selections from server list');
+          if (userAddressListResponse && userAddressListResponse.addressList && userAddressListResponse.addressList.length > 0) {
+            console.log('User has saved address list on server:', userAddressListResponse.addressList);
+            setUserAddressList(userAddressListResponse.addressList);
           } else {
             console.log('User does not have a saved address list on server, using local selections');
+            setUserAddressList([]);
           }
         } catch (error) {
           console.error('Error fetching user address list:', error);
           // If there's an error, we'll fall back to the local storage selections
+          setUserAddressList([]);
         }
       }
     };
@@ -119,7 +108,40 @@ const GarageSales = () => {
     fetchUserAddressList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
+  // Effect to filter and apply user's selected sales when garage sales are loaded
+  useEffect(() => {
+    if (userAddressList && garageSales && garageSales.length > 0 && communityId) {
+      // Filter the selected sales to only include those from the current community
+      let filteredSelectedSales = userAddressList;
+      
+      // Get the IDs of garage sales that belong to the current community
+      const currentCommunityGarageSaleIds = garageSales.map(sale => sale.id);
+      
+      // Filter the user's selected sales to only include those in the current community
+      filteredSelectedSales = userAddressList.filter(selectedSaleId => 
+        currentCommunityGarageSaleIds.includes(selectedSaleId)
+      );
+      
+      console.log('Filtered selected sales for current community:', filteredSelectedSales);
+      console.log('Current community garage sale IDs:', currentCommunityGarageSaleIds);
+      
+      // Convert the filtered array to a Set for the selection context
+      const serverSelectedSales = new Set(filteredSelectedSales);
+      
+      // Update the selected sales in the selection context
+      // This will override any locally stored selections
+      handleDeselectAll(); // Clear existing selections first
+      
+      // Add each server-side selection that belongs to the current community
+      serverSelectedSales.forEach(saleId => {
+        handleCheckboxChange(saleId);
+      });
+      
+      console.log('Updated selections from server list (filtered for current community)');
+    }
+  }, [userAddressList, garageSales, communityId, handleDeselectAll, handleCheckboxChange]);
+
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
@@ -207,8 +229,6 @@ const GarageSales = () => {
       alert('Please select at least one garage sale to view on the map.');
     }
   };
-
-  const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
 
   const handleOptimizeRoute = async () => {
     // Determine if we're optimizing the full route or just selected sales
