@@ -32,6 +32,7 @@ const GarageSales = () => {
   const [showRouteList, setShowRouteList] = useState(false);
   const [userAddressList, setUserAddressList] = useState(null);
   const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
+  const [selectionsInitialized, setSelectionsInitialized] = useState(false);
 
   // Extract communityId from URL parameters and update context/state
   useEffect(() => {
@@ -82,6 +83,11 @@ const GarageSales = () => {
     fetchGarageSales(communityId);
   }, [fetchGarageSales, communityId]);
 
+  // Reset selections initialized flag when community changes
+  useEffect(() => {
+    setSelectionsInitialized(false);
+  }, [communityId]);
+
   // Effect to fetch user's saved address list from server if user is logged in - only runs once on mount
   useEffect(() => {
     const fetchUserAddressList = async () => {
@@ -111,7 +117,7 @@ const GarageSales = () => {
 
   // Effect to filter and apply user's selected sales when garage sales are loaded
   useEffect(() => {
-    if (userAddressList && garageSales && garageSales.length > 0 && communityId) {
+    if (userAddressList && garageSales && garageSales.length > 0 && communityId && !selectionsInitialized) {
       // Filter the selected sales to only include those from the current community
       let filteredSelectedSales = userAddressList;
       
@@ -139,8 +145,9 @@ const GarageSales = () => {
       });
       
       console.log('Updated selections from server list (filtered for current community)');
+      setSelectionsInitialized(true); // Mark selections as initialized
     }
-  }, [userAddressList, garageSales, communityId, handleDeselectAll, handleCheckboxChange]);
+  }, [userAddressList, garageSales, communityId]);
 
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
