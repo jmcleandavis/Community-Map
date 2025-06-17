@@ -11,9 +11,10 @@ const RegisterGarageSale = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    name: 'Garage Sale',
     description: '',
-    street: '',
+    street: '',  // Combined street number and name
+    unit: '',
     city: '',
     provState: '',
     postalZipCode: '',
@@ -53,7 +54,9 @@ const RegisterGarageSale = () => {
           setFormData({
             name: sale.name || '',
             description: sale.description || '',
+            streetNum: sale.address?.streetNum || '',
             street: sale.address?.street || '',
+            unit: sale.address?.unit || '',
             city: sale.address?.city || '',
             provState: sale.address?.provState || '',
             postalZipCode: sale.address?.postalZipCode || '',
@@ -80,6 +83,11 @@ const RegisterGarageSale = () => {
       ...prev,
       [name]: value
     }));
+    
+    // If manually entering address, clear the selected place
+    if (name === 'street' && selectedPlace) {
+      setSelectedPlace(null);
+    }
   };
 
   // Handle address selection from Google Places Autocomplete
@@ -90,6 +98,7 @@ const RegisterGarageSale = () => {
       setFormData(prev => ({
         ...prev,
         street: '',
+        unit: '',
         city: '',
         provState: '',
         postalZipCode: ''
@@ -114,17 +123,18 @@ const RegisterGarageSale = () => {
           const addressComponents = result.address_components;
           
           // Parse address components
+          let streetNum = '';
           let streetName = '';
-          let streetNumber = '';
           let city = '';
           let state = '';
           let postalCode = '';
+          let unit = '';
           
           addressComponents.forEach(component => {
             const types = component.types;
             
             if (types.includes('street_number')) {
-              streetNumber = component.long_name;
+              streetNum = component.long_name;
             } else if (types.includes('route')) {
               streetName = component.long_name;
             } else if (types.includes('locality')) {
@@ -133,18 +143,16 @@ const RegisterGarageSale = () => {
               state = component.short_name;
             } else if (types.includes('postal_code')) {
               postalCode = component.long_name;
+            } else if (types.includes('subpremise')) {
+              unit = component.long_name;
             }
           });
-          
-          // Combine street number and street name
-          const fullStreetAddress = streetNumber && streetName 
-            ? `${streetNumber} ${streetName}` 
-            : streetName || streetNumber || '';
           
           // Update form data with parsed address
           setFormData(prev => ({
             ...prev,
-            street: fullStreetAddress,
+            street: streetNum ? `${streetNum} ${streetName}`.trim() : streetName,
+            unit: unit,
             city: city,
             provState: state,
             postalZipCode: postalCode
@@ -152,8 +160,11 @@ const RegisterGarageSale = () => {
           
           // Create a custom display value for the selected place that shows only street address
           setSelectedPlace({
-            label: fullStreetAddress,
-            value: { place_id: placeId, description: fullStreetAddress }
+            label: streetNum ? `${streetNum} ${streetName}`.trim() : streetName,
+            value: { 
+              place_id: placeId, 
+              description: streetNum ? `${streetNum} ${streetName}`.trim() : streetName 
+            }
           });
         } else {
           console.error('Error getting place details:', status);
@@ -174,19 +185,33 @@ const RegisterGarageSale = () => {
     setError(null);
     
     try {
+      // Format dates for API - convert YYYY-MM-DD to ISO datetime format
+      const formatDateForAPI = (dateString, isEndDate = false) => {
+        if (!dateString) return null;
+        
+        // For start date, use 9:00 AM; for end date, use 6:00 PM
+        const time = isEndDate ? '18:00:00' : '09:00:00';
+        return `${dateString}T${time}`;
+      };
+      
       // Format data for API
       const saleData = {
-        name: formData.name,
-        description: formData.description,
+        name: formData.name || "",
+        description: formData.description || "",
         address: {
+          streetNum: formData.streetNum,
           street: formData.street,
+          unit: formData.unit || "",
           city: formData.city,
           provState: formData.provState,
           postalZipCode: formData.postalZipCode
         },
         highlightedItems: featuredItems.filter(item => item.trim() !== ''),
-        startDate: formData.startDate,
-        endDate: formData.endDate,
+        dateTime: {
+          start: formatDateForAPI(formData.startDate, false),
+          end: formatDateForAPI(formData.endDate || formData.startDate, true),
+          timezone: "America/Toronto"
+        },
         community: 'GENPUB', // Default community for individual garage sales
         userId: userInfo.id
       };
@@ -239,7 +264,9 @@ const RegisterGarageSale = () => {
         setFormData({
           name: '',
           description: '',
+          streetNum: '',
           street: '',
+          unit: '',
           city: '',
           provState: '',
           postalZipCode: '',
@@ -270,7 +297,9 @@ const RegisterGarageSale = () => {
       setFormData({
         name: existingSale.name || '',
         description: existingSale.description || '',
-        street: existingSale.address?.street || '',
+        street: existingSale.address?.street || (existingSale.address?.streetNum ? 
+          `${existingSale.address.streetNum} ${existingSale.address.street || ''}`.trim() : ''),
+        unit: existingSale.address?.unit || '',
         city: existingSale.address?.city || '',
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
@@ -332,6 +361,9 @@ const RegisterGarageSale = () => {
                       {existingSale.address.street}
                     </p>
                     <p className="address-line">
+                      {existingSale.address.unit && (
+                        <span>{existingSale.address.unit} </span>
+                      )}
                       {existingSale.address.city}, {existingSale.address.provState} {existingSale.address.postalZipCode}
                     </p>
                   </>
@@ -373,7 +405,6 @@ const RegisterGarageSale = () => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="e.g., Spring Cleaning Sale"
-              required
             />
           </div>
           
@@ -386,7 +417,6 @@ const RegisterGarageSale = () => {
               onChange={handleInputChange}
               placeholder="Describe your garage sale..."
               rows={4}
-              required
             />
           </div>
           
@@ -460,7 +490,7 @@ const RegisterGarageSale = () => {
           </div>
           
           <div className="form-row">
-            <div className="form-group">
+            <div className="form-group" style={{ width: '100%' }}>
               <label htmlFor="street">
                 Street Address <span style={{ color: 'red' }}>*</span>
               </label>
@@ -471,8 +501,9 @@ const RegisterGarageSale = () => {
                   name="street"
                   value={formData.street}
                   onChange={handleInputChange}
-                  placeholder="Street Address"
+                  placeholder="e.g., 123 Main St"
                   required
+                  style={{ width: '100%' }}
                 />
               ) : (
                 <GooglePlacesAutocomplete
@@ -486,7 +517,7 @@ const RegisterGarageSale = () => {
                   selectProps={{
                     value: selectedPlace,
                     onChange: handleAddressSelect,
-                    placeholder: 'Start typing an address...',
+                    placeholder: 'Search for your address...',
                     isClearable: true,
                     styles: {
                       input: (provided) => ({
@@ -496,6 +527,11 @@ const RegisterGarageSale = () => {
                       option: (provided) => ({
                         ...provided,
                         fontSize: '14px',
+                      }),
+                      control: (provided) => ({
+                        ...provided,
+                        minHeight: '38px',
+                        height: '38px',
                       })
                     }
                   }}
@@ -503,7 +539,7 @@ const RegisterGarageSale = () => {
               )}
               <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
                 {useManualAddress 
-                  ? 'Enter your street address manually' 
+                  ? 'Enter your full street address (e.g., 123 Main St)' 
                   : 'Search for your address to auto-fill all fields below'
                 }
               </small>
@@ -523,6 +559,21 @@ const RegisterGarageSale = () => {
               >
                 {useManualAddress ? 'Use address search instead' : 'Enter address manually'}
               </button>
+            </div>
+          </div>
+          
+          <div className="form-row">
+            
+            <div className="form-group">
+              <label htmlFor="unit">Unit</label>
+              <input
+                type="text"
+                id="unit"
+                name="unit"
+                value={formData.unit}
+                onChange={handleInputChange}
+                placeholder="Unit"
+              />
             </div>
           </div>
           
@@ -595,7 +646,6 @@ const RegisterGarageSale = () => {
               name="endDate"
               value={formData.endDate}
               onChange={handleInputChange}
-              required
             />
           </div>
           
