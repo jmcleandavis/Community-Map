@@ -614,13 +614,15 @@ const RegisterGarageSale = () => {
                 <p className="sale-description">{existingSale.description}</p>
               )}
               
-              {existingSale.highlightedItems && (
-                <p className="sale-items">
-                  <strong>Featured Items:</strong> {Array.isArray(existingSale.highlightedItems) 
-                    ? existingSale.highlightedItems.join(', ') 
-                    : existingSale.highlightedItems}
-                </p>
-              )}
+              <p className="sale-items">
+                <strong>Featured Items:</strong> {
+                  existingSale.highlightedItems && 
+                  Array.isArray(existingSale.highlightedItems) && 
+                  existingSale.highlightedItems.length > 0 
+                    ? existingSale.highlightedItems.filter(item => item.trim() !== '').join(', ')
+                    : 'None'
+                }
+              </p>
               
               <div className="sale-dates">
                 <p><strong>Start Date:</strong> {new Date(existingSale.dateTime.start).toLocaleDateString()}</p>
