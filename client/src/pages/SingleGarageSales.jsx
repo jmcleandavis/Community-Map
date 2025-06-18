@@ -22,6 +22,8 @@ const SingleGarageSales = () => {
   const location = useLocation();
   const { isAuthenticated, userInfo, userEmail } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userAddressList, setUserAddressList] = useState(null);
+  const [selectionsInitialized, setSelectionsInitialized] = useState(false);
 
   // Fetch single garage sales from GENPUB community
   useEffect(() => {
@@ -124,29 +126,20 @@ const SingleGarageSales = () => {
     const fetchUserAddressList = async () => {
       if (isAuthenticated && userInfo?.userId) {
         try {
-          console.log('Fetching user address list for user:', userInfo.userId);
-          const userAddressList = await api.getUserAddressList(userInfo.userId);
+          console.log('SingleGarageSales: Fetching user address list for user:', userInfo.userId);
+          const userAddressListResponse = await api.getUserAddressList(userInfo.userId);
           
-          if (userAddressList && userAddressList.addressList && userAddressList.addressList.length > 0) {
-            console.log('User has saved address list on server:', userAddressList.addressList);
-            
-            // Convert the array to a Set for the selection context
-            const serverSelectedSales = new Set(userAddressList.addressList);
-            
-            // Update the selected sales in the selection context
-            handleDeselectAll(); // Clear existing selections first
-            
-            // Add each server-side selection
-            serverSelectedSales.forEach(saleId => {
-              handleCheckboxChange(saleId);
-            });
-            
-            console.log('Updated selections from server list');
+          if (userAddressListResponse && userAddressListResponse.addressList && userAddressListResponse.addressList.length > 0) {
+            console.log('SingleGarageSales: User has saved address list on server:', userAddressListResponse.addressList);
+            setUserAddressList(userAddressListResponse.addressList);
           } else {
-            console.log('User does not have a saved address list on server, using local selections');
+            console.log('SingleGarageSales: User does not have a saved address list on server, using local selections');
+            setUserAddressList([]);
           }
         } catch (error) {
-          console.error('Error fetching user address list:', error);
+          console.error('SingleGarageSales: Error fetching user address list:', error);
+          // If there's an error, we'll fall back to the local storage selections
+          setUserAddressList([]);
         }
       }
     };
@@ -154,7 +147,41 @@ const SingleGarageSales = () => {
     fetchUserAddressList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
+  // Effect to filter and apply user's selected sales when garage sales are loaded (GENPUB community only)
+  useEffect(() => {
+    if (userAddressList && garageSales && garageSales.length > 0 && !selectionsInitialized) {
+      // Filter the selected sales to only include those from the GENPUB community
+      let filteredSelectedSales = userAddressList;
+      
+      // Get the IDs of garage sales that belong to the GENPUB community
+      const genpubGarageSaleIds = garageSales.map(sale => sale.id);
+      
+      // Filter the user's selected sales to only include those in the GENPUB community
+      filteredSelectedSales = userAddressList.filter(selectedSaleId => 
+        genpubGarageSaleIds.includes(selectedSaleId)
+      );
+      
+      console.log('SingleGarageSales: Filtered selected sales for GENPUB community:', filteredSelectedSales);
+      console.log('SingleGarageSales: GENPUB garage sale IDs:', genpubGarageSaleIds);
+      
+      // Convert the filtered array to a Set for the selection context
+      const serverSelectedSales = new Set(filteredSelectedSales);
+      
+      // Update the selected sales in the selection context
+      // This will override any locally stored selections
+      handleDeselectAll(); // Clear existing selections first
+      
+      // Add each server-side selection that belongs to the GENPUB community
+      serverSelectedSales.forEach(saleId => {
+        handleCheckboxChange(saleId);
+      });
+      
+      console.log('SingleGarageSales: Updated selections from server list (filtered for GENPUB community)');
+      setSelectionsInitialized(true); // Mark selections as initialized
+    }
+  }, [userAddressList, garageSales]);
+
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
