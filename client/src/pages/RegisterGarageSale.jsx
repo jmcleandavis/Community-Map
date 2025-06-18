@@ -577,11 +577,13 @@ const RegisterGarageSale = () => {
 
   return (
     <div className="garage-sales-container">
-      <div className="user-info-section">
-        <h2>{displayName}</h2>
-        {userEmail && <p className="user-email">{userEmail}</p>}
-      </div>
-      <h1>{existingSale && !isEditing ? '' : 'Register a Garage Sale'}</h1>
+      <h1>
+        <div className="user-info-header">
+          <span className="user-name">{displayName}</span>
+          {userEmail && <span className="user-email">{userEmail}</span>}
+        </div>
+        {existingSale && !isEditing ? '' : 'Register a Garage Sale'}
+      </h1>
       
       {loading && <div className="loading">Loading...</div>}
       

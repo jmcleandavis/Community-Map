@@ -1,23 +1,27 @@
-/* User Info Section */
-.user-info-section {
-  background-color: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #4285f4;
+/* User Info in Header */
+.garage-sales-container h1 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
-.user-info-section h2 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-  font-size: 1.5rem;
-}
-
-.user-info-section .user-email {
-  margin: 0;
-  color: #666;
+.user-info-header {
+  display: flex;
+  flex-direction: column;
   font-size: 1rem;
+  font-weight: normal;
+  margin-bottom: 0.5rem;
+}
+
+.user-info-header .user-name {
+  color: #333;
+  font-weight: 500;
+}
+
+.user-info-header .user-email {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .garage-sale-form {
@@ -110,8 +114,8 @@
 .garage-sale-card {
   background-color: white;
   padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+  box-shadow: none;
   margin-bottom: 20px;
 }
 
@@ -204,6 +208,7 @@
   margin: 8px 0;
   color: #555;
   font-size: 16px;
+  line-height: 0.6;
 }
 
 .existing-sale-container .garage-sale-card .sale-content h3 {
@@ -215,7 +220,7 @@
 .existing-sale-container .garage-sale-card .address-line {
   margin: 0;
   color: #666;
-  font-size: 30px !important; /* Larger address text */
+  font-size: 40px !important; /* Larger address text */
   line-height: 1;
 }
 
