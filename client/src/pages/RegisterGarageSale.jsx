@@ -476,29 +476,79 @@ const RegisterGarageSale = () => {
   // Handle edit garage sale
   const handleEditClick = () => {
     if (existingSale) {
+      console.log('Editing existing sale:', existingSale); // Debug log
+      
       setIsEditing(true);
       setSuccess(false);
       setError(null);
       
-      // Pre-fill form with existing data
-      setFormData({
-        name: existingSale.name || '',
+      // Switch to manual address mode for editing to ensure the address field is populated
+      setUseManualAddress(true);
+      setSelectedPlace(null);
+      
+      // Construct full street address
+      let fullStreetAddress = '';
+      if (existingSale.address) {
+        if (existingSale.address.streetNum && existingSale.address.street) {
+          fullStreetAddress = `${existingSale.address.streetNum} ${existingSale.address.street}`;
+        } else if (existingSale.address.street) {
+          fullStreetAddress = existingSale.address.street;
+        }
+      }
+      
+      // Parse dates properly
+      let startDate = '';
+      let endDate = '';
+      
+      if (existingSale.dateTime?.start) {
+        // Handle both ISO format and date-only format
+        const startDateObj = new Date(existingSale.dateTime.start);
+        if (!isNaN(startDateObj.getTime())) {
+          startDate = startDateObj.toISOString().split('T')[0];
+        }
+      }
+      
+      if (existingSale.dateTime?.end) {
+        const endDateObj = new Date(existingSale.dateTime.end);
+        if (!isNaN(endDateObj.getTime())) {
+          endDate = endDateObj.toISOString().split('T')[0];
+        }
+      }
+      
+      console.log('Populating form with:', {
+        name: existingSale.name || 'Garage Sale',
         description: existingSale.description || '',
-        street: existingSale.address?.streetNum && existingSale.address?.street
-          ? `${existingSale.address.streetNum} ${existingSale.address.street}`
-          : existingSale.address?.street || '',
+        street: fullStreetAddress,
         unit: existingSale.address?.unit || '',
         city: existingSale.address?.city || '',
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
-        startDate: existingSale.dateTime?.start ? existingSale.dateTime.start.split('T')[0] : '',
-        endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : ''
+        startDate,
+        endDate
+      }); // Debug log
+      
+      // Pre-fill form with existing data
+      setFormData({
+        name: existingSale.name || 'Garage Sale',
+        description: existingSale.description || '',
+        street: fullStreetAddress,
+        unit: existingSale.address?.unit || '',
+        city: existingSale.address?.city || '',
+        provState: existingSale.address?.provState || '',
+        postalZipCode: existingSale.address?.postalZipCode || '',
+        startDate,
+        endDate
       });
       
-      // Pre-fill featured items
+      // Pre-fill featured items - ensure we always have at least one empty field for adding new items
       if (existingSale.highlightedItems && existingSale.highlightedItems.length > 0) {
         setFeaturedItems([...existingSale.highlightedItems, '']);
+      } else {
+        setFeaturedItems(['']);
       }
+      
+      console.log('Form data set, featured items:', existingSale.highlightedItems); // Debug log
+      console.log('Manual address mode enabled for editing'); // Debug log
     }
   };
 
