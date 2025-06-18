@@ -12,7 +12,7 @@ const SingleGarageSales = () => {
   const [garageSales, setGarageSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [communityName, setCommunityName] = useState('Individual Garage Sales');
+  const [communityName, setCommunityName] = useState('Garage Sales');
   
   // Optimize route state variables
   const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
