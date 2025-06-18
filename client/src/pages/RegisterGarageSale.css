@@ -85,41 +85,80 @@
   margin-top: 20px;
 }
 
+.garage-sale-card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.sale-content {
+  margin-bottom: 20px;
+}
+
+.sale-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.5em;
+}
+
+.sale-address-details {
+  margin-bottom: 15px;
+}
+
+.address-line {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.sale-description {
+  margin: 15px 0;
+  color: #555;
+  line-height: 1.4;
+}
+
+.sale-items {
+  margin: 15px 0;
+  color: #555;
+}
+
 .sale-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 15px;
   margin-top: 20px;
 }
 
-.edit-button {
-  background-color: #4285f4;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
+.sale-actions .edit-button {
+  background-color: #4285f4 !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  transition: background-color 0.3s ease !important;
 }
 
-.edit-button:hover {
-  background-color: #3367d6;
+.sale-actions .edit-button:hover {
+  background-color: #3367d6 !important;
 }
 
-.delete-button {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
+.sale-actions .delete-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  transition: background-color 0.3s ease !important;
 }
 
-.delete-button:hover {
-  background-color: #c82333;
+.sale-actions .delete-button:hover {
+  background-color: #c82333 !important;
 }
 
 .success-message {
