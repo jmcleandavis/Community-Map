@@ -571,7 +571,7 @@ const RegisterGarageSale = () => {
 
   return (
     <div className="garage-sales-container">
-      <h1>{existingSale && !isEditing ? 'Your Garage Sale' : 'Register a Garage Sale'}</h1>
+      <h1>{existingSale && !isEditing ? '' : 'Register a Garage Sale'}</h1>
       
       {loading && <div className="loading">Loading...</div>}
       
@@ -599,13 +599,18 @@ const RegisterGarageSale = () => {
                   <>
                     <p className="address-line">
                       {existingSale.address.streetNum} {existingSale.address.street}
+                      {existingSale.address.unit && (
+                        <span>, Unit {existingSale.address.unit}</span>
+                      )}
                     </p>
                     <p className="address-line">
-                      {existingSale.address.unit && (
-                        <span>{existingSale.address.unit} </span>
-                      )}
-                      {existingSale.address.city}, {existingSale.address.provState} {existingSale.address.postalZipCode}
+                      {existingSale.address.city}, {existingSale.address.provState}
                     </p>
+                    {existingSale.address.postalZipCode && (
+                      <p className="address-line">
+                        {existingSale.address.postalZipCode}
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -667,45 +672,19 @@ const RegisterGarageSale = () => {
             {featuredItems.map((item, index) => (
               <div 
                 key={index} 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '8px',
-                  gap: '8px'
-                }}
+                className="featured-item-input"
               >
                 <input
                   type="text"
                   value={item}
                   onChange={(e) => handleFeaturedItemChange(e, index)}
                   placeholder="e.g., Furniture, Electronics, Toys"
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
                 />
                 {featuredItems.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveFeaturedItem(index)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#666',
-                      cursor: 'pointer',
-                      fontSize: '18px',
-                      padding: '4px',
-                      borderRadius: '50%',
-                      width: '24px',
-                      height: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title="Remove item"
+                    className="remove-item-button"
                   >
                     ×
                   </button>
@@ -715,19 +694,9 @@ const RegisterGarageSale = () => {
             <button
               type="button"
               onClick={handleAddFeaturedItem}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#1a73e8',
-                cursor: 'pointer',
-                fontSize: '14px',
-                padding: '8px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
+              className="add-item-button"
             >
-              <span style={{ fontSize: '16px' }}>+</span> Add item
+              + Add item
             </button>
           </div>
           
@@ -894,81 +863,44 @@ const RegisterGarageSale = () => {
       
       {/* Display User's Garage Sale */}
       {genpubSales.length > 0 && (
-        <div className="user-garage-sale-container" style={{
-          backgroundColor: '#f7f7f7',
-          padding: '20px',
-          borderRadius: '10px',
-          boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h2 style={{ marginBottom: '20px' }}>Your Garage Sale</h2>
+        <div className="genpub-sales-container">
           {genpubSales.map((sale) => (
-            <div key={sale.id} className="user-garage-sale-card" style={{
-              backgroundColor: '#fff',
-              padding: '20px',
-              borderRadius: '10px',
-              boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-              marginBottom: '20px'
-            }}>
-              <div className="sale-header" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px'
-              }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{sale.name}</h3>
+            <div key={sale.id} className="user-garage-sale-card">
+              <div className="sale-header">
+                <h3>{sale.name}</h3>
                 <div className="sale-actions">
-                  <button className="edit-button" onClick={handleEditClick} style={{
-                    backgroundColor: '#4CAF50',
-                    color: '#fff',
-                    padding: '10px 20px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}>Edit</button>
-                  <button className="delete-button" onClick={handleDelete} style={{
-                    backgroundColor: '#e74c3c',
-                    color: '#fff',
-                    padding: '10px 20px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}>Delete</button>
+                  <button className="edit-button" onClick={handleEditClick}>Edit</button>
+                  <button className="delete-button" onClick={handleDelete}>Delete</button>
                 </div>
               </div>
               
               <div className="sale-details">
-                <div className="address-section" style={{
-                  marginBottom: '20px'
-                }}>
-                  <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Address:</h4>
-                  <p style={{ fontSize: '14px' }}>{sale.address.streetNum} {sale.address.street}</p>
-                  {sale.address.unit && <p style={{ fontSize: '14px' }}>Unit: {sale.address.unit}</p>}
-                  <p style={{ fontSize: '14px' }}>{sale.address.city}, {sale.address.provState} {sale.address.postalZipCode}</p>
+                <div className="address-section">
+                  <h4>Address:</h4>
+                  <p>{sale.address.streetNum} {sale.address.street}</p>
+                  {sale.address.unit && <p>Unit: {sale.address.unit}</p>}
+                  <p>{sale.address.city}, {sale.address.provState} {sale.address.postalZipCode}</p>
                 </div>
                 
-                <div className="dates-section" style={{
-                  marginBottom: '20px'
-                }}>
-                  <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Dates:</h4>
-                  <p style={{ fontSize: '14px' }}><strong>Start:</strong> {new Date(sale.dateTime.start).toLocaleDateString()}</p>
-                  <p style={{ fontSize: '14px' }}><strong>End:</strong> {new Date(sale.dateTime.end).toLocaleDateString()}</p>
+                <div className="dates-section">
+                  <h4>Dates:</h4>
+                  <p><strong>Start:</strong> {new Date(sale.dateTime.start).toLocaleDateString()}</p>
+                  <p><strong>End:</strong> {new Date(sale.dateTime.end).toLocaleDateString()}</p>
                 </div>
                 
                 {sale.description && (
-                  <div className="description-section" style={{
-                    marginBottom: '20px'
-                  }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Description:</h4>
-                    <p style={{ fontSize: '14px' }}>{sale.description}</p>
+                  <div className="description-section">
+                    <h4>Description:</h4>
+                    <p>{sale.description}</p>
                   </div>
                 )}
                 
                 {sale.highlightedItems && sale.highlightedItems.length > 0 && (
                   <div className="featured-items-section">
-                    <h4 style={{ fontSize: '16px', fontWeight: 'bold' }}>Featured Items:</h4>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    <h4>Featured Items:</h4>
+                    <ul>
                       {sale.highlightedItems.map((item, index) => (
-                        <li key={index} style={{ fontSize: '14px', marginBottom: '10px' }}>{item}</li>
+                        <li key={index}>{item}</li>
                       ))}
                     </ul>
                   </div>

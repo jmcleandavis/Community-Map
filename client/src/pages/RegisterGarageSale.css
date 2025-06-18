@@ -100,7 +100,7 @@
 .sale-content h3 {
   margin: 0 0 15px 0;
   color: #333;
-  font-size: 1.5em;
+  font-size: 1.8em;
 }
 
 .sale-address-details {
@@ -108,20 +108,22 @@
 }
 
 .address-line {
-  margin: 5px 0;
+  margin: 0;
   color: #666;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .sale-description {
   margin: 15px 0;
   color: #555;
   line-height: 1.4;
+  font-size: 16px;
 }
 
 .sale-items {
   margin: 15px 0;
   color: #555;
+  font-size: 16px;
 }
 
 .sale-actions {
@@ -171,12 +173,186 @@
 }
 
 .sale-dates {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
+  margin: 15px 0;
 }
 
 .sale-dates p {
-  margin: 5px 0;
+  margin: 8px 0;
   color: #555;
+  font-size: 16px;
+}
+
+.existing-sale-container .garage-sale-card .sale-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 2.2em !important; /* Larger title for register page card */
+}
+
+.existing-sale-container .garage-sale-card .address-line {
+  margin: 0;
+  color: #666;
+  font-size: 18px !important; /* Larger address text */
+}
+
+.existing-sale-container .garage-sale-card .sale-description {
+  margin: 15px 0;
+  color: #555;
+  line-height: 1.4;
+  font-size: 18px !important; /* Larger description text */
+}
+
+.existing-sale-container .garage-sale-card .sale-items {
+  margin: 15px 0;
+  color: #555;
+  font-size: 18px !important; /* Larger featured items text */
+}
+
+.existing-sale-container .garage-sale-card .sale-dates p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 18px !important; /* Larger date text */
+}
+
+/* GENPUB Sales Display Section */
+.genpub-sales-container {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-garage-sale-card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sale-header h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.sale-header .sale-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.sale-header .edit-button {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sale-header .edit-button:hover {
+  background-color: #45a049;
+}
+
+.sale-header .delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sale-header .delete-button:hover {
+  background-color: #c0392b;
+}
+
+.sale-details .address-section,
+.sale-details .dates-section,
+.sale-details .description-section,
+.sale-details .featured-items-section {
+  margin-bottom: 20px;
+}
+
+.sale-details h4 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.sale-details p {
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.sale-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sale-details li {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* Featured Items Form Styling */
+.featured-item-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.featured-item-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.remove-item-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.remove-item-button:hover {
+  background-color: #f0f0f0;
+}
+
+.add-item-button {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+}
+
+.add-item-button:hover {
+  color: #1557b0;
 }
