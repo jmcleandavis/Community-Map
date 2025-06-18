@@ -99,6 +99,69 @@
   border-color: var(--color-primary);
 }
 
+/* Selection Controls */
+.selection-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  flex-wrap: wrap;
+}
+
+.selection-controls button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.view-selected-button {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.view-selected-button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.select-all-button {
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+}
+
+.select-all-button:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+/* Controls Container */
+.controls-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px 0;
+  padding: 5px 0;
+  flex-wrap: wrap;
+}
+
+/* Search Container */
+.search-container {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
+  margin: 0;
+}
+
+/* Selection Controls */
+.selection-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+}
+
 /* Buttons */
 .garage-sales__button {
   padding: var(--spacing-sm) var(--spacing-md);
