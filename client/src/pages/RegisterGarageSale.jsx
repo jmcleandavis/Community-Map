@@ -45,29 +45,36 @@ const RegisterGarageSale = () => {
     const fetchUserGarageSale = async () => {
       setLoading(true);
       try {
-        // Fetch user's garage sale if it exists
-        const response = await api.getUserGarageSale(userInfo.id);
+        // Fetch all garage sales from GENPUB community
+        const response = await api.getAddressesByCommunity('GENPUB');
         if (response.data && response.data.length > 0) {
-          const sale = response.data[0];
-          setExistingSale(sale);
+          // Extract userId from userInfo with fallback checks
+          const userId = userInfo?.id || userInfo?.sub || userInfo?.userId || userInfo?.user_id || 
+                        sessionStorage.getItem('userId');
           
-          // Pre-fill form with existing data
-          setFormData({
-            name: sale.name || '',
-            description: sale.description || '',
-            streetNum: sale.address?.streetNum || '',
-            street: sale.address?.street || '',
-            unit: sale.address?.unit || '',
-            city: sale.address?.city || '',
-            provState: sale.address?.provState || '',
-            postalZipCode: sale.address?.postalZipCode || '',
-            startDate: sale.startDate || '',
-            endDate: sale.endDate || ''
-          });
-          setFeaturedItems(sale.highlightedItems || ['']);
+          // Search for user's garage sale by matching userId
+          const userSale = response.data.find(sale => sale.userId === userId);
+          
+          if (userSale) {
+            setExistingSale(userSale);
+            
+            // Pre-fill form with existing data
+            setFormData({
+              name: userSale.name || '',
+              description: userSale.description || '',
+              street: userSale.address?.street || '',
+              unit: userSale.address?.unit || '',
+              city: userSale.address?.city || '',
+              provState: userSale.address?.provState || '',
+              postalZipCode: userSale.address?.postalZipCode || '',
+              startDate: userSale.startDate || '',
+              endDate: userSale.endDate || ''
+            });
+            setFeaturedItems(userSale.highlightedItems || ['']);
+          }
         }
       } catch (err) {
-        console.error('Error fetching user garage sale:', err);
+        console.error('Error fetching GENPUB garage sales:', err);
         // No existing sale or error fetching - that's okay, user can create a new one
       } finally {
         setLoading(false);
@@ -666,22 +673,6 @@ const RegisterGarageSale = () => {
 
           {/* Address Search Toggle */}
           <div style={{ marginBottom: '1rem' }}>
-            <button
-              type="button"
-              onClick={() => setUseManualAddress(!useManualAddress)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#007bff',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                fontSize: '12px',
-                padding: '0',
-                marginTop: '4px'
-              }}
-            >
-              {useManualAddress ? 'Use address search instead' : 'Enter address manually'}
-            </button>
             {!useManualAddress && (
               <small style={{ color: '#666', fontSize: '12px', display: 'block', marginTop: '4px' }}>
                 Search for your address to auto-fill all fields below

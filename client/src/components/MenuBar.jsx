@@ -90,8 +90,8 @@ const MenuBar = () => {
   return (
     <nav className="menu-bar">
       <div className="menu-bar-item" onClick={() => handleNavigation('/about')}>About</div>
-      <div className="menu-bar-item" onClick={() => handleNavigation('/list-active-community-sales-events')}>List of Active Community Sales Events</div>
-      <div className="menu-bar-item" onClick={handleGarageSalesClick}>List of Individual Garage Sales</div>
+      <div className="menu-bar-item" onClick={() => handleNavigation('/list-active-community-sales-events')}>Active Community Sales Events</div>
+      <div className="menu-bar-item" onClick={handleGarageSalesClick}>Garage Sales</div>
       <div className="menu-bar-item" onClick={handleRegisterGarageSaleClick}>Register a Garage Sale</div>
       <div className="menu-bar-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
       {isAuthenticated ? (
