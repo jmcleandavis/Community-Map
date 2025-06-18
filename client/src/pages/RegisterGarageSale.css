@@ -1,3 +1,25 @@
+/* User Info Section */
+.user-info-section {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #4285f4;
+}
+
+.user-info-section h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.user-info-section .user-email {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
 .garage-sale-form {
   background-color: white;
   padding: 25px;
@@ -142,6 +164,7 @@
   cursor: pointer !important;
   font-size: 14px !important;
   transition: background-color 0.3s ease !important;
+  width: 15%;
 }
 
 .sale-actions .edit-button:hover {
@@ -157,6 +180,7 @@
   cursor: pointer !important;
   font-size: 14px !important;
   transition: background-color 0.3s ease !important;
+  width: 15%;
 }
 
 .sale-actions .delete-button:hover {

@@ -569,8 +569,18 @@ const RegisterGarageSale = () => {
     setFeaturedItems(updatedItems);
   };
 
+  // Get user's display name and email from userInfo with fallbacks
+  const firstName = userInfo?.fName || userInfo?.firstName || userInfo?.given_name || '';
+  const lastName = userInfo?.lName || userInfo?.lastName || '';
+  const displayName = `${firstName} ${lastName}`.trim();
+  const userEmail = userInfo?.email || userInfo?.preferred_username || '';
+
   return (
     <div className="garage-sales-container">
+      <div className="user-info-section">
+        <h2>{displayName}</h2>
+        {userEmail && <p className="user-email">{userEmail}</p>}
+      </div>
       <h1>{existingSale && !isEditing ? '' : 'Register a Garage Sale'}</h1>
       
       {loading && <div className="loading">Loading...</div>}
