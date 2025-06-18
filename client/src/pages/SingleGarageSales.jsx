@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './GarageSales.css'; // Reusing the same CSS
+import styles from './GarageSales.module.css'; // Using CSS module
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
@@ -515,35 +515,35 @@ const SingleGarageSales = () => {
       : `Select your starting point from ${salesToDisplay.length} selected garage sales:`;
 
     return (
-      <div className="garage-sales-container">
-        <h1>Optimize Route - Select Starting Point</h1>
+      <div className={styles['garage-sales']}>
+        <h1 className={styles['garage-sales__title']}>Optimize Route - Select Starting Point</h1>
         
-        <div className="optimize-info">
+        <div className={styles['garage-sales__optimize-info']}>
           <p>{displayMessage}</p>
           <button 
-            className="back-button"
+            className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
             onClick={handleBackToSelection}
           >
             ← Back to Selection
           </button>
         </div>
 
-        <div className="garage-sales-list">
+        <div className={styles['garage-sales__list']}>
           {salesToDisplay.map((sale) => (
             <div 
               key={sale.id} 
-              className="garage-sale-card clickable-card"
+              className={`${styles['garage-sales__card']} ${styles['garage-sales__card--clickable']}`}
               onClick={() => handleSelectFirstVisit(sale.id)}
             >
-              <div className="sale-content">
-                <h3>{sale.address || 'No Address Available'}</h3>
+              <div className={styles['garage-sales__card-content']}>
+                <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
                 <p>{sale.description || 'No Description Available'}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="total-count">
+        <div className={styles['garage-sales__total-count']}>
           {displayMessage}
         </div>
       </div>
@@ -553,20 +553,20 @@ const SingleGarageSales = () => {
   // Show optimized route list
   if (showRouteList) {
     return (
-      <div className="garage-sales-container">
-        <h1>Optimized Route</h1>
+      <div className={styles['garage-sales']}>
+        <h1 className={styles['garage-sales__title']}>Optimized Route</h1>
         
-        <div className="route-info">
+        <div className={styles['garage-sales__route-info']}>
           <p>Your optimized route with {optimizedRouteAddresses.length} stops:</p>
-          <div className="route-actions">
+          <div className={styles['garage-sales__route-actions']}>
             <button 
-              className="back-button"
+              className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
               onClick={handleBackToSelection}
             >
               ← Back to Selection
             </button>
             <button 
-              className="proceed-button"
+              className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
               onClick={handleProceedToMap}
             >
               View Route on Map →
@@ -574,12 +574,12 @@ const SingleGarageSales = () => {
           </div>
         </div>
 
-        <div className="route-list">
+        <div className={styles['garage-sales__route-list']}>
           {optimizedRouteAddresses.map((stop, index) => (
-            <div key={stop.id || index} className="route-stop">
-              <div className="stop-number">{index + 1}</div>
-              <div className="stop-details">
-                <h3>{stop.address}</h3>
+            <div key={stop.id || index} className={styles['garage-sales__route-stop']}>
+              <div className={styles['garage-sales__stop-number']}>{index + 1}</div>
+              <div className={styles['garage-sales__stop-details']}>
+                <h3 className={styles['garage-sales__sale-address']}>{stop.address}</h3>
                 <p>{stop.description}</p>
               </div>
             </div>
@@ -590,43 +590,49 @@ const SingleGarageSales = () => {
   }
 
   return (
-    <div className="garage-sales-container">
-      <h1>{communityName ? `${communityName}` : 'Garage Sales'}</h1>
-      {isAuthenticated && (
-        <div className="user-info">
-          <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
-          <div className="user-email">{userEmail}</div>
+    <div className={styles['garage-sales']}>
+      <h1 className={styles['garage-sales__title']}>
+        {communityName || 'Garage Sales'}
+      </h1>
+      {isAuthenticated && userInfo && (
+        <div className={styles['garage-sales__user-info']}>
+          <div className={styles['garage-sales__user-name']}>
+            {userInfo.fName} {userInfo.lName}
+          </div>
+          <div className={styles['garage-sales__user-email']}>
+            {userEmail}
+          </div>
         </div>
       )}
       
-      <div className="controls-container">
-        <div className="search-container">
+      <div className={styles['garage-sales__controls-container']}>
+        <div className={styles['search-container']}>
           <input
             type="text"
             placeholder="Search by address or description..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="search-input"
+            className={styles['garage-sales__search-input']}
           />
         </div>
 
-        <div className="selection-controls">
+        <div className={styles['garage-sales__button-row']}>
           {selectedSales.size > 0 ? (
             <>
               <button 
-                className="select-all-button"
+                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
                 onClick={handleDeselectAllWithServerUpdate}
               >
                 Deselect All
               </button>
               <button 
-                className="view-selected-button"
+                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
                 onClick={handleViewSelected}
               >
                 View Selected on Map
               </button>
               <button 
-                className="view-selected-button"
+                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
                 onClick={handleOptimizeRoute}
               >
                 Optimise Selected Route
@@ -637,29 +643,29 @@ const SingleGarageSales = () => {
       </div>
 
       {filteredSales.length === 0 ? (
-        <div className="no-results">
+        <div className={styles['garage-sales__no-results']}>
           No garage sales found matching your search.
         </div>
       ) : (
-        <div className="garage-sales-list">
+        <div className={styles['garage-sales__list']}>
           {filteredSales.map((sale) => (
-            <div key={sale.id} className="garage-sale-card">
-              <div className="card-header">
-                <label className="checkbox-container">
+            <div key={sale.id} className={styles['garage-sales__card']}>
+              <div className={styles['garage-sales__card-header']}>
+                <label className={styles['garage-sales__checkbox-container']}>
                   <input
                     type="checkbox"
                     checked={selectedSales.has(sale.id)}
                     onChange={() => handleSelectionWithAuth(sale.id)}
                   />
-                  <span className="checkmark"></span>
+                  <span className={styles['garage-sales__checkmark']}></span>
                 </label>
               </div>
-              <div className="sale-content">
-                <h3>{sale.address || 'No Address Available'}</h3>
+              <div className={styles['garage-sales__card-content']}>
+                <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
                 <p>{sale.description || 'No Description Available'}</p>
               </div>
               <button 
-                className="view-map-button"
+                className={styles['garage-sales__view-map-button']}
                 onClick={() => handleViewOnMap(sale)}
               >
                 View on Map
@@ -669,7 +675,7 @@ const SingleGarageSales = () => {
         </div>
       )}
 
-      <div className="total-count">
+      <div className={styles['garage-sales__total-count']}>
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
       </div>

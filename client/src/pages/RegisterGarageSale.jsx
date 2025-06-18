@@ -603,7 +603,7 @@ const RegisterGarageSale = () => {
       {existingSale && !isEditing ? (
         <div className="existing-sale-container">
           <div className="garage-sale-card">
-            <div className="sale-content">
+            <div className="register-sale-content">
               <h3>{existingSale.name || 'GARAGE SALE'}</h3>
               
               <div className="sale-address-details">

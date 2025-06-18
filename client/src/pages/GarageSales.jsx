@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './GarageSales.css';
+import styles from './GarageSales.module.css';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
@@ -598,22 +598,22 @@ const GarageSales = () => {
           ← Back to Selection
         </button>
 
-        <div className="garage-sales-list">
+        <div className={styles['garage-sales__list']}>
           {salesToDisplay.map((sale) => (
             <div 
               key={sale.id} 
-              className="garage-sale-card clickable-card"
+              className={`${styles['garage-sales__card']} ${styles['garage-sales__card--clickable']}`}
               onClick={() => handleSelectFirstVisit(sale.id)}
             >
-              <div className="sale-content">
-                <h3>{sale.address || 'No Address Available'}</h3>
+              <div className={styles['garage-sales__card-content']}>
+                <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
                 <p>{sale.description || 'No Description Available'}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="total-count">
+        <div className={styles['garage-sales__total-count']}>
           {displayMessage}
         </div>
       </div>
@@ -621,88 +621,90 @@ const GarageSales = () => {
   }
 
   return (
-    <div className="garage-sales-container">
-      <h1>{communityName ? `${communityName}` : 'Garage Sales'}</h1>
-      {isAuthenticated && (
-        <div className="user-info">
-          <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
-          <div className="user-email">{userEmail}</div>
+    <div className={styles['garage-sales']}>
+      <h1 className={styles['garage-sales__title']}>{communityName || 'Garage Sales'}</h1>
+      
+      {isAuthenticated && userInfo && (
+        <div className={styles['garage-sales__user-info']}>
+          <div className={styles['garage-sales__user-name']}>{userInfo.fName} {userInfo.lName}</div>
+          <div className={styles['garage-sales__user-email']}>{userEmail}</div>
         </div>
       )}
       
-      <div className="controls-container">
-        <div className="search-container">
+      <div className={styles['controls-container']}>
+        <div className={styles['search-container']}>
           <input
             type="text"
             placeholder="Search by address or description..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="search-input"
+            className={styles['garage-sales__search-input']}
           />
         </div>
 
-        <div className="selection-controls">
+        <div className={styles['garage-sales__button-row']}>
           {selectedSales.size > 0 ? (
             <>
               <button 
-                className="select-all-button"
+                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
                 onClick={handleDeselectAllWithServerUpdate}
               >
                 Deselect All
               </button>
               <button 
-                className="view-selected-button"
+                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
                 onClick={handleViewSelected}
               >
-                View and Save Selected ({selectedSales.size})
+                View Selected ({selectedSales.size})
               </button>
             </>
           ) : null}
           <button 
-            className="view-selected-button"
+            className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
             onClick={handleOptimizeRoute}
           >
-            {selectedSales.size > 0 ? 'Optimise Selected Route' : 'Optimise Full Route'}
+            {selectedSales.size > 0 ? 'Optimise Selected' : 'Optimise Full Route'}
           </button>
         </div>
       </div>
 
       {filteredSales.length === 0 ? (
-        <div className="no-results">
+        <div className={styles['garage-sales__no-results']}>
           No garage sales found matching your search.
         </div>
       ) : (
-        <div className="garage-sales-list">
-          {filteredSales.map((sale) => (
-            <div key={sale.id} className="garage-sale-card">
-              <div className="card-header">
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    checked={selectedSales.has(sale.id)}
-                    onChange={() => handleSelectionWithAuth(sale.id)}
-                  />
-                  <span className="checkmark"></span>
-                </label>
-              </div>
-              <div className="sale-content">
-                <h3>{sale.address || 'No Address Available'}</h3>
-                <p>{sale.description || 'No Description Available'}</p>
-              </div>
-              {/* <button 
-                className="view-map-button"
-                onClick={() => handleViewOnMap(sale)}
+          <div className={styles['garage-sales__list']}>
+            {filteredSales.map((sale) => (
+              <div 
+                key={sale.id} 
+                className={`${styles['garage-sales__card']} ${selectedSales.has(sale.id) ? styles['selected'] : ''}`}
+                onClick={() => handleSelectionWithAuth(sale.id)}
               >
-                View on Map
-              </button> */}
-            </div>
-          ))}
-        </div>
+                <div className={styles['garage-sales__card-header']}>
+                  <label className={styles['garage-sales__checkbox-container']}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSales.has(sale.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleSelectionWithAuth(sale.id);
+                      }}
+                    />
+                    <span className={styles['garage-sales__checkmark']}></span>
+                  </label>
+                  <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
+                </div>
+                <div className={styles['garage-sales__card-content']}>
+                  <p>{sale.description || 'No Description Available'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
       )}
 
       <div className="total-count">
         Showing {filteredSales.length} of {garageSales.length} garage sales
-        {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
+        {selectedSales.size > 0 && ` • ${selectedSales.size} selected`}
       </div>
       <LoginRequiredModal 
         isOpen={showLoginModal} 
