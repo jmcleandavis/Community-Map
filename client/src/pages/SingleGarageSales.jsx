@@ -188,6 +188,11 @@ const SingleGarageSales = () => {
     }
   }, [userAddressList, garageSales]);
 
+  // Effect to ensure showOnlySelected is set to false when component loads
+  useEffect(() => {
+    toggleDisplayMode('showAll');
+  }, []);
+
   // Handle optimize route functionality
   const handleOptimizeRoute = async () => {
     // Determine if we're optimizing the full route or just selected sales
@@ -498,6 +503,9 @@ const SingleGarageSales = () => {
   // Add debugging for filtered sales
   console.log('Filtered sales:', filteredSales);
   console.log('Number of filtered sales:', filteredSales.length);
+  console.log('Search term:', searchTerm);
+  console.log('Show only selected:', showOnlySelected);
+  console.log('Selected sales:', selectedSales);
 
   // Show optimize route selection view
   if (showOptimizeRoute) {
