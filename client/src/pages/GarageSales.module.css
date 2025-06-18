@@ -158,6 +158,67 @@
   border-bottom: 1px solid #e9ecef;
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+/* Checkbox Styles */
+.garage-sales__checkbox-container {
+  display: inline-block;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.garage-sales__checkbox-container input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.garage-sales__checkmark {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #5f6368;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.garage-sales__checkbox-container:hover input ~ .garage-sales__checkmark {
+  background-color: #f1f3f4;
+}
+
+.garage-sales__checkbox-container input:checked ~ .garage-sales__checkmark {
+  background-color: #4285f4;
+  border-color: #4285f4;
+}
+
+.garage-sales__checkmark:after {
+  content: '';
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.garage-sales__checkbox-container input:checked ~ .garage-sales__checkmark:after {
+  display: block;
 }
 
 .garage-sales__card-content {
