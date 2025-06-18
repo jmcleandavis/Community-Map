@@ -308,7 +308,40 @@ const RegisterGarageSale = () => {
         }
       } catch (err) {
         console.error('Error in form submission:', err);
-        setError(err.response?.data?.message || 'An error occurred. Please try again.');
+        
+        // Enhanced error message extraction
+        let errorMessage = 'An error occurred. Please try again.';
+        
+        if (err.response) {
+          // Server responded with error status
+          console.log('Error response:', err.response);
+          console.log('Error response data:', err.response.data);
+          console.log('Error response status:', err.response.status);
+          
+          if (err.response.data) {
+            if (typeof err.response.data === 'string') {
+              errorMessage = err.response.data;
+            } else if (err.response.data.message) {
+              errorMessage = err.response.data.message;
+            } else if (err.response.data.error) {
+              errorMessage = err.response.data.error;
+            } else if (err.response.data.details) {
+              errorMessage = err.response.data.details;
+            } else {
+              errorMessage = `Server error (${err.response.status}): ${JSON.stringify(err.response.data)}`;
+            }
+          } else {
+            errorMessage = `Server error: ${err.response.status} ${err.response.statusText}`;
+          }
+        } else if (err.request) {
+          // Network error
+          errorMessage = 'Network error: Unable to reach the server. Please check your connection.';
+        } else if (err.message) {
+          // Other error
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
         throw err;
       }
       setIsEditing(false);
@@ -407,7 +440,34 @@ const RegisterGarageSale = () => {
       setSuccess('Your garage sale has been successfully deleted.');
     } catch (err) {
       console.error('Error deleting garage sale:', err);
-      setError(err.response?.data?.message || 'Failed to delete your garage sale. Please try again.');
+      
+      // Enhanced error message extraction
+      let errorMessage = 'Failed to delete your garage sale. Please try again.';
+      
+      if (err.response) {
+        console.log('Delete error response:', err.response);
+        console.log('Delete error response data:', err.response.data);
+        
+        if (err.response.data) {
+          if (typeof err.response.data === 'string') {
+            errorMessage = err.response.data;
+          } else if (err.response.data.message) {
+            errorMessage = err.response.data.message;
+          } else if (err.response.data.error) {
+            errorMessage = err.response.data.error;
+          } else {
+            errorMessage = `Delete failed (${err.response.status}): ${JSON.stringify(err.response.data)}`;
+          }
+        } else {
+          errorMessage = `Delete failed: ${err.response.status} ${err.response.statusText}`;
+        }
+      } else if (err.request) {
+        errorMessage = 'Network error: Unable to reach the server. Please check your connection.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
