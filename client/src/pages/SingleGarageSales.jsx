@@ -14,6 +14,12 @@ const SingleGarageSales = () => {
   const [error, setError] = useState(null);
   const [communityName, setCommunityName] = useState('Individual Garage Sales');
   
+  // Optimize route state variables
+  const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
+  const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
+  const [showRouteList, setShowRouteList] = useState(false);
+  const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
+  
   const { searchTerm, handleSearchChange } = useSearch();
   const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
@@ -182,13 +188,240 @@ const SingleGarageSales = () => {
     }
   }, [userAddressList, garageSales]);
 
+  // Handle optimize route functionality
+  const handleOptimizeRoute = async () => {
+    // Determine if we're optimizing the full route or just selected sales
+    const isFullRouteOptimization = selectedSales.size === 0;
+    setOptimizeFullRoute(isFullRouteOptimization);
+    
+    console.log(`Optimizing ${isFullRouteOptimization ? 'FULL route' : 'SELECTED sales route'}`);
+    
+    // If there are selected sales and the user is authenticated, save them to the backend first
+    if (selectedSales.size > 0 && isAuthenticated && userInfo?.userId) {
+      try {
+        console.log('Saving selected sales to server before optimization for user:', userInfo.userId);
+        
+        // Filter sales to only include those that are selected
+        const selectedSalesData = garageSales
+          .filter(sale => selectedSales.has(sale.id));
+        
+        // Extract just the IDs for the server request
+        const selectedSaleIds = selectedSalesData.map(sale => sale.id);
+        
+        console.log(`Saving ${selectedSaleIds.length} selected sales for GENPUB community`);
+        
+        // Save the selected sales to the server with GENPUB as communityId
+        const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds, 'GENPUB');
+        console.log('Successfully saved selected sales to server before optimization:', response);
+      } catch (error) {
+        console.error('Error saving selected sales to server before optimization:', error);
+        // Continue with optimization even if server save fails
+        // We don't want to block the user from optimizing their route
+      }
+    }
+    
+    // Show the optimize route view to let the user select a starting point
+    setShowOptimizeRoute(true);
+  };
+
+  const handleSelectFirstVisit = async (saleId) => {
+    try {
+      console.log('Selected first visit:', saleId);
+      
+      // Get sessionId from localStorage
+      const sessionId = localStorage.getItem('sessionId');
+      
+      // Make API call to get optimized route
+      let optimizedRouteData = null;
+      
+      // Use different endpoints based on whether we're optimizing full route or selected sales
+      const endpoint = !optimizeFullRoute && selectedSales.size > 0 
+        ? `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`
+        : `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`;
+      
+      console.log(`Using endpoint: ${endpoint} (optimizeFullRoute=${optimizeFullRoute}, selectedSales.size=${selectedSales.size})`);
+      
+      // Prepare the request payload based on the endpoint
+      const payload = !optimizeFullRoute && selectedSales.size > 0
+        ? {
+            startingAddressId: saleId,
+            communityId: 'GENPUB',
+            userId: userInfo?.userId || ''
+          }
+        : {
+            startingAddressId: saleId,
+            communityId: 'GENPUB'
+          };
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'app-key': import.meta.env.VITE_APP_API_KEY,
+          'app-name': 'postman-call',
+          'sessionId': sessionId
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      }
+      
+      optimizedRouteData = await response.json();
+      console.log('API Response:', optimizedRouteData);
+      
+      // Process the response
+      if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
+        console.log('Using optimised route data:', optimizedRouteData);
+        
+        // Create a map of addresses to sale data for matching
+        const addressToSaleMap = {};
+        
+        // Build a map of normalized addresses to their corresponding sale data
+        garageSales.forEach(sale => {
+          if (sale.address) {
+            // Normalize the address by removing extra spaces and converting to lowercase
+            const normalizedAddress = sale.address.toLowerCase().replace(/\s+/g, ' ').trim();
+            addressToSaleMap[normalizedAddress] = sale;
+          }
+        });
+        
+        console.log('Address to sale map created with', Object.keys(addressToSaleMap).length, 'entries');
+        
+        // Process the ordered waypoints from the API
+        const filteredWaypoints = [];
+        console.log('Ordered waypoints from API:', optimizedRouteData.orderedWaypoints);
+        
+        // Process each waypoint in the optimized route
+        optimizedRouteData.orderedWaypoints.forEach((waypoint, index) => {
+          // Get the address from the waypoint
+          let waypointAddress = '';
+          
+          // Handle different possible formats of the waypoint data
+          if (typeof waypoint === 'string') {
+            waypointAddress = waypoint;
+          } else if (waypoint && typeof waypoint === 'object') {
+            waypointAddress = waypoint.address || waypoint.location || '';
+          }
+          
+          console.log(`Processing waypoint ${index + 1}:`, waypointAddress);
+          
+          if (waypointAddress) {
+            // Normalize the address for matching
+            const normalizedAddress = waypointAddress.toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            // Find the matching sale by address
+            const matchingSale = addressToSaleMap[normalizedAddress];
+            
+            if (matchingSale) {
+              console.log('Found matching sale with ID:', matchingSale.id);
+              
+              // Add the waypoint with the correct ID and position information
+              filteredWaypoints.push({
+                id: matchingSale.id,
+                address: matchingSale.address,
+                description: matchingSale.description,
+                position: matchingSale.position,
+                // Add the position in the optimized route
+                routeOrder: index + 1
+              });
+            } else {
+              console.log('No matching sale found for address:', waypointAddress);
+              
+              // Include the waypoint even without a matching sale
+              filteredWaypoints.push({
+                address: waypointAddress,
+                description: `Stop ${index + 1}`,
+                routeOrder: index + 1
+              });
+            }
+          }
+        });
+        
+        console.log('Filtered waypoints with route order:', filteredWaypoints);
+        
+        // Create a modified optimized route data with only selected sales
+        const filteredOptimizedRouteData = {
+          ...optimizedRouteData,
+          orderedWaypoints: filteredWaypoints
+        };
+        
+        // Store the optimized route data in localStorage for the map to use
+        localStorage.setItem('optimizedRoute', JSON.stringify(filteredOptimizedRouteData));
+        
+        // Set the optimized route addresses for display
+        setOptimizedRouteAddresses(filteredWaypoints);
+        
+        // Show the route list
+        setShowRouteList(true);
+        setShowOptimizeRoute(false);
+      } else {
+        console.log('No optimized route data received or orderedWaypoints is empty');
+        alert('No optimized route could be generated. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error getting optimised route:', error);
+      // Show user-friendly error message
+      alert(`Error optimising route: ${error.message}`);
+    }
+  };
+
+  const handleBackToSelection = () => {
+    setShowOptimizeRoute(false);
+    setShowRouteList(false);
+  };
+  
+  const handleProceedToMap = () => {
+    // Get the optimized route data from localStorage
+    const optimizedRouteData = JSON.parse(localStorage.getItem('optimizedRoute') || '{}');
+    
+    // If we have optimized route data and we're not doing a full route optimization
+    if (optimizedRouteData.orderedWaypoints && !optimizeFullRoute) {
+      // Filter the garage sales to only include those in the optimized route
+      const optimizedSales = garageSales.filter(sale => 
+        optimizedRouteData.orderedWaypoints.some(wp => wp.id === sale.id)
+      );
+      
+      // Store only the optimized sales in localStorage
+      localStorage.setItem('selectedSales', JSON.stringify(optimizedSales));
+      
+      // Make sure we're in selected sales mode
+      if (!showOnlySelected) {
+        toggleDisplayMode();
+      }
+    } else if (optimizeFullRoute) {
+      // For full route optimization, show all markers
+      toggleDisplayMode('showAll');
+    }
+    
+    // Navigate to map view with parameters for GENPUB community
+    navigate(`/?communityId=GENPUB&showOptimizedRoute=true`);
+    
+    // Close the route list view
+    setShowRouteList(false);
+  };
+
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
-    // Just update local selection state without server calls
     handleCheckboxChange(saleId);
+  };
+
+  const handleDeselectAllWithServerUpdate = async () => {
+    handleDeselectAll();
+    
+    // Also update the server if authenticated
+    if (isAuthenticated && userInfo?.userId) {
+      try {
+        await api.createUpdateUserAddressList(userInfo.userId, [], 'GENPUB');
+        console.log('Successfully cleared selections on server');
+      } catch (error) {
+        console.error('Error clearing selections on server:', error);
+      }
+    }
   };
 
   const handleViewOnMap = (sale) => {
@@ -204,68 +437,9 @@ const SingleGarageSales = () => {
     navigate(`/?communityId=GENPUB`);
   };
 
-  const handleDeselectAllWithServerUpdate = async () => {
-    // First, clear the local selections
-    handleDeselectAll();
-    
-    // Then, if user is authenticated, update the server with an empty list
-    if (isAuthenticated && userInfo?.userId) {
-      try {
-        console.log('Updating server with empty selection list for user:', userInfo.userId);
-        
-        // Call API with empty array for addressList
-        const response = await api.createUpdateUserAddressList(userInfo.userId, []);
-        console.log('Successfully updated server with empty selection list:', response);
-      } catch (error) {
-        console.error('Error updating server with empty selection list:', error);
-      }
-    }
-  };
-
-  const handleSelectAll = () => {
-    // Create a new Set with all sale IDs
-    const allSaleIds = new Set(garageSales.map(sale => sale.id));
-    setSelectedSales(allSaleIds);
-    
-    // Update server if user is authenticated
-    if (isAuthenticated && userInfo?.userId) {
-      try {
-        console.log('Saving all selections to server for user:', userInfo.userId);
-        const allSaleIdsArray = Array.from(allSaleIds);
-        api.createUpdateUserAddressList(userInfo.userId, allSaleIdsArray, 'GENPUB');
-        console.log('Successfully saved all selections to server');
-      } catch (error) {
-        console.error('Error saving all selections to server:', error);
-      }
-    }
-  };
-
-  // Add debugging for the garage sales state
-  console.log('Current garageSales state:', garageSales);
-  console.log('Number of garage sales:', garageSales.length);
-  
-  // Filter sales based on search term and display mode
-  const filteredSales = garageSales.filter(sale => {
-    // First apply search filter if there's a search term
-    const matchesSearch = !searchTerm || 
-      (sale.address && sale.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (sale.description && sale.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (sale.name && sale.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (sale.highlightedItems && sale.highlightedItems.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    // Then apply selected filter if showOnlySelected is true
-    const matchesSelected = !showOnlySelected || selectedSales.has(sale.id);
-    
-    return matchesSearch && matchesSelected;
-  });
-  
-  // Add debugging for filtered sales
-  console.log('Filtered sales:', filteredSales);
-  console.log('Number of filtered sales:', filteredSales.length);
-
   const handleViewSelected = async () => {
     // Filter sales to only include those that are in the selectedSales set
-    const selectedSalesData = filteredSales
+    const selectedSalesData = garageSales
       .filter(sale => selectedSales.has(sale.id));
 
     if (selectedSalesData.length > 0) {
@@ -302,31 +476,132 @@ const SingleGarageSales = () => {
     }
   };
 
+  // Add debugging for the garage sales state
+  console.log('Current garageSales state:', garageSales);
+  console.log('Number of garage sales:', garageSales.length);
+  
+  // Filter sales based on search term and display mode
+  const filteredSales = garageSales.filter(sale => {
+    // First apply search filter if there's a search term
+    const matchesSearch = !searchTerm || 
+      (sale.address && sale.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (sale.description && sale.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (sale.name && sale.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (sale.highlightedItems && sale.highlightedItems.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // Then apply selected filter if showOnlySelected is true
+    const matchesSelected = !showOnlySelected || selectedSales.has(sale.id);
+    
+    return matchesSearch && matchesSelected;
+  });
+  
+  // Add debugging for filtered sales
+  console.log('Filtered sales:', filteredSales);
+  console.log('Number of filtered sales:', filteredSales.length);
 
+  // Show optimize route selection view
+  if (showOptimizeRoute) {
+    const salesToDisplay = optimizeFullRoute ? filteredSales : filteredSales.filter(sale => selectedSales.has(sale.id));
+    const displayMessage = optimizeFullRoute 
+      ? `Select your starting point from ${salesToDisplay.length} garage sales:`
+      : `Select your starting point from ${salesToDisplay.length} selected garage sales:`;
+
+    return (
+      <div className="garage-sales-container">
+        <h1>Optimize Route - Select Starting Point</h1>
+        
+        <div className="optimize-info">
+          <p>{displayMessage}</p>
+          <button 
+            className="back-button"
+            onClick={handleBackToSelection}
+          >
+            ← Back to Selection
+          </button>
+        </div>
+
+        <div className="garage-sales-list">
+          {salesToDisplay.map((sale) => (
+            <div 
+              key={sale.id} 
+              className="garage-sale-card clickable-card"
+              onClick={() => handleSelectFirstVisit(sale.id)}
+            >
+              <div className="sale-content">
+                <h3>{sale.address || 'No Address Available'}</h3>
+                <p>{sale.description || 'No Description Available'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="total-count">
+          {displayMessage}
+        </div>
+      </div>
+    );
+  }
+
+  // Show optimized route list
+  if (showRouteList) {
+    return (
+      <div className="garage-sales-container">
+        <h1>Optimized Route</h1>
+        
+        <div className="route-info">
+          <p>Your optimized route with {optimizedRouteAddresses.length} stops:</p>
+          <div className="route-actions">
+            <button 
+              className="back-button"
+              onClick={handleBackToSelection}
+            >
+              ← Back to Selection
+            </button>
+            <button 
+              className="proceed-button"
+              onClick={handleProceedToMap}
+            >
+              View Route on Map →
+            </button>
+          </div>
+        </div>
+
+        <div className="route-list">
+          {optimizedRouteAddresses.map((stop, index) => (
+            <div key={stop.id || index} className="route-stop">
+              <div className="stop-number">{index + 1}</div>
+              <div className="stop-details">
+                <h3>{stop.address}</h3>
+                <p>{stop.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="garage-sales-container">
-      <h1>Individual Garage Sales</h1>
-      
-      {isAuthenticated && userInfo && (
+      <h1>{communityName ? `${communityName}` : 'Garage Sales'}</h1>
+      {isAuthenticated && (
         <div className="user-info">
           <div className="user-name">{userInfo?.fName} {userInfo?.lName}</div>
-          {userInfo?.email && <div className="user-email">{userInfo.email}</div>}
+          <div className="user-email">{userEmail}</div>
         </div>
       )}
       
-      {/* Search and filter controls */}
       <div className="controls-container">
         <div className="search-container">
           <input
             type="text"
             placeholder="Search by address or description..."
             value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={handleSearchChange}
             className="search-input"
           />
         </div>
-        
+
         <div className="selection-controls">
           {selectedSales.size > 0 ? (
             <>
@@ -334,105 +609,66 @@ const SingleGarageSales = () => {
                 className="select-all-button"
                 onClick={handleDeselectAllWithServerUpdate}
               >
-                Deselect All ({selectedSales.size})
+                Deselect All
               </button>
               <button 
                 className="view-selected-button"
                 onClick={handleViewSelected}
-                disabled={selectedSales.size === 0}
               >
                 View Selected on Map
               </button>
+              <button 
+                className="view-selected-button"
+                onClick={handleOptimizeRoute}
+              >
+                Optimise Selected Route
+              </button>
             </>
-          ) : (
-            <button 
-              className="select-all-button"
-              onClick={handleSelectAll}
-            >
-              Select All
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
-      
-      {/* Loading and error states */}
-      {loading && <div className="loading">Loading garage sales...</div>}
-      {error && <div className="error">{error}</div>}
-      
-      {/* Sales list */}
-      {!loading && !error && (
-        <>
-          {filteredSales.length === 0 ? (
-            <div className="no-results">
-              No garage sales found matching your search.
+
+      {filteredSales.length === 0 ? (
+        <div className="no-results">
+          No garage sales found matching your search.
+        </div>
+      ) : (
+        <div className="garage-sales-list">
+          {filteredSales.map((sale) => (
+            <div key={sale.id} className="garage-sale-card">
+              <div className="card-header">
+                <label className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    checked={selectedSales.has(sale.id)}
+                    onChange={() => handleSelectionWithAuth(sale.id)}
+                  />
+                  <span className="checkmark"></span>
+                </label>
+              </div>
+              <div className="sale-content">
+                <h3>{sale.address || 'No Address Available'}</h3>
+                <p>{sale.description || 'No Description Available'}</p>
+              </div>
+              <button 
+                className="view-map-button"
+                onClick={() => handleViewOnMap(sale)}
+              >
+                View on Map
+              </button>
             </div>
-          ) : (
-            <div className="garage-sales-list">
-              {filteredSales.map(sale => (
-                <div key={sale.id} className="garage-sale-card">
-                  <div className="card-header">
-                    <label className="checkbox-container">
-                      <input
-                        type="checkbox"
-                        checked={selectedSales.has(sale.id)}
-                        onChange={() => handleSelectionWithAuth(sale.id)}
-                      />
-                      <span className="checkmark"></span>
-                    </label>
-                  </div>
-                  <div className="sale-content">
-                    <h3>{sale.name || 'GARAGE SALE'}</h3>
-                    
-                    {/* Display full address with each component on its own line */}
-                    <div className="sale-address-details">
-                      {sale.fullAddress && (
-                        <>
-                          <p className="address-line">
-                            {sale.fullAddress.streetNum} {sale.fullAddress.street}
-                          </p>
-                          <p className="address-line">
-                            {sale.fullAddress.city}, {sale.fullAddress.provState} {sale.fullAddress.postalZipCode}
-                          </p>
-                        </>
-                      )}
-                      {!sale.fullAddress && <p>No Address Available</p>}
-                    </div>
-                    
-                    {sale.description && (
-                      <p className="sale-description">{sale.description}</p>
-                    )}
-                    
-                    {sale.highlightedItems && (
-                      <p className="sale-items">
-                        <strong>Featured Items:</strong> {sale.highlightedItems}
-                      </p>
-                    )}
-                  </div>
-                  <button 
-                    className="view-map-button"
-                    onClick={() => handleViewOnMap(sale)}
-                  >
-                    View on Map
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <div className="total-count">
-            Showing {filteredSales.length} of {garageSales.length} garage sales
-            {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
-          </div>
-        </>
+          ))}
+        </div>
       )}
-      
-      {/* Login modal */}
-      {showLoginModal && (
-        <LoginRequiredModal
-          onClose={() => setShowLoginModal(false)}
-          message="Please log in to save garage sales to your list."
-        />
-      )}
+
+      <div className="total-count">
+        Showing {filteredSales.length} of {garageSales.length} garage sales
+        {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
+      </div>
+      <LoginRequiredModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
     </div>
   );
 };
