@@ -707,16 +707,6 @@ const GarageSales = () => {
                 {sale.description && <p>{sale.description}</p>}
                 <p>Date: {sale.date || 'No date specified'}</p>
                 <p>Time: {sale.startTime || 'No time specified'}{sale.endTime ? ` - ${sale.endTime}` : ''}</p>
-                
-                <button 
-                  className={styles['garage-sales__view-map-button']}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewOnMap(sale);
-                  }}
-                >
-                  View on Map
-                </button>
               </div>
             </div>
           ))}
