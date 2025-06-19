@@ -1,6 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import styles from './GarageSales.module.css'; // Using CSS module
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  Checkbox, 
+  Container, 
+  FormControlLabel, 
+  Grid, 
+  IconButton, 
+  InputAdornment, 
+  Paper, 
+  TextField, 
+  Typography, 
+  useTheme,
+  useMediaQuery,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  CircularProgress,
+  Alert,
+  CardActionArea,
+  CardActions
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  Map as MapIcon,
+  Route as RouteIcon,
+  CheckBox as CheckBoxIcon,
+  CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
+  ArrowBack as ArrowBackIcon
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
@@ -507,6 +543,9 @@ const SingleGarageSales = () => {
   console.log('Show only selected:', showOnlySelected);
   console.log('Selected sales:', selectedSales);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   // Show optimize route selection view
   if (showOptimizeRoute) {
     const salesToDisplay = optimizeFullRoute ? filteredSales : filteredSales.filter(sale => selectedSales.has(sale.id));
@@ -515,175 +554,436 @@ const SingleGarageSales = () => {
       : `Select your starting point from ${salesToDisplay.length} selected garage sales:`;
 
     return (
-      <div className={styles['garage-sales']}>
-        <h1 className={styles['garage-sales__title']}>Optimize Route - Select Starting Point</h1>
-        
-        <div className={styles['garage-sales__optimize-info']}>
-          <p>{displayMessage}</p>
-          <button 
-            className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box mb={3}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Optimize Route - Select Starting Point
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            {displayMessage}
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
             onClick={handleBackToSelection}
+            sx={{ mb: 3 }}
           >
-            ← Back to Selection
-          </button>
-        </div>
+            Back to Selection
+          </Button>
+        </Box>
 
-        <div className={styles['garage-sales__list']}>
+        <Grid container spacing={2}>
           {salesToDisplay.map((sale) => (
-            <div 
-              key={sale.id} 
-              className={`${styles['garage-sales__card']} ${styles['garage-sales__card--clickable']}`}
-              onClick={() => handleSelectFirstVisit(sale.id)}
-            >
-              <div className={styles['garage-sales__card-content']}>
-                <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
-                <p>{sale.description || 'No Description Available'}</p>
-              </div>
-            </div>
+            <Grid item xs={12} key={sale.id}>
+              <Card 
+                variant="outlined"
+                sx={{
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                    cursor: 'pointer',
+                    borderColor: 'primary.main'
+                  },
+                  borderColor: 'divider'
+                }}
+                onClick={() => handleSelectFirstVisit(sale.id)}
+              >
+                <CardActionArea>
+                  <CardContent>
+                    <Typography variant="h6" component="h3" gutterBottom>
+                      {sale.address || 'No Address Available'}
+                    </Typography>
+                    {sale.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {sale.description}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
           ))}
-        </div>
+        </Grid>
 
-        <div className={styles['garage-sales__total-count']}>
-          {displayMessage}
-        </div>
-      </div>
+        <Box mt={2} textAlign="center">
+          <Typography variant="body2" color="text.secondary">
+            {displayMessage}
+          </Typography>
+        </Box>
+      </Container>
     );
   }
 
   // Show optimized route list
   if (showRouteList) {
     return (
-      <div className={styles['garage-sales']}>
-        <h1 className={styles['garage-sales__title']}>Optimized Route</h1>
-        
-        <div className={styles['garage-sales__route-info']}>
-          <p>Your optimized route with {optimizedRouteAddresses.length} stops:</p>
-          <div className={styles['garage-sales__route-actions']}>
-            <button 
-              className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box mb={4}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Optimized Route
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Your optimized route with {optimizedRouteAddresses.length} stops:
+          </Typography>
+          
+          <Box display="flex" justifyContent="space-between" mb={3} flexWrap="wrap" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
               onClick={handleBackToSelection}
+              sx={{ minWidth: 160 }}
             >
-              ← Back to Selection
-            </button>
-            <button 
-              className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
+              Back to Selection
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              endIcon={<MapIcon />}
               onClick={handleProceedToMap}
+              sx={{ minWidth: 160 }}
             >
-              View Route on Map →
-            </button>
-          </div>
-        </div>
+              View Route on Map
+            </Button>
+          </Box>
+        </Box>
 
-        <div className={styles['garage-sales__route-list']}>
-          {optimizedRouteAddresses.map((stop, index) => (
-            <div key={stop.id || index} className={styles['garage-sales__route-stop']}>
-              <div className={styles['garage-sales__stop-number']}>{index + 1}</div>
-              <div className={styles['garage-sales__stop-details']}>
-                <h3 className={styles['garage-sales__sale-address']}>{stop.address}</h3>
-                <p>{stop.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+        <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
+          <List disablePadding>
+            {optimizedRouteAddresses.map((stop, index) => (
+              <React.Fragment key={stop.id || index}>
+                <ListItem sx={{ py: 2, px: 3 }}>
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <Box 
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        bgcolor: theme.palette.primary.main,
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 500
+                      }}
+                    >
+                      {index + 1}
+                    </Box>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={stop.address || 'No Address Available'} 
+                    secondary={stop.description || ''}
+                    primaryTypographyProps={{ fontWeight: 500 }}
+                  />
+                </ListItem>
+                {index < optimizedRouteAddresses.length - 1 && <Divider component="li" />}
+              </React.Fragment>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <Box textAlign="center">
+          <CircularProgress />
+          <Typography variant="body1" mt={2}>Loading garage sales...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert 
+          severity="error" 
+          action={
+            <Button color="inherit" size="small" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      </Box>
     );
   }
 
   return (
-    <div className={styles['garage-sales']}>
-      <h1 className={styles['garage-sales__title']}>
-        {communityName || 'Garage Sales'}
-      </h1>
-      {isAuthenticated && userInfo && (
-        <div className={styles['garage-sales__user-info']}>
-          <div className={styles['garage-sales__user-name']}>
-            {userInfo.fName} {userInfo.lName}
-          </div>
-          <div className={styles['garage-sales__user-email']}>
-            {userEmail}
-          </div>
-        </div>
-      )}
-      
-      <div className={styles['garage-sales__controls-container']}>
-        <div className={styles['search-container']}>
-          <input
-            type="text"
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box mb={4}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {communityName || 'Garage Sales'}
+        </Typography>
+        
+        {isAuthenticated && userInfo && (
+          <Box mb={3}>
+            <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
+              {userInfo.fName} {userInfo.lName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {userEmail}
+            </Typography>
+          </Box>
+        )}
+        
+        <Box 
+          sx={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 2,
+            mb: 3,
+            alignItems: isMobile ? 'stretch' : 'flex-end'
+          }}
+        >
+          <TextField
+            fullWidth
+            variant="outlined"
             placeholder="Search by address or description..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className={styles['garage-sales__search-input']}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              flex: 1,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'background.paper',
+              },
+            }}
           />
-        </div>
-
-        <div className={styles['garage-sales__button-row']}>
-          {selectedSales.size > 0 ? (
-            <>
-              <button 
-                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--secondary']}`}
-                onClick={handleDeselectAllWithServerUpdate}
-              >
-                Deselect All
-              </button>
-              <button 
-                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
-                onClick={handleViewSelected}
-              >
-                View Selected on Map
-              </button>
-              <button 
-                className={`${styles['garage-sales__button']} ${styles['garage-sales__button--primary']}`}
+          
+          <Box 
+            sx={{
+              display: 'flex',
+              gap: 1,
+              flexWrap: 'wrap',
+              justifyContent: isMobile ? 'stretch' : 'flex-end',
+              '& > *': {
+                flex: isMobile ? '1 1 100%' : '0 0 auto',
+              }
+            }}
+          >
+            {selectedSales.size > 0 && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleDeselectAllWithServerUpdate}
+                  startIcon={<CloseIcon />}
+                  fullWidth={isMobile}
+                >
+                  Deselect All
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleViewSelected}
+                  startIcon={<MapIcon />}
+                  fullWidth={isMobile}
+                >
+                  View Selected ({selectedSales.size})
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleOptimizeRoute}
+                  startIcon={<RouteIcon />}
+                  fullWidth={isMobile}
+                >
+                  Optimize Route
+                </Button>
+              </>
+            )}
+            {selectedSales.size === 0 && (
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={handleOptimizeRoute}
+                startIcon={<RouteIcon />}
+                fullWidth={isMobile}
               >
-                Optimise Selected Route
-              </button>
-            </>
-          ) : null}
-        </div>
-      </div>
+                Optimize Full Route
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
       {filteredSales.length === 0 ? (
-        <div className={styles['garage-sales__no-results']}>
-          No garage sales found matching your search.
-        </div>
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="200px"
+          textAlign="center"
+        >
+          <Typography variant="body1" color="text.secondary">
+            No garage sales found matching your search.
+          </Typography>
+        </Box>
       ) : (
-        <div className={styles['garage-sales__list']}>
+        <Grid container spacing={2} sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {filteredSales.map((sale) => (
-            <div key={sale.id} className={styles['garage-sales__card']}>
-              <div className={styles['garage-sales__card-header']}>
-                <label className={styles['garage-sales__checkbox-container']}>
-                  <input
-                    type="checkbox"
-                    checked={selectedSales.has(sale.id)}
-                    onChange={() => handleSelectionWithAuth(sale.id)}
-                  />
-                  <span className={styles['garage-sales__checkmark']}></span>
-                </label>
-              </div>
-              <div className={styles['garage-sales__card-content']}>
-                <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
-                <p>{sale.description || 'No Description Available'}</p>
-              </div>
-              <button 
-                className={styles['garage-sales__view-map-button']}
-                onClick={() => handleViewOnMap(sale)}
+            <Grid item xs={12} sm={6} md={4} key={sale.id} sx={{ display: 'flex' }}>
+              <Card 
+                variant="outlined"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  height: '100%',
+                  minHeight: '280px',
+                  transition: 'all 0.2s ease-in-out',
+                  borderColor: selectedSales.has(sale.id) ? 'primary.main' : 'divider',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                    borderColor: 'primary.main'
+                  },
+                }}
               >
-                View on Map
-              </button>
-            </div>
+                <CardActionArea 
+                  onClick={() => handleSelectionWithAuth(sale.id)}
+                  sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    height: '100%',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <CardHeader
+                    avatar={
+                      <Checkbox
+                        checked={selectedSales.has(sale.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectionWithAuth(sale.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        icon={<CheckBoxOutlineBlankIcon />}
+                        checkedIcon={<CheckBoxIcon color="primary" />}
+                        inputProps={{ 'aria-label': 'Select garage sale' }}
+                      />
+                    }
+                    title={
+                      <Typography 
+                        variant="subtitle1" 
+                        component="div" 
+                        noWrap
+                        sx={{
+                          fontWeight: 500,
+                          color: 'text.primary'
+                        }}
+                      >
+                        {sale.address || 'No Address Available'}
+                      </Typography>
+                    }
+                    sx={{ 
+                      pb: 1,
+                      width: '100%',
+                      '& .MuiCardHeader-content': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        minWidth: 0 // Ensure text truncation works
+                      }
+                    }}
+                  />
+                  <CardContent sx={{ 
+                    pt: 0, 
+                    flexGrow: 1,
+                    overflow: 'auto',
+                    maxHeight: '180px',
+                    '&::-webkit-scrollbar': {
+                      width: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'transparent',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(0,0,0,0.2)',
+                      borderRadius: '4px',
+                    },
+                  }}>
+                    {sale.description && (
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        paragraph
+                        sx={{
+                          mb: 1.5,
+                          lineHeight: 1.5
+                        }}
+                      >
+                        {sale.description}
+                      </Typography>
+                    )}
+                    {sale.highlightedItems && (
+                      <Typography 
+                        variant="body2" 
+                        color="primary" 
+                        sx={{
+                          fontWeight: 500,
+                          mt: 'auto',
+                          pt: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider'
+                        }}
+                      >
+                        <Box component="span" fontWeight={500}>Featured Items:</Box> {sale.highlightedItems}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </CardActionArea>
+                <CardActions sx={{ 
+                  justifyContent: 'flex-end', 
+                  pt: 0,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                  backgroundColor: 'action.hover',
+                  px: 2,
+                  py: 1
+                }}>
+                  <Button 
+                    size="small" 
+                    color="primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewOnMap(sale);
+                    }}
+                    startIcon={<MapIcon fontSize="small" />}
+                  >
+                    View on Map
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       )}
 
-      <div className={styles['garage-sales__total-count']}>
-        Showing {filteredSales.length} of {garageSales.length} garage sales
-        {selectedSales.size > 0 && ` (${selectedSales.size} selected)`}
-      </div>
+      <Box mt={3} textAlign="center">
+        <Typography variant="body2" color="text.secondary">
+          Showing {filteredSales.length} of {garageSales.length} garage sales
+          {selectedSales.size > 0 && ` • ${selectedSales.size} selected`}
+        </Typography>
+      </Box>
+      
       <LoginRequiredModal 
         isOpen={showLoginModal} 
         onClose={() => setShowLoginModal(false)} 
       />
-    </div>
+    </Container>
   );
 };
 

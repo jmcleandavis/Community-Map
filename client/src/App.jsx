@@ -1,8 +1,11 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import ReactGA from 'react-ga4'; // Import react-ga4
+import ReactGA from 'react-ga4';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme/theme';
 import './App.css';
 import HamburgerMenu from './components/HamburgerMenu';
 import ConditionalMenu from './components/ConditionalMenu';
@@ -71,130 +74,133 @@ function App() {
   
 
   return (
-    <AuthProvider>
-      <LoadScript
-        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-        libraries={libraries}
-        loadingElement={<div>Loading Google Maps...</div>}
-      >
-        <GarageSalesProvider>
-          <DisplayProvider>
-            <LocationProvider>
-              <NavigationProvider>
-                <InitialPageProvider>
-                  <CommunitySalesProvider>
-                    <DocumentTitle />
-                    <div className="app">
-                      <Routes>
-                        <Route path="/loginRedirect" element={<LoginRedirect />} />
-                        <Route path="/about" element={
-                          <>
-                            <ConditionalMenu />
-                            <LandingPage />
-                          </>
-                        } />
-                        <Route path="/info" element={
-                          <>
-                            <ConditionalMenu />
-                            <InfoPage />
-                          </>
-                        } />
-                        <Route path="/help" element={
-                          <>
-                            <ConditionalMenu />
-                            <Help />
-                          </>
-                        } />
-                        <Route path="/list-active-community-sales-events" element={
-                          <>
-                            <ConditionalMenu />
-                            <ListActiveCommunitySalesEvents />
-                          </>
-                        } />
-                        <Route path="/login" element={
-                          <>
-                            <ConditionalMenu />
-                            <Login />
-                          </>
-                        } />
-                        <Route path="/reset-password" element={
-                          <>
-                            <ConditionalMenu />
-                            <PasswordReset />
-                          </>
-                        } />
-                        <Route path="/sales" element={
-                          <>
-                            <ConditionalMenu />
-                            <GarageSales />
-                          </>
-                        } />
-                        <Route path="/single-garage-sales" element={
-                          <>
-                            <ConditionalMenu />
-                            <SingleGarageSales />
-                          </>
-                        } />
-                        <Route path="/" element={
-                          <>
-                            <ConditionalMenu />
-                            <div className="map-container">
-                              <MapView
-                                mapContainerStyle={mapContainerStyle}
-                                mapOptions={mapOptions}
-                              />
-                            </div>
-                          </>
-                        } />
-                        <Route path="/landing" element={
-                          <>
-                            <ConditionalMenu />
-                            <LandingPage />
-                          </>
-                        } />
-                        <Route path="/lander" element={<LanderRedirect />} />
-                        <Route path="/admin/community-sales" element={
-                          <ProtectedRouteWrapper>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <LoadScript
+          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          libraries={libraries}
+          loadingElement={<div>Loading Google Maps...</div>}
+        >
+          <GarageSalesProvider>
+            <DisplayProvider>
+              <LocationProvider>
+                <NavigationProvider>
+                  <InitialPageProvider>
+                    <CommunitySalesProvider>
+                      <DocumentTitle />
+                      <div className="app">
+                        <Routes>
+                          <Route path="/loginRedirect" element={<LoginRedirect />} />
+                          <Route path="/about" element={
                             <>
                               <ConditionalMenu />
-                              <CommunitySalesAdmin />
+                              <LandingPage />
                             </>
-                          </ProtectedRouteWrapper>
-                        } />
-                        <Route path="/admin/sales" element={
-                          <ProtectedRouteWrapper>
+                          } />
+                          <Route path="/info" element={
                             <>
                               <ConditionalMenu />
-                              <GarageSalesAdmin />
+                              <InfoPage />
                             </>
-                          </ProtectedRouteWrapper>
-                        } />
-                        <Route path="/admin/bulk-upload" element={
-                          <ProtectedRouteWrapper>
+                          } />
+                          <Route path="/help" element={
                             <>
                               <ConditionalMenu />
-                              <GarageSalesBulkUpload />
+                              <Help />
                             </>
-                          </ProtectedRouteWrapper>
-                        } />
-                        <Route path="/register-garage-sale" element={
-                          <ProtectedRouteWrapper>
+                          } />
+                          <Route path="/list-active-community-sales-events" element={
                             <>
                               <ConditionalMenu />
-                              <RegisterGarageSale />
+                              <ListActiveCommunitySalesEvents />
                             </>
-                          </ProtectedRouteWrapper>
-                        } />
-                      </Routes>
-                    </div>
-                  </CommunitySalesProvider>
-                </InitialPageProvider>
-              </NavigationProvider>
-            </LocationProvider>
-          </DisplayProvider>
-        </GarageSalesProvider>
-      </LoadScript>
-    </AuthProvider>
+                          } />
+                          <Route path="/login" element={
+                            <>
+                              <ConditionalMenu />
+                              <Login />
+                            </>
+                          } />
+                          <Route path="/reset-password" element={
+                            <>
+                              <ConditionalMenu />
+                              <PasswordReset />
+                            </>
+                          } />
+                          <Route path="/sales" element={
+                            <>
+                              <ConditionalMenu />
+                              <GarageSales />
+                            </>
+                          } />
+                          <Route path="/single-garage-sales" element={
+                            <>
+                              <ConditionalMenu />
+                              <SingleGarageSales />
+                            </>
+                          } />
+                          <Route path="/" element={
+                            <>
+                              <ConditionalMenu />
+                              <div className="map-container">
+                                <MapView
+                                  mapContainerStyle={mapContainerStyle}
+                                  mapOptions={mapOptions}
+                                />
+                              </div>
+                            </>
+                          } />
+                          <Route path="/landing" element={
+                            <>
+                              <ConditionalMenu />
+                              <LandingPage />
+                            </>
+                          } />
+                          <Route path="/lander" element={<LanderRedirect />} />
+                          <Route path="/admin/community-sales" element={
+                            <ProtectedRouteWrapper>
+                              <>
+                                <ConditionalMenu />
+                                <CommunitySalesAdmin />
+                              </>
+                            </ProtectedRouteWrapper>
+                          } />
+                          <Route path="/admin/sales" element={
+                            <ProtectedRouteWrapper>
+                              <>
+                                <ConditionalMenu />
+                                <GarageSalesAdmin />
+                              </>
+                            </ProtectedRouteWrapper>
+                          } />
+                          <Route path="/admin/bulk-upload" element={
+                            <ProtectedRouteWrapper>
+                              <>
+                                <ConditionalMenu />
+                                <GarageSalesBulkUpload />
+                              </>
+                            </ProtectedRouteWrapper>
+                          } />
+                          <Route path="/register-garage-sale" element={
+                            <ProtectedRouteWrapper>
+                              <>
+                                <ConditionalMenu />
+                                <RegisterGarageSale />
+                              </>
+                            </ProtectedRouteWrapper>
+                          } />
+                        </Routes>
+                      </div>
+                    </CommunitySalesProvider>
+                  </InitialPageProvider>
+                </NavigationProvider>
+              </LocationProvider>
+            </DisplayProvider>
+          </GarageSalesProvider>
+        </LoadScript>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
