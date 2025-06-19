@@ -52,10 +52,10 @@ function Help() {
         </div>
       </section>
 
-      {/* <section className="help-section">
+      <section className="help-section">
         <h2>Need More Help?</h2>
-        <p>If you have any questions or need additional assistance, please contact us at support@communitymap.com</p>
-      </section> */}
+        <p>If you have any questions or need additional assistance, or have any suggestions, please contact us at <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a></p>
+      </section>
     </div>
   );
 }
