@@ -38,8 +38,7 @@ const InfoPage = () => {
             </div>
           </div>
           <div className="version-info">
-            <h3>Version</h3>
-            <p>1.0.0</p>
+            <p>🎉 Thanks for checking out the very first version of our app! We hope it made your garage sale adventures just a little more fun (and a lot more efficient). We're always looking to make things better, so if you have ideas, suggestions, or just want to say hi, drop me a line at <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a>. We'd love to hear from you—constructive feedback or wild praise, we're not picky! 😄</p>
           </div>
           {/* <div className="links">
             <h3>Quick Links</h3>
