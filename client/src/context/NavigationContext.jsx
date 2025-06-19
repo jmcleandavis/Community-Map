@@ -8,9 +8,19 @@ export const useNavigation = () => {
 };
 
 export const NavigationProvider = ({ children }) => {
-  const [fromLanding, setFromLanding] = useState(false);
+  // Check sessionStorage for shouldShowMenuBar flag on initial load
+  const [fromLanding, setFromLanding] = useState(() => {
+    return sessionStorage.getItem('shouldShowMenuBar') === 'true' || false;
+  });
   const [fromMap, setFromMap] = useState(false);
   const location = useLocation();
+  
+  // Clear the sessionStorage flag after reading it
+  useEffect(() => {
+    if (sessionStorage.getItem('shouldShowMenuBar') === 'true') {
+      sessionStorage.removeItem('shouldShowMenuBar');
+    }
+  }, []);
 
   // Check if the user is on the landing page or came from it
   useEffect(() => {

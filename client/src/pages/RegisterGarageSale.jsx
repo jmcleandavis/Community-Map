@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '../context/NavigationContext';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import './RegisterGarageSale.css'; // Use dedicated CSS for this component
 import api from '../utils/api';
@@ -8,6 +9,7 @@ import api from '../utils/api';
 const RegisterGarageSale = () => {
   const navigate = useNavigate();
   const { isAuthenticated, userInfo } = useAuth();
+  const { setFromLanding } = useNavigation();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -270,7 +272,12 @@ const RegisterGarageSale = () => {
           // Update existing garage sale
           console.log('Updating existing garage sale with data:', JSON.stringify(saleData, null, 2));
           apiResponse = await api.updateGarageSale(existingSale.id, saleData);
-          setSuccess('Your garage sale has been updated successfully!');
+          // Set fromLanding to true and persist in sessionStorage
+          setFromLanding(true);
+          // Store in sessionStorage to persist across page reload
+          sessionStorage.setItem('shouldShowMenuBar', 'true');
+          // Force a full page reload to refresh all components
+          window.location.reload();
         } else {
           // Create new garage sale
           console.log('Creating new garage sale with data:', JSON.stringify(saleData, null, 2));
