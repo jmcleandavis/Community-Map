@@ -928,6 +928,8 @@ const GarageSales = () => {
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     overflow: 'hidden',
                     '&:hover': {
                       overflow: 'auto',
@@ -949,7 +951,14 @@ const GarageSales = () => {
                         color="text.secondary" 
                         sx={{
                           lineHeight: 1.5,
-                          mt: 1
+                          textAlign: 'center',
+                          width: '100%',
+                          p: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '100%',
+                          boxSizing: 'border-box'
                         }}
                       >
                         {sale.description}

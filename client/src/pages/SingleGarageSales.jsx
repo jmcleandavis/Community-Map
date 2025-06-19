@@ -862,8 +862,15 @@ const SingleGarageSales = () => {
                     overflow: 'hidden'
                   }}
                 >
-                  <CardHeader
-                    avatar={
+                  <Box sx={{ position: 'relative', width: '100%' }}>
+                    <Box 
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        zIndex: 1,
+                      }}
+                    >
                       <Checkbox
                         checked={selectedSales.has(sale.id)}
                         onChange={(e) => {
@@ -875,35 +882,45 @@ const SingleGarageSales = () => {
                         checkedIcon={<CheckBoxIcon color="primary" />}
                         inputProps={{ 'aria-label': 'Select garage sale' }}
                       />
-                    }
-                    title={
-                      <Typography 
-                        variant="subtitle1" 
-                        component="div" 
-                        noWrap
-                        sx={{
-                          fontWeight: 500,
-                          color: 'text.primary'
-                        }}
-                      >
-                        {sale.address || 'No Address Available'}
-                      </Typography>
-                    }
-                    sx={{ 
-                      pb: 1,
-                      width: '100%',
-                      '& .MuiCardHeader-content': {
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        minWidth: 0 // Ensure text truncation works
+                    </Box>
+                    <CardHeader
+                      title={
+                        <Box sx={{ width: '100%', pt: 1 }}>
+                          <Box sx={{ height: 40 }} /> {/* Creates space for the checkbox */}
+                          <Typography 
+                            variant="subtitle1" 
+                            component="div"
+                            sx={{
+                              fontWeight: 500,
+                              color: 'text.primary',
+                              width: '100%'
+                            }}
+                          >
+                            {sale.address || 'No Address Available'}
+                          </Typography>
+                        </Box>
                       }
-                    }}
-                  />
+                      sx={{ 
+                        pb: 1,
+                        width: '100%',
+                        '& .MuiCardHeader-content': {
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          width: '100%'
+                        }
+                      }}
+                    />
+                  </Box>
                   <CardContent sx={{ 
                     pt: 0, 
                     flexGrow: 1,
-                    overflow: 'auto',
-                    maxHeight: '180px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    '&:hover': {
+                      overflow: 'auto',
+                    },
                     '&::-webkit-scrollbar': {
                       width: '4px',
                     },
@@ -919,10 +936,17 @@ const SingleGarageSales = () => {
                       <Typography 
                         variant="body2" 
                         color="text.secondary" 
-                        paragraph
                         sx={{
-                          mb: 1.5,
-                          lineHeight: 1.5
+                          lineHeight: 1.5,
+                          textAlign: 'center',
+                          width: '100%',
+                          p: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '100%',
+                          boxSizing: 'border-box',
+                          mb: 1.5
                         }}
                       >
                         {sale.description}
@@ -936,8 +960,13 @@ const SingleGarageSales = () => {
                           fontWeight: 500,
                           mt: 'auto',
                           pt: 1,
+                          px: 2,
+                          pb: 1,
                           borderTop: '1px solid',
-                          borderColor: 'divider'
+                          borderColor: 'divider',
+                          textAlign: 'center',
+                          width: '100%',
+                          boxSizing: 'border-box'
                         }}
                       >
                         <Box component="span" fontWeight={500}>Featured Items:</Box> {sale.highlightedItems}
