@@ -620,18 +620,25 @@ const GarageSales = () => {
     );
   }
 
+  // Main component return
   return (
     <div className={styles['garage-sales']}>
-      <h1 className={styles['garage-sales__title']}>{communityName || 'Garage Sales'}</h1>
+      <h1 className={styles['garage-sales__title']}>
+        {communityName || 'Garage Sales'}
+      </h1>
       
       {isAuthenticated && userInfo && (
         <div className={styles['garage-sales__user-info']}>
-          <div className={styles['garage-sales__user-name']}>{userInfo.fName} {userInfo.lName}</div>
-          <div className={styles['garage-sales__user-email']}>{userEmail}</div>
+          <div className={styles['garage-sales__user-name']}>
+            {userInfo.fName} {userInfo.lName}
+          </div>
+          <div className={styles['garage-sales__user-email']}>
+            {userEmail}
+          </div>
         </div>
       )}
       
-      <div className={styles['controls-container']}>
+      <div className={styles['garage-sales__controls-container']}>
         <div className={styles['search-container']}>
           <input
             type="text"
@@ -673,39 +680,54 @@ const GarageSales = () => {
           No garage sales found matching your search.
         </div>
       ) : (
-          <div className={styles['garage-sales__list']}>
-            {filteredSales.map((sale) => (
-              <div 
-                key={sale.id} 
-                className={`${styles['garage-sales__card']} ${selectedSales.has(sale.id) ? styles['selected'] : ''}`}
-                onClick={() => handleSelectionWithAuth(sale.id)}
-              >
-                <div className={styles['garage-sales__card-header']}>
-                  <label className={styles['garage-sales__checkbox-container']}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSales.has(sale.id)}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleSelectionWithAuth(sale.id);
-                      }}
-                    />
-                    <span className={styles['garage-sales__checkmark']}></span>
-                  </label>
-                  <h3 className={styles['garage-sales__sale-address']}>{sale.address || 'No Address Available'}</h3>
-                </div>
-                <div className={styles['garage-sales__card-content']}>
-                  <p>{sale.description || 'No Description Available'}</p>
-                </div>
+        <div className={styles['garage-sales__list']}>
+          {filteredSales.map((sale) => (
+            <div 
+              key={sale.id} 
+              className={`${styles['garage-sales__card']} ${selectedSales.has(sale.id) ? styles['selected'] : ''}`}
+              onClick={() => handleSelectionWithAuth(sale.id)}
+            >
+              <div className={styles['garage-sales__card-header']}>
+                <label className={styles['garage-sales__checkbox-container']}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSales.has(sale.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleSelectionWithAuth(sale.id);
+                    }}
+                  />
+                  <span className={styles['garage-sales__checkmark']}></span>
+                </label>
+                <h3 className={styles['garage-sales__sale-address']}>
+                  {sale.address || 'No Address Available'}
+                </h3>
               </div>
-            ))}
-          </div>
+              <div className={styles['garage-sales__card-content']}>
+                {sale.description && <p>{sale.description}</p>}
+                <p>Date: {sale.date || 'No date specified'}</p>
+                <p>Time: {sale.startTime || 'No time specified'}{sale.endTime ? ` - ${sale.endTime}` : ''}</p>
+                
+                <button 
+                  className={styles['garage-sales__view-map-button']}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewOnMap(sale);
+                  }}
+                >
+                  View on Map
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
-      <div className="total-count">
+      <div className={styles['garage-sales__total-count']}>
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {selectedSales.size > 0 && ` • ${selectedSales.size} selected`}
       </div>
+      
       <LoginRequiredModal 
         isOpen={showLoginModal} 
         onClose={() => setShowLoginModal(false)} 
