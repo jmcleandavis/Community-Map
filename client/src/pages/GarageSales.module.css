@@ -1,3 +1,9 @@
+/* TEST STYLE - REMOVE LATER */
+.test-css-loaded {
+  color: red !important;
+  font-size: 1px !important;
+}
+
 /* Main Container */
 .garage-sales {
   max-width: 1200px;
@@ -42,31 +48,46 @@
 
 /* Controls */
 .garage-sales__controls-container {
-  margin-bottom: 5px;
+  margin-bottom: 50px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   width: 100%;
+  gap: 10px; /* Add space between flex items */
+  border: 2px solid red !important; /* Debug */
+  box-sizing: border-box !important;
+  padding: 0; /* Ensure no padding is constraining content */
 }
 
 /* Search Container */
-.search-container {
-  width: 98%;
-  margin-bottom: 10px;
+.garage-sales__controls-container .search-container {
+  flex: 1 1 auto !important; /* Allow to grow and shrink */
+  min-width: 0; /* Required for flex items to shrink below content size */
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  border: 2px solid blue !important; /* Debug */
+  box-sizing: border-box !important;
 }
 
 .garage-sales__search-input {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  transition: border-color 0.3s ease;
+  width: 100% !important;
+  min-width: 100% !important;
+  padding: 12px !important;
+  font-size: 16px !important;
+  border: 2px solid green !important; /* Debug */
+  border-radius: 6px !important;
+  transition: border-color 0.3s ease !important;
+  outline: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  display: block !important; /* Ensure it's a block element */
 }
 
 .garage-sales__search-input:focus {
-  outline: none;
-  border-color: #4285f4;
+  border-color: #4285f4 !important;
+  box-shadow: none !important;
 }
 
 /* Button Row */
@@ -884,8 +905,12 @@
 
 .search-container {
   /* Same as .garage-sales__search */
-  flex: 1 1 300px;
-  max-width: 500px;
+  margin: 0 0 0 0;
+  width: 98%;
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  margin-left: 0;
 }
 
 .garage-sales-list {
