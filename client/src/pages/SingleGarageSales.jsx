@@ -41,6 +41,7 @@ import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
 import { useSelection } from '../context/SelectionContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import api from '../utils/api';
 
@@ -48,7 +49,8 @@ const SingleGarageSales = () => {
   const [garageSales, setGarageSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [communityName, setCommunityName] = useState('search for a Garage Sales');
+  const [localCommunityName, setLocalCommunityName] = useState('search for a Garage Sales');
+  const { setCommunityName } = useCommunitySales();
 
   // Optimize route state variables
   const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
@@ -512,6 +514,9 @@ const SingleGarageSales = () => {
       // Store the selected sales in localStorage
       localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
 
+      // Set the community name to 'Garage Sales' for the title
+      setCommunityName('Garage Sales');
+      
       // Navigate to the map view with the GENPUB community ID
       navigate('/?communityId=GENPUB');
     } else {
@@ -719,7 +724,7 @@ const SingleGarageSales = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box mb={4}>
     
-    <h2 style={{fontWeight: "200"}}>    Hi {userInfo?.fName || ''}, {communityName || 'Garage Sales'}</h2>  
+    <h2 style={{fontWeight: "200"}}>    Hi {userInfo?.fName || ''}, {localCommunityName || 'Garage Sales'}</h2>  
 
 {/* 
         {isAuthenticated && userInfo && (
