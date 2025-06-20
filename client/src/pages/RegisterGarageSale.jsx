@@ -879,55 +879,6 @@ const RegisterGarageSale = () => {
         </form>
       )}
       
-      {/* Display User's Garage Sale */}
-      {genpubSales.length > 0 && (
-        <div className="genpub-sales-container">
-          {genpubSales.map((sale) => (
-            <div key={sale.id} className="user-garage-sale-card">
-              <div className="sale-header">
-                <h3>{sale.name}</h3>
-                <div className="sale-actions">
-                  <button className="edit-button" onClick={handleEditClick}>Edit</button>
-                  <button className="delete-button" onClick={handleDelete}>Delete</button>
-                </div>
-              </div>
-              
-              <div className="sale-details">
-                <div className="address-section">
-                  <h4>Address:</h4>
-                  <p>{sale.address.streetNum} {sale.address.street}</p>
-                  {sale.address.unit && <p>Unit: {sale.address.unit}</p>}
-                  <p>{sale.address.city}, {sale.address.provState} {sale.address.postalZipCode}</p>
-                </div>
-                
-                <div className="dates-section">
-                  <h4>Dates:</h4>
-                  <p><strong>Start:</strong> {new Date(sale.dateTime.start).toLocaleDateString()}</p>
-                  <p><strong>End:</strong> {new Date(sale.dateTime.end).toLocaleDateString()}</p>
-                </div>
-                
-                {sale.description && (
-                  <div className="description-section">
-                    <h4>Description:</h4>
-                    <p>{sale.description}</p>
-                  </div>
-                )}
-                
-                {sale.highlightedItems && sale.highlightedItems.length > 0 && (
-                  <div className="featured-items-section">
-                    <h4>Featured Items:</h4>
-                    <ul>
-                      {sale.highlightedItems.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
