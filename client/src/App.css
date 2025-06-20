@@ -102,15 +102,16 @@ body {
   }
 }
 /* Add this to your App.css or relevant stylesheet */
-
 .landing-layout-container {
-  display: flex; /* Makes the container a flex container */
-  align-items: center; /* Vertically aligns items in the center */
-  gap: 40px; /* Adds space between the image and the text (e.g., 40px) */
-  padding: 10px; /* Optional: Add some padding around the container */
-  max-width: 1200px; /* Optional: Limit the total width for the content */
-  margin: 40px auto; /* Optional: Center the container horizontally with margin from top/bottom */
-  flex-wrap: wrap; /* Allows items to wrap onto the next line on smaller screens */
+  display: flex; /* Already existing */
+  gap: 40px; /* Already existing */
+  padding: 20px; /* Already existing */
+  max-width: 1200px; /* Already existing */
+  margin: 40px auto; /* Already existing */
+  flex-wrap: wrap; /* Already existing */
+  justify-content: center; /* Already existing */
+  /* CRITICAL CHANGE: This ensures all flex items (your .help-column cards) stretch to the height of the tallest item in the row. */
+  align-items: stretch;
 }
 
 .landing-image {
