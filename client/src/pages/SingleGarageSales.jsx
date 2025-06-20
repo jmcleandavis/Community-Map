@@ -812,17 +812,7 @@ const SingleGarageSales = () => {
         </Button>
       </>
     )}
-    {selectedSales.size === 0 && (
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleOptimizeRoute}
-        startIcon={<RouteIcon />}
-        fullWidth={isMobile}
-      >
-        Optimize Full Route
-      </Button>
-    )}
+    {/* Removed Optimize Full Route button as requested */}
   </Box>
 </Box>
       </Box>
