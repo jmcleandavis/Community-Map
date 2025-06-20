@@ -657,6 +657,9 @@ const RegisterGarageSale = () => {
             <button className="edit-button" onClick={handleEditClick}>Edit Garage Sale</button>
             <button className="delete-button" onClick={handleDelete}>Delete Garage Sale</button>
           </div>
+          <div className="sale-note">
+            <p>To create additional garage sales, please visit the <strong>Community Sales Page</strong>.</p>
+          </div>
         </div>
       ) : (
         <form className="garage-sale-form" onSubmit={handleSubmit}>
@@ -878,7 +881,6 @@ const RegisterGarageSale = () => {
           </div>
         </form>
       )}
-      
     </div>
   );
 };
