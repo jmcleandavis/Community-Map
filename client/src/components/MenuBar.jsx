@@ -101,7 +101,7 @@ const MenuBar = () => {
         <div className="menu-bar-item" style={{ marginLeft: 'auto' }}></div>
 
         {isAuthenticated ? (
-          <div className="menu-bar-item">Logout</div>
+          <div className="menu-bar-item" onClick={handleLogout}>Logout</div>
         ) : (
           <div className="menu-bar-item-button-wrapper">
             <button className=" menu-bar-item-button menu-bar-item-loginButton" onClick={() => handleNavigation('/login?from=landing')} >Login</button>
