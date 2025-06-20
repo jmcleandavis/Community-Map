@@ -22,7 +22,7 @@ const InfoPage = () => {
         <div className="content">
           <div className="about-section">
             <h3>About Community Map</h3>
-            <p>An app that maps out garage sales in your community during a community garage sale event.</p>
+            <p>An app that maps out garage sales, both individual listings and community-wide events, making it easy to find and plan your garage sale adventures.</p>
           </div>
           <div className="developed-by">
             <h3>Developed By</h3>
@@ -38,7 +38,7 @@ const InfoPage = () => {
             </div>
           </div>
           <div className="version-info">
-            <p>🎉 Thanks for checking out the very first version of our app! We hope it made your garage sale adventures just a little more fun (and a lot more efficient). We're always looking to make things better, so if you have ideas, suggestions, or just want to say hi, drop me a line at <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a>. We'd love to hear from you—constructive feedback or wild praise, we're not picky! 😄</p>
+            <p>🎉 Thanks for checking out the very first version of our app! We hope it made your garage sale adventures just a little more fun (and a lot more efficient). We're always looking to make things better, so if you have ideas, suggestions, or just want to say hi, drop us a line. We'd love to hear from you—constructive feedback or wild praise, we're not picky! 😄</p>
           </div>
           {/* <div className="links">
             <h3>Quick Links</h3>
