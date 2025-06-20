@@ -73,13 +73,16 @@ const MenuBar = () => {
   const handleLogout = () => {
     logout();
     setFromLanding(true); // Maintain the menu bar even after logout
-
-    // When on landing/about page, stay there after logout
-    if (location.pathname === '/landing' || location.pathname === '/about') {
-      navigate(location.pathname); // Stay on the current page
-    } else {
-      navigate('/landing'); // Otherwise go to landing page
-    }
+    
+    // Force a small delay to ensure state updates before navigation
+    setTimeout(() => {
+      // When on landing/about page, stay there after logout
+      if (location.pathname === '/landing' || location.pathname === '/about') {
+        window.location.href = location.pathname; // Full page reload to reset state
+      } else {
+        window.location.href = '/landing'; // Full page reload to reset state
+      }
+    }, 100);
   };
 
   // If screen is small, render hamburger menu instead
