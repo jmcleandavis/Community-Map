@@ -322,19 +322,37 @@ async function getUserInfo(email) {
 const createGarageSale = async (saleData) => {
   try {
     const sessionId = await getSessionId();
+    console.log('Sending sale data to API:', JSON.stringify(saleData, null, 2));
+    
     const response = await mapsApi.post('/v1/createAddress', saleData, {
       headers: {
-        'sessionId': sessionId
+        'sessionId': sessionId,
+        'Content-Type': 'application/json'
       }
     });
     return response.data;
   } catch (error) {
-    console.error('Create garage sale error:', error);
+    console.error('Create garage sale error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.config?.headers,
+      url: error.config?.url,
+      method: error.config?.method,
+      data: error.config?.data
+    });
+    
     if (error.response?.data?.code === 'ERR_MAPS001' && 
         error.response?.data?.errorMsg === 'Existing Address') {
       throw new Error('A garage sale already exists at this address');
     }
-    throw error;
+    
+    // Add more specific error messages based on status code
+    if (error.response?.status === 400) {
+      throw new Error(`Invalid request: ${error.response.data?.message || 'Please check your input and try again'}`);
+    }
+    
+    throw new Error(error.response?.data?.message || 'Failed to create garage sale. Please try again.');
   }
 };
 

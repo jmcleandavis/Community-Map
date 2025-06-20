@@ -43,7 +43,7 @@ const GarageSalesAdmin = () => {
     address: '',
     description: ''
   });
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState(null);
   
   // --- QR Code Section ---
   // Prefer context values if available, fallback to local state
@@ -190,6 +190,7 @@ const GarageSalesAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError(null);
     try {
       if (editingSale) {
         // Prepare the update data based on what changed
@@ -220,30 +221,55 @@ const GarageSalesAdmin = () => {
         // Only make the API call if there are changes to update (community ID is always included)
         await api.updateGarageSale(editingSale.id, updateData);
       } else {
-        // Create new garage sale
+        // Parse the address from the form
         const addressData = parseAddress(formData.address);
+        
+        // Create the sale data object with all required fields
         const saleData = {
           address: {
-            street: addressData.street,
-            streetNum: addressData.streetNumber,
-            city: addressData.city,
-            provState: addressData.state,
+            street: addressData.street || '',
+            streetNum: addressData.streetNumber || '',
+            city: addressData.city || '',
+            provState: addressData.state || '',
             postalZipCode: addressData.postalCode || '',
-            unit: addressData.unit || ''
+            unit: addressData.unit || '',
+            country: 'Canada' // Ensure country is included
           },
           description: formData.description || 'GARAGE SALE',
-          highlightedItems: formData.featuredItems || [],
+          highlightedItems: [], // Default to empty array if not provided
           name: formData.name || 'Garage Sale',
           community: communityId || 'GENPUB',
-          userId: userInfo?.id || userInfo?.userId,  // Get from user context
+          userId: userInfo?.id || userInfo?.userId || 'anonymous', // Ensure we have a fallback user ID
           dateTime: {
-            start: formData.startDate ? `${formData.startDate}T09:00:00` : new Date().toISOString(),
-            end: formData.endDate ? `${formData.endDate}T18:00:00` : new Date(Date.now() + 86400000).toISOString(),
+            start: (formData.startDate ? 
+              new Date(`${formData.startDate}T09:00:00-04:00`) : 
+              new Date()).toISOString().replace(/\.\d+Z$/, '').replace('Z', ''),
+            end: (formData.endDate ? 
+              new Date(`${formData.endDate}T18:00:00-04:00`) : 
+              new Date(Date.now() + 86400000)).toISOString().replace(/\.\d+Z$/, '').replace('Z', ''),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Toronto'
-          }
+          },
+          // Add date fields at the root level if needed by the API
+          startDate: formData.startDate ? 
+            new Date(`${formData.startDate}T00:00:00-04:00`).toISOString().split('T')[0] : 
+            new Date().toISOString().split('T')[0],
+          endDate: formData.endDate ? 
+            new Date(`${formData.endDate}T23:59:59-04:00`).toISOString().split('T')[0] : 
+            new Date(Date.now() + 86400000).toISOString().split('T')[0],
+          // Add any additional fields that might be required
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
         
-        await api.createGarageSale(saleData);
+        console.log('Creating garage sale with data:', JSON.stringify(saleData, null, 2));
+        
+        try {
+          await api.createGarageSale(saleData);
+        } catch (error) {
+          console.error('API Error:', error.response?.data || error.message);
+          throw error; // Re-throw to be caught by the outer catch block
+        }
       }
       
       setIsAddingNew(false);
@@ -252,16 +278,13 @@ const GarageSalesAdmin = () => {
         address: '',
         description: ''
       });
-      // Force refresh the list after adding/editing
-      // Pass the communityId as the first parameter and true as the second parameter to force refresh
+      // Force refresh the list after adding/editing with the current community ID
       await fetchGarageSales(communityId, true);
     } catch (error) {
-      console.error('Error submitting garage sale:', error);
-      if (error.message === 'A garage sale already exists at this address') {
-        window.alert('A garage sale already exists at this address');
-      } else {
-        window.alert('Failed to save garage sale. Please try again.');
-      }
+      console.error('Error saving garage sale:', error);
+      setSubmitError(error.message || 'Failed to save garage sale. Please try again.');
+      // Scroll to top to show error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -389,8 +412,45 @@ const GarageSalesAdmin = () => {
         <div class="qr-container">
           <img src="${qrCodeUrl}" alt="QR Code for Community Garage Sale" />
         </div>
-        <div class="instructions">
-          <p>Scan this QR code to access the ${communityName || 'Community Garage Sale'} map on your mobile device.</p>
+        <div className={styles.adminContent}>
+        <h2>Manage Garage Sales for ${communityName || 'Community'}</h2>
+        {submitError && (
+          <div style={{
+            backgroundColor: '#ffebee',
+            color: '#c62828',
+            padding: '12px',
+            borderRadius: '4px',
+            margin: '10px 0',
+            border: '1px solid #ef9a9a',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ fontWeight: 'bold' }}>Error:</span>
+            <span>{submitError}</span>
+            <button 
+              onClick={() => setSubmitError(null)}
+              style={{
+                marginLeft: 'auto',
+                background: 'none',
+                border: 'none',
+                color: '#c62828',
+                cursor: 'pointer',
+                fontSize: '16px',
+                padding: '0 4px'
+              }}
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+            border: 1px solid #ffcccc;
+            border-radius: 4px;
+            background-color: #fff0f0
+          ">
+            ${submitError}
+          </div>
+        )}
+        <p>Scan this QR code to access the ${communityName || 'Community Garage Sale'} map on your mobile device.</p>
           <p>You can print this page or save the QR code image for distribution.</p>
         </div>
       </body>
@@ -486,6 +546,38 @@ const GarageSalesAdmin = () => {
         <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
         <div className={styles.userEmail}>{userEmail}</div>
       </div>
+      
+      {submitError && (
+        <div style={{
+          backgroundColor: '#ffebee',
+          color: '#c62828',
+          padding: '12px',
+          borderRadius: '4px',
+          margin: '10px 20px',
+          border: '1px solid #ef9a9a',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span style={{ fontWeight: 'bold' }}>Error:</span>
+          <span>{submitError}</span>
+          <button 
+            onClick={() => setSubmitError(null)}
+            style={{
+              marginLeft: 'auto',
+              background: 'none',
+              border: 'none',
+              color: '#c62828',
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '0 4px'
+            }}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
       
       <div className={styles.adminControls}>
         <div className={styles.searchContainer}>
