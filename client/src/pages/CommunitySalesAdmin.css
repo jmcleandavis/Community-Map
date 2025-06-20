@@ -507,3 +507,27 @@
     width: 100%;
   }
 }
+
+textarea#description {
+
+  font-family: inherit; 
+  font-size: inherit;   
+  color: #333; 
+  border: 1px solid #ccc; 
+  border-radius: 4px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box; 
+  resize: vertical; 
+}
+
+
+textarea#description::placeholder {
+  color: #999; 
+  font-family: inherit;
+}
+
+textarea#description:empty-or-default-value-state { 
+    color: #999; 
+    font-style: italic; 
+}

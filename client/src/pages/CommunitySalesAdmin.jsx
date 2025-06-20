@@ -435,7 +435,7 @@ const CommunitySalesAdmin = () => {
   );
 
   return (
-    <div className="sales-admin">
+    <div className="sales-admin" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <h1>Community Sales Events Administration</h1>
       
       <div className="user-info">

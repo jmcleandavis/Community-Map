@@ -12,14 +12,14 @@
 }
 
 .landing-title {
-  font-size: 3rem;
+  font-size: 36px;
   font-weight: 700;
   margin-bottom: 1rem;
   color: #2c3e50;
 }
 
 .landing-subtitle {
-  font-size: 1.5rem;
+  font-size: 20px;
   color: #7f8c8d;
   max-width: 800px;
   margin: 0 auto;
@@ -57,10 +57,12 @@
 
 .landing-section {
   margin-bottom: 4rem;
+  align: top;
 }
 
 .landing-section-title {
-  font-size: 2rem;
+  font-size: 24px;
+  font-weight: 600;
   color: #2c3e50;
   margin-bottom: 1.5rem;
   text-align: center;
