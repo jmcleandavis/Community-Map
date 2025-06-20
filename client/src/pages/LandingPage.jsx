@@ -74,95 +74,95 @@ const LandingPage = () => {
           </section>
         </div>
 
-<hr />
+        <hr />
 
-          <div className="landing-layout-container">
-            {/* Community Sale */}
-            <section className="landing-section">
-              <h2 className="landing-section-title">How Community Sales Work</h2>
-              <div className="landing-steps">
-                <div className="landing-step">
-                  <div className="step-number">1</div>
-                  <div className="step-content">
-                    <h3 className="step-title">Create an Account</h3>
-                    <p className="step-description">
-                      Sign up for a free account to get started. It only takes a minute and you'll be ready to create your first community sale event.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="landing-step">
-                  <div className="step-number">2</div>
-                  <div className="step-content">
-                    <h3 className="step-title">Set Up Your Community Sale</h3>
-                    <p className="step-description">
-                      Create a new community sale event with details like name, date, and location. This will be the main hub for all the individual garage sales.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="landing-step">
-                  <div className="step-number">3</div>
-                  <div className="step-content">
-                    <h3 className="step-title">Add Garage Sales</h3>
-                    <p className="step-description">
-                      Add individual garage sales to your community event by entering addresses and descriptions. Our system automatically places them on the map.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="landing-step">
-                  <div className="step-number">4</div>
-                  <div className="step-content">
-                    <h3 className="step-title">Share With Your Community</h3>
-                    <p className="step-description">
-                      Your garage sale will be added to our public listing where visitors can browse all active sales. Shoppers can select multiple sales they want to visit and view them on an interactive map, making it easy to plan their route and find the best deals in the area.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section className="landing-section" style={{ backgroundColor: '#f9f9f9', padding: '2rem', borderRadius: '8px' }}>
-              <h2 className="landing-section-title">Individual Garage Sales Made Easy</h2>
-              <p>
-                Not part of a community event? No problem! Our platform also supports individual garage sales, making it simple for anyone to list their sale and attract more visitors.
-              </p>
-              <p>
-                Whether you're decluttering your home, moving, or just having a seasonal sale, our tools help you reach more potential buyers in your local area.
-              </p>
-              <div className="landing-features" style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginTop: '1.5rem' }}>
-                <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <h3 style={{ color: '#1976d2', marginTop: 0 }}> Quick Listing</h3>
-                  <p>Create a listing in minutes with just a few details about your sale.</p>
-                </div>
-                <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <h3 style={{ color: '#1976d2', marginTop: 0 }}> Easy Discovery</h3>
-                  <p>Get your sale noticed by local shoppers searching for garage sales in your area.</p>
-                </div>
-                <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <h3 style={{ color: '#1976d2', marginTop: 0 }}> Mobile-Friendly</h3>
-                  <p>Manage your listing and respond to inquiries right from your phone.</p>
-                </div>
-              </div>
-              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                <div className="cta-button secondary" onClick={() => handleNavigation('/single-garage-sales')}>
-                  Browse Garage Sales
-                </div>
-              </div>
-            </section>
-          </div>
-          <hr />
-    
-
-        
-        <h2 className="landing-section-title">How It Works</h2>
-          <div className="landing-layout-container">
-             {/* How It Works */}
-  
-          
+        <div className="landing-layout-container">
+          {/* Community Sale */}
           <section className="landing-section">
-          {/* <div className="landing-steps"> */}
-            
+            <h2 className="landing-section-title">How Community Sales Work</h2>
+            <div className="landing-steps">
+              <div className="landing-step">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <h3 className="step-title">Create an Account</h3>
+                  <p className="step-description">
+                    Sign up for a free account to get started. It only takes a minute and you'll be ready to create your first community sale event.
+                  </p>
+                </div>
+              </div>
+
+              <div className="landing-step">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3 className="step-title">Set Up Your Community Sale</h3>
+                  <p className="step-description">
+                    Create a new community sale event with details like name, date, and location. This will be the main hub for all the individual garage sales.
+                  </p>
+                </div>
+              </div>
+
+              <div className="landing-step">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <h3 className="step-title">Add Garage Sales</h3>
+                  <p className="step-description">
+                    Add individual garage sales to your community event by entering addresses and descriptions. Our system automatically places them on the map.
+                  </p>
+                </div>
+              </div>
+
+              <div className="landing-step">
+                <div className="step-number">4</div>
+                <div className="step-content">
+                  <h3 className="step-title">Share With Your Community</h3>
+                  <p className="step-description">
+                    Your garage sale will be added to our public listing where visitors can browse all active sales. Shoppers can select multiple sales they want to visit and view them on an interactive map, making it easy to plan their route and find the best deals in the area.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section className="landing-section" style={{ backgroundColor: '#f9f9f9', padding: '2rem', borderRadius: '8px' }}>
+            <h2 className="landing-section-title">Individual Garage Sales Made Easy</h2>
+            <p>
+              Not part of a community event? No problem! Our platform also supports individual garage sales, making it simple for anyone to list their sale and attract more visitors.
+            </p>
+            <p>
+              Whether you're decluttering your home, moving, or just having a seasonal sale, our tools help you reach more potential buyers in your local area.
+            </p>
+            <div className="landing-features" style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginTop: '1.5rem' }}>
+              <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ color: '#1976d2', marginTop: 0 }}> Quick Listing</h3>
+                <p>Create a listing in minutes with just a few details about your sale.</p>
+              </div>
+              <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ color: '#1976d2', marginTop: 0 }}> Easy Discovery</h3>
+                <p>Get your sale noticed by local shoppers searching for garage sales in your area.</p>
+              </div>
+              <div style={{ flex: '1', minWidth: '250px', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ color: '#1976d2', marginTop: 0 }}> Mobile-Friendly</h3>
+                <p>Manage your listing and respond to inquiries right from your phone.</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+              <div className="cta-button secondary" onClick={() => handleNavigation('/single-garage-sales')}>
+                Browse Garage Sales
+              </div>
+            </div>
+          </section>
+        </div>
+        <hr />
+
+
+
+        <h2 className="landing-section-title">How It Works</h2>
+        <div className="landing-layout-container">
+          {/* How It Works */}
+
+
+          <section className="landing-section">
+            {/* <div className="landing-steps"> */}
+
             <div className="landing-step">
               <div className="step-number">1</div>
               <div className="step-content">
@@ -182,8 +182,8 @@ const LandingPage = () => {
                 </p>
               </div>
             </div>
-</section>
-<section className="landing-section">
+          </section>
+          <section className="landing-section">
             <div className="landing-step">
               <div className="step-number">3</div>
               <div className="step-content">
@@ -203,68 +203,95 @@ const LandingPage = () => {
                 </p>
               </div>
             </div>
-          {/* </div> */}
-        </section>
-          </div>
-    
-    <hr />
-    <h2 className="landing-section-title">Features</h2>
-    <div className="landing-layout-container">
- {/* Features */}
- <section className="landing-section">
+            {/* </div> */}
+          </section>
+        </div>
 
-<div className="landing-grid">
-  <div className="landing-card">
-    <h3 className="landing-card-title">Interactive Maps</h3>
-    <p className="landing-card-content">
-      Fully interactive Google Maps integration that makes it easy for visitors to explore and find sales.
-    </p>
-  </div>
+        <hr />
+        <h2 className="landing-section-title">Features</h2>
+        <div className="landing-layout-container">
+          {/* Features */}
+          <section className="landing-section">
 
-  <div className="landing-card">
-    <h3 className="landing-card-title">Sale Management</h3>
-    <p className="landing-card-content">
-      Easy-to-use tools for adding, editing, and removing garage sales from your community event.
-    </p>
-  </div>
-</div>
-</section>
-  <section className="landing-section">
+            <div className="landing-grid">
+              <div className="landing-card">
+                <h3 className="landing-card-title">Interactive Maps</h3>
+                <p className="landing-card-content">
+                  Fully interactive Google Maps integration that makes it easy for visitors to explore and find sales.
+                </p>
+              </div>
 
-  <div className="landing-grid">
-  <div className="landing-card">
-    <h3 className="landing-card-title">Search Functionality</h3>
-    <p className="landing-card-content">
-      Visitors can search for specific items or categories to find exactly what they're looking for.
-    </p>
-  </div>
+              <div className="landing-card">
+                <h3 className="landing-card-title">Sale Management</h3>
+                <p className="landing-card-content">
+                  Easy-to-use tools for adding, editing, and removing garage sales from your community event.
+                </p>
+              </div>
+            </div>
+          </section>
+          <section className="landing-section">
 
-  <div className="landing-card">
-    <h3 className="landing-card-title">Mobile Friendly</h3>
-    <p className="landing-card-content">
-      Responsive design works great on smartphones and tablets, perfect for visitors on the go.
-    </p>
-  </div>
-</div>
-</section>
-    </div>
+            <div className="landing-grid">
+              <div className="landing-card">
+                <h3 className="landing-card-title">Search Functionality</h3>
+                <p className="landing-card-content">
+                  Visitors can search for specific items or categories to find exactly what they're looking for.
+                </p>
+              </div>
 
-<hr/>
+              <div className="landing-card">
+                <h3 className="landing-card-title">Mobile Friendly</h3>
+                <p className="landing-card-content">
+                  Responsive design works great on smartphones and tablets, perfect for visitors on the go.
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
 
-<h2 className="landing-section-title">Ready to Get Started?</h2>
-<div className="landing-layout-container">
-   {/* Call to Action */}
-   <section className="landing-section" style={{ textAlign: 'center', marginBottom: '2rem',fontSize: '1.2rem' }}>
-          Create your first community garage sale map today and make it easier for everyone to find what they're looking for.
-        </section>
-        <section className="landing-section" style={{ textAlign: 'center' }}>  
-          <div className="cta-button" onClick={() => handleNavigation('/login')}>
-            Sign Up Now
-          </div>
-        </section>
+        <hr />
+
+        <h2 className="landing-section-title">Ready to Get Started?</h2>
+        <div className="landing-layout-container">
+          {/* Call to Action */}
+          <section className="landing-section" style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.2rem' }}>
+            Create your first community garage sale map today and make it easier for everyone to find what they're looking for.
+          </section>
+          <section className="landing-section" style={{ textAlign: 'center' }}>
+            <div className="cta-button" onClick={() => handleNavigation('/login')}>
+              Sign Up Now
+            </div>
+          </section>
+        </div>
+
+        <hr />
+        {/* <h2 className="landing-section-title">Need Help?</h2> */}
+        <div className="landing-layout-container help-section-container">
+          {/* Column 1: Contact Information */}
+          <section className="landing-section help-column">
+            <h3 className="help-column-title">Developed By</h3>
+            <p>
+              <strong>Asher Green</strong><br />
+              <a href="mailto:asher@ashergreen.ca">asher@ashergreen.ca</a><br />
+              <a href="http://www.ashergreen.ca" target="_blank" rel="noopener noreferrer">www.ashergreen.ca</a>
+            </p>
+            <p>
+              <strong>Jamie-Lee Mclean-Davis</strong><br />
+              <a href="mailto:jmclean.davis@gmail.com">jmclean.davis@gmail.com</a>
+            </p>
+          </section>
+
+          {/* Column 2: Feedback/Thanks */}
+          <section className="landing-section help-column" style={{ flex: 1 }}>
+            <h3 className="help-column-title">Thanks for Using Our App!</h3>
+            <h3 className="help-column-title">Feedback & Support</h3>
+            <p>
+              We hope our app made your garage sale adventures more fun and efficient! We're always looking to improve, so feel free to drop us a line with ideas, suggestions, or just to say hi.
+            </p>
+          </section>
+        </div>
       </div>
-  </div>
-       
+
 
       {/* Footer */}
       <footer className="landing-footer">
