@@ -13,7 +13,7 @@ const RegisterGarageSale = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: 'Garage Sale',
+    name: '',
     description: '',
     street: '',     // Full street address (e.g., '123 Main St')
     unit: '',
@@ -583,12 +583,12 @@ const RegisterGarageSale = () => {
   const userEmail = userInfo?.email || userInfo?.preferred_username || '';
 
   return (
-    <div className="garage-sales-container">
-      <h1>
-        <div className="user-info-header">
+    <div className="garage-sales-container" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <h1 style={{fontWeight: "600"}}>
+        {/* <div className="user-info-header">
           <span className="user-name">{displayName}</span>
           {userEmail && <span className="user-email">{userEmail}</span>}
-        </div>
+        </div> */}
         {existingSale && !isEditing ? '' : 'Register a Garage Sale'}
       </h1>
       

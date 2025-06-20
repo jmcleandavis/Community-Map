@@ -1,4 +1,4 @@
-/* User Info in Header */
+/* User Info in Header s*/
 .garage-sales-container h1 {
   display: flex;
   flex-direction: column;
@@ -10,7 +10,6 @@
   display: flex;
   flex-direction: column;
   font-size: 1rem;
-  font-weight: normal;
   margin-bottom: 0.5rem;
 }
 
@@ -385,4 +384,28 @@
 
 .add-item-button:hover {
   color: #1557b0;
+}
+
+textarea#description {
+
+  font-family: inherit; 
+  font-size: inherit;   
+  color: #333; 
+  border: 1px solid #ccc; 
+  border-radius: 4px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box; 
+  resize: vertical; 
+}
+
+
+textarea#description::placeholder {
+  color: #999; 
+  font-family: inherit;
+}
+
+textarea#description:empty-or-default-value-state { 
+    color: #999; 
+    font-style: italic; 
 }

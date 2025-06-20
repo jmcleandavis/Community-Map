@@ -93,13 +93,19 @@ const MenuBar = () => {
       <div className="menu-bar-item" onClick={() => handleNavigation('/list-active-community-sales-events')}>Active Community Sales Events</div>
       <div className="menu-bar-item" onClick={handleGarageSalesClick}>Garage Sales</div>
       <div className="menu-bar-item" onClick={handleRegisterGarageSaleClick}>Register a Garage Sale</div>
-      <div className="menu-bar-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
+      {isAuthenticated &&
+        <div className="menu-bar-item" onClick={() => handleNavigation('/admin/community-sales')}>Manage Community Sales</div>
+}
+      
+      <div className="menu-bar-item" >|</div>
       {isAuthenticated ? (
         <div className="menu-bar-item" onClick={handleLogout}>Logout</div>
       ) : (
-        <div className="menu-bar-item" onClick={() => handleNavigation('/login?from=landing')}>Login</div>
+        <div className="menu-bar-item-button-wrapper" >
+          <button className=" menu-bar-item-button"  onClick={() => handleNavigation('/login?from=landing')} >Login</button>
+        </div>
       )}
-      <div className="menu-bar-item" onClick={() => handleNavigation('/info')}>Info</div>
+      {/* <div className="menu-bar-item" onClick={() => handleNavigation('/info')}>Info</div> */}
     </nav>
   );
 };

@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Box, 
-  Button, 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  Checkbox, 
-  Container, 
-  FormControlLabel, 
-  Grid, 
-  IconButton, 
-  InputAdornment, 
-  Paper, 
-  TextField, 
-  Typography, 
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Paper,
+  TextField,
+  Typography,
   useTheme,
   useMediaQuery,
   Divider,
@@ -48,18 +48,18 @@ const SingleGarageSales = () => {
   const [garageSales, setGarageSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [communityName, setCommunityName] = useState('Garage Sales');
-  
+  const [communityName, setCommunityName] = useState('search for a Garage Sales');
+
   // Optimize route state variables
   const [showOptimizeRoute, setShowOptimizeRoute] = useState(false);
   const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
   const [showRouteList, setShowRouteList] = useState(false);
   const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
-  
+
   const { searchTerm, handleSearchChange } = useSearch();
   const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
   const { showOnlySelected, toggleDisplayMode } = useDisplay();
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, userInfo, userEmail } = useAuth();
@@ -72,12 +72,12 @@ const SingleGarageSales = () => {
     const fetchSingleGarageSales = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // Use the environment variable for the API URL
         const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/GENPUB`;
         console.log('SingleGarageSales: Fetching data from API URL:', apiUrl);
-        
+
         // Try to get data from the API
         let data;
         try {
@@ -89,19 +89,19 @@ const SingleGarageSales = () => {
               'app-key': import.meta.env.VITE_APP_SESSION_KEY
             }
           });
-          
+
           if (!response.ok) {
             throw new Error(`API request failed with status ${response.status}`);
           }
-          
+
           data = await response.json();
           console.log('SingleGarageSales: Data received from API:', data);
-          
+
           // Store successful API response in sessionStorage for future use
           sessionStorage.setItem('garageSalesData', JSON.stringify(data));
         } catch (apiError) {
           console.error('Error fetching from API:', apiError);
-          
+
           // Try to get data from sessionStorage as fallback
           const storedData = sessionStorage.getItem('garageSalesData');
           if (storedData) {
@@ -111,28 +111,30 @@ const SingleGarageSales = () => {
             throw new Error('No cached data available and API request failed');
           }
         }
-        
+
         // Process the response data properly
         console.log('Raw data to process:', data);
-        
+
         // Based on the screenshots, the response structure is an array
         if (data && Array.isArray(data)) {
           const salesData = data.map(sale => {
             // Extract address data from the nested address object
             const addressObj = sale.address || {};
-            
+
             // Create a formatted address string including all components
             const formattedAddress = [
-              addressObj.streetNum, 
-              addressObj.street, 
-              addressObj.city, 
-              addressObj.provState, 
+              addressObj.streetNum,
+              addressObj.street,
+              addressObj.city,
+              addressObj.provState,
               addressObj.postalZipCode
             ].filter(Boolean).join(', ');
-            
+
             return {
               id: sale.id || `sale-${Math.random().toString(36).substr(2, 9)}`,
               address: formattedAddress,
+              addressLine1: addressObj.streetNum + " " + addressObj.street || '',
+              addressLine2: addressObj.city + ", " + addressObj.provState + ", " + addressObj.postalZipCode || '',
               fullAddress: addressObj, // Store the full address object for reference
               description: sale.description || '',
               name: sale.name || 'GARAGE SALE',
@@ -144,7 +146,7 @@ const SingleGarageSales = () => {
               }
             };
           });
-          
+
           console.log('Processed sales data:', salesData);
           setGarageSales(salesData);
         } else {
@@ -170,7 +172,7 @@ const SingleGarageSales = () => {
         try {
           console.log('SingleGarageSales: Fetching user address list for user:', userInfo.userId);
           const userAddressListResponse = await api.getUserAddressList(userInfo.userId);
-          
+
           if (userAddressListResponse && userAddressListResponse.addressList && userAddressListResponse.addressList.length > 0) {
             console.log('SingleGarageSales: User has saved address list on server:', userAddressListResponse.addressList);
             setUserAddressList(userAddressListResponse.addressList);
@@ -185,7 +187,7 @@ const SingleGarageSales = () => {
         }
       }
     };
-    
+
     fetchUserAddressList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -195,30 +197,30 @@ const SingleGarageSales = () => {
     if (userAddressList && garageSales && garageSales.length > 0 && !selectionsInitialized) {
       // Filter the selected sales to only include those from the GENPUB community
       let filteredSelectedSales = userAddressList;
-      
+
       // Get the IDs of garage sales that belong to the GENPUB community
       const genpubGarageSaleIds = garageSales.map(sale => sale.id);
-      
+
       // Filter the user's selected sales to only include those in the GENPUB community
-      filteredSelectedSales = userAddressList.filter(selectedSaleId => 
+      filteredSelectedSales = userAddressList.filter(selectedSaleId =>
         genpubGarageSaleIds.includes(selectedSaleId)
       );
-      
+
       console.log('SingleGarageSales: Filtered selected sales for GENPUB community:', filteredSelectedSales);
       console.log('SingleGarageSales: GENPUB garage sale IDs:', genpubGarageSaleIds);
-      
+
       // Convert the filtered array to a Set for the selection context
       const serverSelectedSales = new Set(filteredSelectedSales);
-      
+
       // Update the selected sales in the selection context
       // This will override any locally stored selections
       handleDeselectAll(); // Clear existing selections first
-      
+
       // Add each server-side selection that belongs to the GENPUB community
       serverSelectedSales.forEach(saleId => {
         handleCheckboxChange(saleId);
       });
-      
+
       console.log('SingleGarageSales: Updated selections from server list (filtered for GENPUB community)');
       setSelectionsInitialized(true); // Mark selections as initialized
     }
@@ -234,23 +236,23 @@ const SingleGarageSales = () => {
     // Determine if we're optimizing the full route or just selected sales
     const isFullRouteOptimization = selectedSales.size === 0;
     setOptimizeFullRoute(isFullRouteOptimization);
-    
+
     console.log(`Optimizing ${isFullRouteOptimization ? 'FULL route' : 'SELECTED sales route'}`);
-    
+
     // If there are selected sales and the user is authenticated, save them to the backend first
     if (selectedSales.size > 0 && isAuthenticated && userInfo?.userId) {
       try {
         console.log('Saving selected sales to server before optimization for user:', userInfo.userId);
-        
+
         // Filter sales to only include those that are selected
         const selectedSalesData = garageSales
           .filter(sale => selectedSales.has(sale.id));
-        
+
         // Extract just the IDs for the server request
         const selectedSaleIds = selectedSalesData.map(sale => sale.id);
-        
+
         console.log(`Saving ${selectedSaleIds.length} selected sales for GENPUB community`);
-        
+
         // Save the selected sales to the server with GENPUB as communityId
         const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds, 'GENPUB');
         console.log('Successfully saved selected sales to server before optimization:', response);
@@ -260,7 +262,7 @@ const SingleGarageSales = () => {
         // We don't want to block the user from optimizing their route
       }
     }
-    
+
     // Show the optimize route view to let the user select a starting point
     setShowOptimizeRoute(true);
   };
@@ -268,32 +270,32 @@ const SingleGarageSales = () => {
   const handleSelectFirstVisit = async (saleId) => {
     try {
       console.log('Selected first visit:', saleId);
-      
+
       // Get sessionId from localStorage
       const sessionId = localStorage.getItem('sessionId');
-      
+
       // Make API call to get optimized route
       let optimizedRouteData = null;
-      
+
       // Use different endpoints based on whether we're optimizing full route or selected sales
-      const endpoint = !optimizeFullRoute && selectedSales.size > 0 
+      const endpoint = !optimizeFullRoute && selectedSales.size > 0
         ? `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute/bySavedList`
         : `${import.meta.env.VITE_MAPS_API_URL}/v1/getOptimzedRoute`;
-      
+
       console.log(`Using endpoint: ${endpoint} (optimizeFullRoute=${optimizeFullRoute}, selectedSales.size=${selectedSales.size})`);
-      
+
       // Prepare the request payload based on the endpoint
       const payload = !optimizeFullRoute && selectedSales.size > 0
         ? {
-            startingAddressId: saleId,
-            communityId: 'GENPUB',
-            userId: userInfo?.userId || ''
-          }
+          startingAddressId: saleId,
+          communityId: 'GENPUB',
+          userId: userInfo?.userId || ''
+        }
         : {
-            startingAddressId: saleId,
-            communityId: 'GENPUB'
-          };
-      
+          startingAddressId: saleId,
+          communityId: 'GENPUB'
+        };
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -304,21 +306,21 @@ const SingleGarageSales = () => {
         },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         throw new Error(`API call failed: ${response.status} ${response.statusText}`);
       }
-      
+
       optimizedRouteData = await response.json();
       console.log('API Response:', optimizedRouteData);
-      
+
       // Process the response
       if (optimizedRouteData && optimizedRouteData.orderedWaypoints) {
         console.log('Using optimised route data:', optimizedRouteData);
-        
+
         // Create a map of addresses to sale data for matching
         const addressToSaleMap = {};
-        
+
         // Build a map of normalized addresses to their corresponding sale data
         garageSales.forEach(sale => {
           if (sale.address) {
@@ -327,37 +329,37 @@ const SingleGarageSales = () => {
             addressToSaleMap[normalizedAddress] = sale;
           }
         });
-        
+
         console.log('Address to sale map created with', Object.keys(addressToSaleMap).length, 'entries');
-        
+
         // Process the ordered waypoints from the API
         const filteredWaypoints = [];
         console.log('Ordered waypoints from API:', optimizedRouteData.orderedWaypoints);
-        
+
         // Process each waypoint in the optimized route
         optimizedRouteData.orderedWaypoints.forEach((waypoint, index) => {
           // Get the address from the waypoint
           let waypointAddress = '';
-          
+
           // Handle different possible formats of the waypoint data
           if (typeof waypoint === 'string') {
             waypointAddress = waypoint;
           } else if (waypoint && typeof waypoint === 'object') {
             waypointAddress = waypoint.address || waypoint.location || '';
           }
-          
+
           console.log(`Processing waypoint ${index + 1}:`, waypointAddress);
-          
+
           if (waypointAddress) {
             // Normalize the address for matching
             const normalizedAddress = waypointAddress.toLowerCase().replace(/\s+/g, ' ').trim();
-            
+
             // Find the matching sale by address
             const matchingSale = addressToSaleMap[normalizedAddress];
-            
+
             if (matchingSale) {
               console.log('Found matching sale with ID:', matchingSale.id);
-              
+
               // Add the waypoint with the correct ID and position information
               filteredWaypoints.push({
                 id: matchingSale.id,
@@ -369,7 +371,7 @@ const SingleGarageSales = () => {
               });
             } else {
               console.log('No matching sale found for address:', waypointAddress);
-              
+
               // Include the waypoint even without a matching sale
               filteredWaypoints.push({
                 address: waypointAddress,
@@ -379,21 +381,21 @@ const SingleGarageSales = () => {
             }
           }
         });
-        
+
         console.log('Filtered waypoints with route order:', filteredWaypoints);
-        
+
         // Create a modified optimized route data with only selected sales
         const filteredOptimizedRouteData = {
           ...optimizedRouteData,
           orderedWaypoints: filteredWaypoints
         };
-        
+
         // Store the optimized route data in localStorage for the map to use
         localStorage.setItem('optimizedRoute', JSON.stringify(filteredOptimizedRouteData));
-        
+
         // Set the optimized route addresses for display
         setOptimizedRouteAddresses(filteredWaypoints);
-        
+
         // Show the route list
         setShowRouteList(true);
         setShowOptimizeRoute(false);
@@ -412,21 +414,21 @@ const SingleGarageSales = () => {
     setShowOptimizeRoute(false);
     setShowRouteList(false);
   };
-  
+
   const handleProceedToMap = () => {
     // Get the optimized route data from localStorage
     const optimizedRouteData = JSON.parse(localStorage.getItem('optimizedRoute') || '{}');
-    
+
     // If we have optimized route data and we're not doing a full route optimization
     if (optimizedRouteData.orderedWaypoints && !optimizeFullRoute) {
       // Filter the garage sales to only include those in the optimized route
-      const optimizedSales = garageSales.filter(sale => 
+      const optimizedSales = garageSales.filter(sale =>
         optimizedRouteData.orderedWaypoints.some(wp => wp.id === sale.id)
       );
-      
+
       // Store only the optimized sales in localStorage
       localStorage.setItem('selectedSales', JSON.stringify(optimizedSales));
-      
+
       // Make sure we're in selected sales mode
       if (!showOnlySelected) {
         toggleDisplayMode();
@@ -435,10 +437,10 @@ const SingleGarageSales = () => {
       // For full route optimization, show all markers
       toggleDisplayMode('showAll');
     }
-    
+
     // Navigate to map view with parameters for GENPUB community
     navigate(`/?communityId=GENPUB&showOptimizedRoute=true`);
-    
+
     // Close the route list view
     setShowRouteList(false);
   };
@@ -453,7 +455,7 @@ const SingleGarageSales = () => {
 
   const handleDeselectAllWithServerUpdate = async () => {
     handleDeselectAll();
-    
+
     // Also update the server if authenticated
     if (isAuthenticated && userInfo?.userId) {
       try {
@@ -473,7 +475,7 @@ const SingleGarageSales = () => {
       address: sale.address,
       description: sale.description
     };
-    
+
     localStorage.setItem('selectedSales', JSON.stringify([saleToView]));
     navigate(`/?communityId=GENPUB`);
   };
@@ -488,10 +490,10 @@ const SingleGarageSales = () => {
       if (isAuthenticated && userInfo?.userId) {
         try {
           console.log('Saving selected sales to server for user:', userInfo.userId);
-          
+
           // Extract just the IDs for the server request
           const selectedSaleIds = selectedSalesData.map(sale => sale.id);
-          
+
           // Save the selected sales to the server with the GENPUB communityId
           const response = await api.createUpdateUserAddressList(userInfo.userId, selectedSaleIds, 'GENPUB');
           console.log('Successfully saved selected sales to server:', response);
@@ -501,15 +503,15 @@ const SingleGarageSales = () => {
       } else {
         console.log('User not authenticated, skipping server save of selected sales');
       }
-      
+
       // If not already showing only selected sales, turn it on
       if (!showOnlySelected) {
         toggleDisplayMode();
       }
-      
+
       // Store the selected sales in localStorage
       localStorage.setItem('selectedSales', JSON.stringify(selectedSalesData));
-      
+
       // Navigate to the map view with the GENPUB community ID
       navigate('/?communityId=GENPUB');
     } else {
@@ -520,22 +522,22 @@ const SingleGarageSales = () => {
   // Add debugging for the garage sales state
   console.log('Current garageSales state:', garageSales);
   console.log('Number of garage sales:', garageSales.length);
-  
+
   // Filter sales based on search term and display mode
   const filteredSales = garageSales.filter(sale => {
     // First apply search filter if there's a search term
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       (sale.address && sale.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (sale.description && sale.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (sale.name && sale.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (sale.highlightedItems && sale.highlightedItems.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     // Then apply selected filter if showOnlySelected is true
     const matchesSelected = !showOnlySelected || selectedSales.has(sale.id);
-    
+
     return matchesSearch && matchesSelected;
   });
-  
+
   // Add debugging for filtered sales
   console.log('Filtered sales:', filteredSales);
   console.log('Number of filtered sales:', filteredSales.length);
@@ -549,7 +551,7 @@ const SingleGarageSales = () => {
   // Show optimize route selection view
   if (showOptimizeRoute) {
     const salesToDisplay = optimizeFullRoute ? filteredSales : filteredSales.filter(sale => selectedSales.has(sale.id));
-    const displayMessage = optimizeFullRoute 
+    const displayMessage = optimizeFullRoute
       ? `Select your starting point from ${salesToDisplay.length} garage sales:`
       : `Select your starting point from ${salesToDisplay.length} selected garage sales:`;
 
@@ -575,7 +577,7 @@ const SingleGarageSales = () => {
         <Grid container spacing={2}>
           {salesToDisplay.map((sale) => (
             <Grid item xs={12} key={sale.id}>
-              <Card 
+              <Card
                 variant="outlined"
                 sx={{
                   transition: 'all 0.2s ease-in-out',
@@ -626,7 +628,7 @@ const SingleGarageSales = () => {
           <Typography variant="body1" color="text.secondary" paragraph>
             Your optimized route with {optimizedRouteAddresses.length} stops:
           </Typography>
-          
+
           <Box display="flex" justifyContent="space-between" mb={3} flexWrap="wrap" gap={2}>
             <Button
               variant="outlined"
@@ -654,7 +656,7 @@ const SingleGarageSales = () => {
               <React.Fragment key={stop.id || index}>
                 <ListItem sx={{ py: 2, px: 3 }}>
                   <ListItemIcon sx={{ minWidth: 40 }}>
-                    <Box 
+                    <Box
                       sx={{
                         width: 28,
                         height: 28,
@@ -670,8 +672,8 @@ const SingleGarageSales = () => {
                       {index + 1}
                     </Box>
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={stop.address || 'No Address Available'} 
+                  <ListItemText
+                    primary={stop.address || 'No Address Available'}
                     secondary={stop.description || ''}
                     primaryTypographyProps={{ fontWeight: 500 }}
                   />
@@ -699,8 +701,8 @@ const SingleGarageSales = () => {
   if (error) {
     return (
       <Box p={3}>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           action={
             <Button color="inherit" size="small" onClick={() => window.location.reload()}>
               Retry
@@ -716,10 +718,10 @@ const SingleGarageSales = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {communityName || 'Garage Sales'}
-        </Typography>
-        
+    
+    <h2 style={{fontWeight: "200"}}>    Hi {userInfo?.fName || ''}, {communityName || 'Garage Sales'}</h2>  
+
+{/* 
         {isAuthenticated && userInfo && (
           <Box mb={3}>
             <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
@@ -729,100 +731,102 @@ const SingleGarageSales = () => {
               {userEmail}
             </Typography>
           </Box>
-        )}
-        
-        <Box 
-          sx={{
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: 2,
-            mb: 3,
-            alignItems: isMobile ? 'stretch' : 'flex-end'
-          }}
+        )} */}
+
+<Box
+  sx={{
+    display: 'flex',
+    flexDirection: 'column', // Changed to 'column' to stack items vertically
+    gap: 2,
+    mb: 3,
+    alignItems: 'stretch' // Ensures children (TextField and button Box) stretch to full width
+  }}
+>
+  <TextField
+    fullWidth
+    variant="outlined"
+    placeholder="Search by address or description..."
+    value={searchTerm}
+    onChange={handleSearchChange}
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon color="action" />
+        </InputAdornment>
+      ),
+    }}
+    sx={{
+      flex: 1, // This flex property on a column item will make it grow, but not necessary for full width here
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: 'background.paper',
+      },
+      mb: 1 // Add a small margin-bottom to separate from buttons if gap isn't enough
+    }}
+  />
+
+
+  <Box
+    sx={{
+      display: 'flex',
+      gap: 1,
+      flexWrap: 'wrap',
+      justifyContent: 'flex-end', // Keep buttons aligned to the end (right)
+      '& > *': {
+        flex: isMobile ? '1 1 100%' : '0 0 auto',
+      }
+    }}
+  >
+    {selectedSales.size > 0 && (
+      <>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleDeselectAllWithServerUpdate}
+          startIcon={<CloseIcon />}
+          fullWidth={isMobile}
         >
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search by address or description..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              flex: 1,
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'background.paper',
-              },
-            }}
-          />
-          
-          <Box 
-            sx={{
-              display: 'flex',
-              gap: 1,
-              flexWrap: 'wrap',
-              justifyContent: isMobile ? 'stretch' : 'flex-end',
-              '& > *': {
-                flex: isMobile ? '1 1 100%' : '0 0 auto',
-              }
-            }}
-          >
-            {selectedSales.size > 0 && (
-              <>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={handleDeselectAllWithServerUpdate}
-                  startIcon={<CloseIcon />}
-                  fullWidth={isMobile}
-                >
-                  Deselect All
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleViewSelected}
-                  startIcon={<MapIcon />}
-                  fullWidth={isMobile}
-                >
-                  View Selected ({selectedSales.size})
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={handleOptimizeRoute}
-                  startIcon={<RouteIcon />}
-                  fullWidth={isMobile}
-                >
-                  Optimize Route
-                </Button>
-              </>
-            )}
-            {selectedSales.size === 0 && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleOptimizeRoute}
-                startIcon={<RouteIcon />}
-                fullWidth={isMobile}
-              >
-                Optimize Full Route
-              </Button>
-            )}
-          </Box>
-        </Box>
+          Deselect All
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleViewSelected}
+          startIcon={<MapIcon />}
+          fullWidth={isMobile}
+        >
+          View Selected ({selectedSales.size})
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleOptimizeRoute}
+          startIcon={<RouteIcon />}
+          fullWidth={isMobile}
+        >
+          Optimize Route
+        </Button>
+      </>
+    )}
+    {selectedSales.size === 0 && (
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleOptimizeRoute}
+        startIcon={<RouteIcon />}
+        fullWidth={isMobile}
+      >
+        Optimize Full Route
+      </Button>
+    )}
+  </Box>
+</Box>
       </Box>
 
       {filteredSales.length === 0 ? (
-        <Box 
-          display="flex" 
-          justifyContent="center" 
-          alignItems="center" 
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
           minHeight="200px"
           textAlign="center"
         >
@@ -834,12 +838,12 @@ const SingleGarageSales = () => {
         <Grid container spacing={2} sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {filteredSales.map((sale) => (
             <Grid item xs={12} sm={6} md={4} key={sale.id} sx={{ display: 'flex' }}>
-              <Card 
+              <Card
                 variant="outlined"
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  width: '100%',
+                  width: '350px',
                   height: '100%',
                   minHeight: '280px',
                   transition: 'all 0.2s ease-in-out',
@@ -851,19 +855,21 @@ const SingleGarageSales = () => {
                   },
                 }}
               >
-                <CardActionArea 
+                <CardActionArea
                   onClick={() => handleSelectionWithAuth(sale.id)}
                   sx={{
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'flex-start', // Align all major sections to the top within CardActionArea
                     alignItems: 'stretch',
                     height: '100%',
                     overflow: 'hidden'
                   }}
                 >
                   <Box sx={{ position: 'relative', width: '100%' }}>
-                    <Box 
+                    {/* Checkbox moved outside CardHeader title for correct positioning */}
+                    <Box
                       sx={{
                         position: 'absolute',
                         top: 8,
@@ -881,27 +887,43 @@ const SingleGarageSales = () => {
                         icon={<CheckBoxOutlineBlankIcon />}
                         checkedIcon={<CheckBoxIcon color="primary" />}
                         inputProps={{ 'aria-label': 'Select garage sale' }}
-                      />
+                      />{sale.name}
                     </Box>
                     <CardHeader
                       title={
                         <Box sx={{ width: '100%', pt: 1 }}>
                           <Box sx={{ height: 40 }} /> {/* Creates space for the checkbox */}
-                          <Typography 
-                            variant="subtitle1" 
+                          <Typography
+                            variant="subtitle1"
                             component="div"
                             sx={{
                               fontWeight: 500,
                               color: 'text.primary',
-                              width: '100%'
+                              width: '100%',
+                              mt: 1,
+                              minHeight: '60px', // Ensure consistent space for address (2 lines)
+                              maxHeight: '60px', // Strict max height for address
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-word',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
                             }}
                           >
-                            {sale.address || 'No Address Available'}
+                            {sale.addressLine1 || 'No Address Available'}<br />
+                            {sale.addressLine2 || ''}
                           </Typography>
                         </Box>
                       }
-                      sx={{ 
-                        pb: 1,
+                      // subheader={
+                      //   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
+                      //     GARAGE SALE
+                      //   </Typography>
+                      // }
+                      sx={{
+                        pb: 0,
                         width: '100%',
                         '& .MuiCardHeader-content': {
                           overflow: 'hidden',
@@ -911,15 +933,16 @@ const SingleGarageSales = () => {
                       }}
                     />
                   </Box>
-                  <CardContent sx={{ 
-                    pt: 0, 
+                  <CardContent sx={{
+                    pt: 0,
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'center',
+                    justifyContent: 'flex-start', // Align description and featured items to the top within CardContent
                     overflow: 'hidden',
                     '&:hover': {
-                      overflow: 'auto',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                     },
                     '&::-webkit-scrollbar': {
                       width: '4px',
@@ -932,33 +955,53 @@ const SingleGarageSales = () => {
                       borderRadius: '4px',
                     },
                   }}>
-                    {sale.description && (
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
+                    {sale.description ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
                         sx={{
                           lineHeight: 1.5,
                           textAlign: 'center',
                           width: '100%',
                           p: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          minHeight: '100%',
                           boxSizing: 'border-box',
-                          mb: 1.5
+                          mb: 1.5,
+                          minHeight: `calc(${1.5 * 4}em)`, // Ensure consistent space for 4 lines
+                          maxHeight: `calc(${1.5 * 4}em)`, // Strict max height for description
+                          overflow: 'hidden', // Hide overflow if text exceeds
+                          textOverflow: 'ellipsis', // Add ellipsis
+                          display: '-webkit-box',
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: 'vertical',
+                          // Removed alignItems/justifyContent to prevent vertical centering
                         }}
                       >
                         {sale.description}
                       </Typography>
+                    ) : (
+                      <Box sx={{
+                        minHeight: `calc(${1.5 * 4}em)`, // Match the height of the actual description area
+                        display: 'flex',
+                        alignItems: 'flex-start', // Align "No description provided." to the top
+                        justifyContent: 'center',
+                        width: '100%',
+                        p: 2,
+                        boxSizing: 'border-box',
+                        mb: 1.5,
+                      }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                          No description provided.
+                        </Typography>
+                      </Box>
                     )}
-                    {sale.highlightedItems && (
-                      <Typography 
-                        variant="body2" 
-                        color="primary" 
+
+                    {sale.highlightedItems ? (
+                      <Typography
+                        variant="body2"
+                        color="primary"
                         sx={{
                           fontWeight: 500,
-                          mt: 'auto',
+                          mt: 0, // Align to top (no auto margin)
                           pt: 1,
                           px: 2,
                           pb: 1,
@@ -966,25 +1009,42 @@ const SingleGarageSales = () => {
                           borderColor: 'divider',
                           textAlign: 'center',
                           width: '100%',
-                          boxSizing: 'border-box'
+                          boxSizing: 'border-box',
+                          minHeight: '20px',
+                          // whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: "wrap",
                         }}
                       >
-                        <Box component="span" fontWeight={500}>Featured Items:</Box> {sale.highlightedItems}
+                        <Box component="span" fontWeight={500}>Highlights & Items:</Box> <br />{sale.highlightedItems}
                       </Typography>
+                    ) : (
+                      <Box sx={{
+                        minHeight: '20px',
+                        mt: 0, // Align to top (no auto margin)
+                        pt: 1,
+                        px: 2,
+                        pb: 1,
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }} >No Items to Highlight</Box>
                     )}
                   </CardContent>
                 </CardActionArea>
-                <CardActions sx={{ 
-                  justifyContent: 'flex-end', 
+                <CardActions sx={{
+                  justifyContent: 'flex-end',
                   pt: 0,
                   borderTop: '1px solid',
                   borderColor: 'divider',
                   backgroundColor: 'action.hover',
                   px: 2,
-                  py: 1
+                  py: 1,
+                  flexShrink: 0,
                 }}>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     color="primary"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1007,10 +1067,10 @@ const SingleGarageSales = () => {
           {selectedSales.size > 0 && ` • ${selectedSales.size} selected`}
         </Typography>
       </Box>
-      
-      <LoginRequiredModal 
-        isOpen={showLoginModal} 
-        onClose={() => setShowLoginModal(false)} 
+
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </Container>
   );

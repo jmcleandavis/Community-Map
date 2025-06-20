@@ -6,6 +6,10 @@
   text-align: center;
 }
 
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -96,4 +100,72 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+/* Add this to your App.css or relevant stylesheet */
+
+.landing-layout-container {
+  display: flex; /* Makes the container a flex container */
+  align-items: center; /* Vertically aligns items in the center */
+  gap: 40px; /* Adds space between the image and the text (e.g., 40px) */
+  padding: 10px; /* Optional: Add some padding around the container */
+  max-width: 1200px; /* Optional: Limit the total width for the content */
+  margin: 40px auto; /* Optional: Center the container horizontally with margin from top/bottom */
+  flex-wrap: wrap; /* Allows items to wrap onto the next line on smaller screens */
+}
+
+.landing-image {
+  flex: 1; /* Allows the image to grow and shrink */
+  min-width: 300px; /* Prevents image from becoming too small before wrapping */
+  max-width: 50%; /* Ensures it takes up roughly half the width initially */
+  height: auto; /* Maintains aspect ratio */
+  /* Remove any conflicting width/height properties if they exist elsewhere */
+}
+
+.landing-section {
+  flex: 1; /* Allows the section to grow and shrink */
+  min-width: 300px; /* Ensures text section doesn't become too narrow */
+  max-width: 50%; /* Ensures it takes up roughly half the width initially */
+  text-align: left; /* Align text to the left within this section */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+  .landing-layout-container {
+    flex-direction: column; /* Stacks items vertically on smaller screens */
+    gap: 20px; /* Adjust gap for vertical stacking */
+  }
+
+  .landing-image,
+  .landing-section {
+    max-width: 100%; /* Make them take full width when stacked */
+  }
+
+  .landing-section {
+      text-align: center; /* Center text when stacked on small screens if preferred */
+  }
+}
+
+/* Ensure your existing .cta-button styles are defined. Example: */
+.cta-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4CAF50; /* Example green color */
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #45a049; /* Slightly darker green on hover */
+}
+
+.cta-button.secondary {
+  background-color: #f44336; /* Example red color for secondary */
+}
+
+.cta-button.secondary:hover {
+  background-color: #da190b; /* Slightly darker red on hover */
 }
