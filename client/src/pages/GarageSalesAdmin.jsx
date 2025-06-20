@@ -222,13 +222,28 @@ const GarageSalesAdmin = () => {
       } else {
         // Create new garage sale
         const addressData = parseAddress(formData.address);
-        await api.createGarageSale(
-          addressData,
-          formData.description,
-          "Garage Sale", // Default name
-          [], // Empty highlighted items
-          communityId // Pass the current community ID
-        );
+        const saleData = {
+          address: {
+            street: addressData.street,
+            streetNum: addressData.streetNumber,
+            city: addressData.city,
+            provState: addressData.state,
+            postalZipCode: addressData.postalCode || '',
+            unit: addressData.unit || ''
+          },
+          description: formData.description || 'GARAGE SALE',
+          highlightedItems: formData.featuredItems || [],
+          name: formData.name || 'Garage Sale',
+          community: communityId || 'GENPUB',
+          userId: userInfo?.id || userInfo?.userId,  // Get from user context
+          dateTime: {
+            start: formData.startDate ? `${formData.startDate}T09:00:00` : new Date().toISOString(),
+            end: formData.endDate ? `${formData.endDate}T18:00:00` : new Date(Date.now() + 86400000).toISOString(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Toronto'
+          }
+        };
+        
+        await api.createGarageSale(saleData);
       }
       
       setIsAddingNew(false);
