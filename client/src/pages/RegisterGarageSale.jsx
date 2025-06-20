@@ -282,7 +282,7 @@ const RegisterGarageSale = () => {
           // Create new garage sale
           console.log('Creating new garage sale with data:', JSON.stringify(saleData, null, 2));
           apiResponse = await api.createGarageSale(saleData);
-          setSuccess('Your garage sale has been registered successfully!');
+          setSuccess('');
         }
         console.log('API Response:', apiResponse);
         response = apiResponse;
