@@ -1018,7 +1018,8 @@ const api = {
   verifyResetToken,
   resetPassword,
   getUserAddressList,
-  getAddressesByCommunity
+  getAddressesByCommunity,
+  deleteCommunitySale
 };
 
 export default api;

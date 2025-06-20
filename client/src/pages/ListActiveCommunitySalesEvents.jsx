@@ -109,7 +109,7 @@ const ListActiveCommunitySalesEvents = () => {
 
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-      <h1>Active Community Sales Events</h1>
+      <h1>Community Sales Events</h1>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <input
           type="text"
