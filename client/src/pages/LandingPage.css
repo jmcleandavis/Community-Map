@@ -57,7 +57,7 @@
 
 .landing-section {
   margin-bottom: 4rem;
-  align: top;
+  align: top; /* This 'align' property is not standard CSS; it might be ignored or cause issues. You likely meant 'align-items' on a flex container. */
 }
 
 .landing-section-title {
@@ -181,20 +181,79 @@
   line-height: 1.6;
 }
 
+/* Base styles for all help columns */
+.help-column {
+  min-width: 280px; /* Minimum width before columns start wrapping */
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+}
+
+/* Specific styling for the first column (Developed By) - will take ~40% */
+.help-column:nth-child(1) {
+  flex: 1 1 40%; /* flex-grow:1, flex-shrink:1, flex-basis:40% */
+  max-width: 40%; /* Limit its max width to maintain ratio on very wide screens */
+}
+
+/* Specific styling for the second column (Feedback/Thanks) - will take ~60% */
+.help-column:nth-child(2) {
+  flex: 1 1 60%; /* flex-grow:1, flex-shrink:1, flex-basis:60% */
+  max-width: 60%; /* Limit its max width to maintain ratio on very wide screens */
+}
+
+.help-column-title {
+  font-size: 1.3rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.help-column p {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  color: #555;
+}
+
+.help-column a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.help-column a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .landing-menu {
     flex-direction: column;
   }
-  
+
   .landing-title {
     font-size: 2.5rem;
   }
-  
+
   .landing-subtitle {
     font-size: 1.25rem;
   }
-  
+
   .landing-section-title {
     font-size: 1.75rem;
+  }
+
+  /* Responsive adjustments for the help section columns */
+  .help-column:nth-child(1),
+  .help-column:nth-child(2) {
+    flex: 1 1 100%; /* Both take full width when stacked */
+    max-width: 100%;
+    min-width: auto;
   }
 }
