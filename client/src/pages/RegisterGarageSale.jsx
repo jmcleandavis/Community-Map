@@ -13,7 +13,7 @@ const RegisterGarageSale = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    name: 'Garage Sale',  // Set default name
     description: '',
     street: '',     // Full street address (e.g., '123 Main St')
     unit: '',
@@ -443,8 +443,6 @@ const RegisterGarageSale = () => {
       });
       setFeaturedItems(['']);
       setIsEditing(false);
-      
-      setSuccess('Your garage sale has been successfully deleted.');
     } catch (err) {
       console.error('Error deleting garage sale:', err);
       
@@ -671,6 +669,7 @@ const RegisterGarageSale = () => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="e.g., Spring Cleaning Sale"
+              className={formData.name === 'Garage Sale' ? 'default-name' : ''}
             />
           </div>
           
