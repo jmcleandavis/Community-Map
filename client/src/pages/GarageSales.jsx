@@ -74,6 +74,8 @@ const GarageSales = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const id = queryParams.get('communityId');
+  
+
 
     if (id) {
       // Update local state
@@ -388,12 +390,12 @@ const GarageSales = () => {
       const payload = !optimizeFullRoute && selectedSales.size > 0
         ? {
           startingAddressId: saleId,
-          communityId: communityId,
+          communityId: communityId || id,
           userId: userInfo?.userId || ''
         }
         : {
           startingAddressId: saleId,
-          communityId: communityId
+          communityId: communityId || id
         };
 
       const response = await fetch(endpoint, {
@@ -685,215 +687,35 @@ const GarageSales = () => {
           Back to Selection
         </Button>
 
-        <Grid ontainer spacing={2} sx={{ display: 'flex', flexWrap: 'wrap' }}>
+        <Grid container spacing={2}>
           {salesToDisplay.map((sale) => (
-            <Grid item xs={12} sm={6} md={4} key={sale.id} sx={{ display: 'flex' }}>
+            <Grid item xs={12} key={sale.id}>
               <Card
                 variant="outlined"
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '350px',
-                  height: '100%',
-                  minHeight: '280px',
                   transition: 'all 0.2s ease-in-out',
-                  borderColor: selectedSales.has(sale.id) ? 'primary.main' : 'divider',
                   '&:hover': {
                     transform: 'translateY(-2px)',
                     boxShadow: 3,
+                    cursor: 'pointer',
                     borderColor: 'primary.main'
                   },
+                  borderColor: 'divider'
                 }}
+                onClick={() => handleSelectFirstVisit(sale.id)}
               >
-                <CardActionArea
-                  onClick={() => handleSelectionWithAuth(sale.id)}
-                  sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start', // Align all major sections to the top within CardActionArea
-                    alignItems: 'stretch',
-                    height: '100%',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <Box sx={{ position: 'relative', width: '100%' }}>
-                    {/* Checkbox moved outside CardHeader title for correct positioning */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        zIndex: 1,
-                      }}
-                    >
-                      <Checkbox
-                        checked={selectedSales.has(sale.id)}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleSelectionWithAuth(sale.id);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        icon={<CheckBoxOutlineBlankIcon />}
-                        checkedIcon={<CheckBoxIcon color="primary" />}
-                        inputProps={{ 'aria-label': 'Select garage sale' }}
-                      />{sale.name}
-                    </Box>
-                    <CardHeader
-                      title={
-                        <Box sx={{ width: '100%', pt: 1 }}>
-                          <Box sx={{ height: 40 }} /> {/* Creates space for the checkbox */}
-                          <Typography
-                            variant="subtitle1"
-                            component="div"
-                            sx={{
-                              fontWeight: 500,
-                              color: 'text.primary',
-                              width: '100%',
-                              mt: 1,
-                              minHeight: '60px', // Ensure consistent space for address (2 lines)
-                              maxHeight: '60px', // Strict max height for address
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'normal',
-                              wordBreak: 'break-word',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                            }}
-                          >
-                            {sale.addressLine1 || 'No Address Available'}<br />
-                            {sale.addressLine2 || ''}
-                          </Typography>
-                        </Box>
-                      }
-                      // subheader={
-                      //   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
-                      //     GARAGE SALE
-                      //   </Typography>
-                      // }
-                      sx={{
-                        pb: 0,
-                        width: '100%',
-                        '& .MuiCardHeader-content': {
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%'
-                        }
-                      }}
-                    />
-                  </Box>
-                  <CardContent sx={{
-                    pt: 0,
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start', // Align description and featured items to the top within CardContent
-                    overflow: 'hidden',
-                    '&:hover': {
-                      overflowY: 'auto',
-                      overflowX: 'hidden',
-                    },
-                    '&::-webkit-scrollbar': {
-                      width: '4px',
-                    },
-                    '&::-webkit-scrollbar-track': {
-                      background: 'transparent',
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      background: 'rgba(0,0,0,0.2)',
-                      borderRadius: '4px',
-                    },
-                  }}>
-                    {sale.description ? (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          lineHeight: 1.5,
-                          textAlign: 'center',
-                          width: '100%',
-                          p: 2,
-                          boxSizing: 'border-box',
-                          mb: 1.5,
-                          minHeight: `calc(${1.5 * 4}em)`, // Ensure consistent space for 4 lines
-                          maxHeight: `calc(${1.5 * 4}em)`, // Strict max height for description
-                          overflow: 'hidden', // Hide overflow if text exceeds
-                          textOverflow: 'ellipsis', // Add ellipsis
-                          display: '-webkit-box',
-                          WebkitLineClamp: 4,
-                          WebkitBoxOrient: 'vertical',
-                          // Removed alignItems/justifyContent to prevent vertical centering
-                        }}
-                      >
+                <CardActionArea>
+                  <CardContent>
+                    <Typography variant="h6" component="h3" gutterBottom>
+                      {sale.address || 'No Address Available'}
+                    </Typography>
+                    {/* {sale.description && (
+                      <Typography variant="body2" color="text.secondary">
                         {sale.description}
                       </Typography>
-                    ) : (
-                      <Box sx={{
-                        minHeight: `calc(${1.5 * 4}em)`, // Match the height of the actual description area
-                        display: 'flex',
-                        alignItems: 'flex-start', // Align "No description provided." to the top
-                        justifyContent: 'center',
-                        width: '100%',
-                        p: 2,
-                        boxSizing: 'border-box',
-                        mb: 1.5,
-                      }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                          No description provided.
-                        </Typography>
-                      </Box>
-                    )}
-
-                    {sale.highlightedItems ? (
-                      <Typography
-                        variant="body2"
-                        color="primary"
-                        sx={{
-                          fontWeight: 500,
-                          mt: 0, // Align to top (no auto margin)
-                          pt: 1,
-                          px: 2,
-                          pb: 1,
-                          borderTop: '1px solid',
-                          borderColor: 'divider',
-                          textAlign: 'center',
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          minHeight: '20px',
-                          // whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: "wrap",
-                        }}
-                      >
-                        <Box component="span" fontWeight={500}>Highlights & Items:</Box> <br />{sale.highlightedItems}
-                      </Typography>
-                    ) : (
-                      <Box sx={{
-                        minHeight: '20px',
-                        mt: 0, // Align to top (no auto margin)
-                        pt: 1,
-                        px: 2,
-                        pb: 1,
-                        borderTop: '1px solid',
-                        borderColor: 'divider',
-                        width: '100%',
-                        boxSizing: 'border-box'
-                      }} >No Items to Highlight</Box>
-                    )}
+                    )} */}
                   </CardContent>
                 </CardActionArea>
-                <CardActions sx={{
-                  justifyContent: 'flex-end',
-                  pt: 0,
-                  borderTop: '1px solid',
-                  borderColor: 'divider',
-                  backgroundColor: 'action.hover',
-                  px: 2,
-                  py: 1,
-                  flexShrink: 0,
-                }}>
-                </CardActions>
               </Card>
             </Grid>
           ))}
@@ -913,7 +735,7 @@ const GarageSales = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box mb={4}>
         {/* <Typography variant="h4" component="h1" gutterBottom> */}
-          <h1>{communityId === 'GENPUB' ? 'Garage Sales' : (communityName || 'Garage Sales')}</h1>
+        <h1>{communityId === 'GENPUB' ? 'Garage Sales' : (communityName || 'Garage Sales')}</h1>
         {/* </Typography><br /> */}
         {/* 
         {isAuthenticated && userInfo && (
@@ -1018,7 +840,7 @@ const GarageSales = () => {
           </Typography>
         </Box>
       ) : (
-        <Grid container spacing={2} sx={{ display: 'flex', flexWrap: 'wrap' }} style={{justifyContent: 'center'}}>
+        <Grid container spacing={2} sx={{ display: 'flex', flexWrap: 'wrap' }} style={{ justifyContent: 'center' }}>
           {filteredSales.map((sale) => (
             <Grid item xs={12} sm={6} md={4} key={sale.id} sx={{ display: 'flex' }}>
               <Card
@@ -1161,43 +983,43 @@ const GarageSales = () => {
                         {sale.description}
                       </Typography>
                     )}
-                  {sale.highlightedItems ? (
-                                        <Typography
-                                          variant="body2"
-                                          color="primary"
-                                          sx={{
-                                            fontWeight: 500,
-                                            mt: 0, // Align to top (no auto margin)
-                                            pt: 1,
-                                            px: 2,
-                                            pb: 1,
-                                            borderTop: '1px solid',
-                                            borderColor: 'divider',
-                                            textAlign: 'center',
-                                            width: '100%',
-                                            boxSizing: 'border-box',
-                                            minHeight: '20px',
-                                            // whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: "wrap",
-                                          }}
-                                        >
-                                          <Box component="span" fontWeight={500}>Highlights & Items:</Box> <br />{sale.highlightedItems}
-                                        </Typography>
-                                      ) : (
-                                        <Box sx={{
-                                          minHeight: '20px',
-                                          mt: 0, // Align to top (no auto margin)
-                                          pt: 1,
-                                          px: 2,
-                                          pb: 1,
-                                          borderTop: '1px solid',
-                                          borderColor: 'divider',
-                                          width: '100%',
-                                          boxSizing: 'border-box'
-                                        }} >No Items to Highlight</Box>
-                                      )}
-                                    </CardContent>
+                    {sale.highlightedItems ? (
+                      <Typography
+                        variant="body2"
+                        color="primary"
+                        sx={{
+                          fontWeight: 500,
+                          mt: 0, // Align to top (no auto margin)
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          textAlign: 'center',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          minHeight: '20px',
+                          // whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: "wrap",
+                        }}
+                      >
+                        <Box component="span" fontWeight={500}>Highlights & Items:</Box> <br />{sale.highlightedItems}
+                      </Typography>
+                    ) : (
+                      <Box sx={{
+                        minHeight: '20px',
+                        mt: 0, // Align to top (no auto margin)
+                        pt: 1,
+                        px: 2,
+                        pb: 1,
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }} >No Items to Highlight</Box>
+                    )}
+                  </CardContent>
                 </CardActionArea>
               </Card>
             </Grid>
