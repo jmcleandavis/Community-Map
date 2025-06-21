@@ -807,15 +807,17 @@ const GarageSales = () => {
                 </Button>
               </>
             )}
-            <Button
-              variant={selectedSales.size > 0 ? "outlined" : "contained"}
-              color="primary"
-              onClick={handleOptimizeRoute}
-              startIcon={<RouteIcon />}
-              fullWidth={isMobile}
-            >
-              {selectedSales.size > 0 ? 'Optimise Selected' : 'Optimise Full Route'}
-            </Button>
+            {communityId !== 'GENPUB' && (
+              <Button
+                variant={selectedSales.size > 0 ? "outlined" : "contained"}
+                color="primary"
+                onClick={handleOptimizeRoute}
+                startIcon={<RouteIcon />}
+                fullWidth={isMobile}
+              >
+                {selectedSales.size > 0 ? 'Optimise Selected' : 'Optimise Full Route'}
+              </Button>
+            )}
           </Box>
         </Box>
       </Box>
