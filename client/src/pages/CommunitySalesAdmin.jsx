@@ -152,6 +152,15 @@ const CommunitySalesAdmin = () => {
     }));
   };
 
+  // Format dates for API submission
+  const formatDateForApi = (dateString, isStartDate, submissionData) => {
+    if (!dateString) return '';
+    // Add default time if not provided
+    const defaultStartTime = 'T09:00:00';
+    const defaultEndTime = 'T18:00:00';
+    return dateString + (isStartDate ? defaultStartTime : defaultEndTime);
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,18 +169,16 @@ const CommunitySalesAdmin = () => {
       setSubmitting(true);
       setSubmitError(null);
       
+      // Create a copy of form data with default end date if not provided
+      const submissionData = {
+        ...formData,
+        endDate: formData.endDate || formData.startDate
+      };
+      
+      // Update the form state to reflect the default end date
+      setFormData(submissionData);
+      
       if (editingSale) {
-        // Format dates for API submission - reuse the same function
-        const formatDateForApi = (dateString) => {
-          if (!dateString) return '';
-          // Add default time if not provided
-          const defaultStartTime = 'T09:00:00';
-          const defaultEndTime = 'T18:00:00';
-          return dateString + (formData.startDate === formData.endDate ? 
-            (dateString === formData.startDate ? defaultStartTime : defaultEndTime) : 
-            (dateString === formData.startDate ? defaultStartTime : defaultEndTime));
-        };
-        
         // Check if we have valid user information
         if (!userInfo) {
           throw new Error('User information is missing. Please log in again.');
@@ -187,11 +194,11 @@ const CommunitySalesAdmin = () => {
         // Prepare data for API
         const apiData = {
           userId: userId,
-          name: formData.name,
-          description: formData.description,
-          startDate: formatDateForApi(formData.startDate),
-          endDate: formatDateForApi(formData.endDate),
-          location: formData.location
+          name: submissionData.name,
+          description: submissionData.description,
+          startDate: formatDateForApi(submissionData.startDate, true, submissionData),
+          endDate: formatDateForApi(submissionData.endDate, false, submissionData),
+          location: submissionData.location
         };
         
         // Debug information
@@ -245,17 +252,6 @@ const CommunitySalesAdmin = () => {
         // Show success message
         alert('Community sale updated successfully!');
       } else {
-        // Format dates for API submission
-        const formatDateForApi = (dateString) => {
-          if (!dateString) return '';
-          // Add default time if not provided
-          const defaultStartTime = 'T09:00:00';
-          const defaultEndTime = 'T18:00:00';
-          return dateString + (formData.startDate === formData.endDate ? 
-            (dateString === formData.startDate ? defaultStartTime : defaultEndTime) : 
-            (dateString === formData.startDate ? defaultStartTime : defaultEndTime));
-        };
-        
         // Check if we have valid user information
         if (!userInfo) {
           throw new Error('User information is missing. Please log in again.');
@@ -271,11 +267,11 @@ const CommunitySalesAdmin = () => {
         // Prepare data for API
         const apiData = {
           userId: userId,
-          name: formData.name,
-          description: formData.description,
-          startDate: formatDateForApi(formData.startDate),
-          endDate: formatDateForApi(formData.endDate),
-          location: formData.location
+          name: submissionData.name,
+          description: submissionData.description,
+          startDate: formatDateForApi(submissionData.startDate, true, submissionData),
+          endDate: formatDateForApi(submissionData.endDate, false, submissionData),
+          location: submissionData.location
         };
         
         // Debug information
