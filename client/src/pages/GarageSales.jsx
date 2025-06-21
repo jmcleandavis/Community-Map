@@ -730,7 +730,7 @@ const GarageSales = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box mb={4}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {communityName || 'Garage Sales'}
+          {communityId === 'GENPUB' ? 'Garage Sales' : (communityName || 'Garage Sales')}
         </Typography>
         
         {isAuthenticated && userInfo && (
