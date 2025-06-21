@@ -434,6 +434,17 @@ const CommunitySalesAdmin = () => {
     (sale.location || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Debug logging
+  console.log('Debug - CommunitySalesAdmin state:', {
+    loading,
+    error,
+    searchTerm,
+    communitySalesCount: communitySales.length,
+    filteredSalesCount: filteredSales.length,
+    communitySalesSample: communitySales.slice(0, 2), // Show first 2 items to avoid console spam
+    filteredSalesSample: filteredSales.slice(0, 2)    // Show first 2 items to avoid console spam
+  });
+
   return (
     <div className="sales-admin" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <h1>Community Sales Events Administration</h1>
@@ -585,9 +596,11 @@ const CommunitySalesAdmin = () => {
               <div className="card-header">
                 <h3 className="card-title">{sale.name}</h3>
               </div>
-              {sale.date && (
+              {(sale.startDate || sale.endDate) && (
                 <div className="card-date">
-                  Date: {new Date(sale.date).toLocaleDateString()}
+                  {sale.startDate && `Starts: ${new Date(sale.startDate).toLocaleDateString()}`}
+                  {sale.startDate && sale.endDate && <br />}
+                  {sale.endDate && `Ends: ${new Date(sale.endDate).toLocaleDateString()}`}
                 </div>
               )}
               {sale.location && (
