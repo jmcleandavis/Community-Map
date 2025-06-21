@@ -1038,17 +1038,6 @@ const SingleGarageSales = () => {
                   py: 1,
                   flexShrink: 0,
                 }}>
-                  <Button
-                    size="small"
-                    color="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewOnMap(sale);
-                    }}
-                    startIcon={<MapIcon fontSize="small" />}
-                  >
-                    View on Map
-                  </Button>
                 </CardActions>
               </Card>
             </Grid>
