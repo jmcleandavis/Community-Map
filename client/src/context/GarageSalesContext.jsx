@@ -90,7 +90,9 @@ export function GarageSalesProvider({ children }) {
             address: address,
             description: sale.description || 'No description available',
             position: position,
-            highlightedItems: sale.highlightedItems || []
+            highlightedItems: sale.highlightedItems || [],
+            // Also include featuredItems for backward compatibility
+            featuredItems: sale.highlightedItems || []
           };
         });
 

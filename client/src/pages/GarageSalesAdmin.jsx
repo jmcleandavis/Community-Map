@@ -41,7 +41,8 @@ const GarageSalesAdmin = () => {
   const [editingSale, setEditingSale] = useState(null);
   const [formData, setFormData] = useState({
     address: '',
-    description: ''
+    description: '',
+    featuredItems: []
   });
   const [submitError, setSubmitError] = useState(null);
   
@@ -158,7 +159,8 @@ const GarageSalesAdmin = () => {
     setEditingSale(sale);
     setFormData({
       address: sale.address,
-      description: sale.description
+      description: sale.description,
+      featuredItems: sale.featuredItems || []
     });
     // Scroll to the top of the page to make the form visible
     window.scrollTo(0, 0);
@@ -178,6 +180,32 @@ const GarageSalesAdmin = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Handle adding a new featured item
+  const handleAddFeaturedItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      featuredItems: [...(prev.featuredItems || []), '']
+    }));
+  };
+  
+  // Handle removing a featured item
+  const handleRemoveFeaturedItem = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      featuredItems: (prev.featuredItems || []).filter((_, i) => i !== index)
+    }));
+  };
+  
+  // Handle changing a featured item
+  const handleFeaturedItemChange = (e, index) => {
+    const newItems = [...(formData.featuredItems || [])];
+    newItems[index] = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      featuredItems: newItems
     }));
   };
 
@@ -218,8 +246,23 @@ const GarageSalesAdmin = () => {
           updateData.description = formData.description;
         }
         
+        // Check if featured items were updated
+        const currentFeaturedItems = formData.featuredItems?.filter(item => item.trim() !== '') || [];
+        const existingFeaturedItems = editingSale.featuredItems || [];
+        
+        // Check if featured items have changed (order-insensitive comparison)
+        const itemsChanged = 
+          currentFeaturedItems.length !== existingFeaturedItems.length ||
+          !currentFeaturedItems.every(item => existingFeaturedItems.includes(item));
+          
+        if (itemsChanged) {
+          updateData.highlightedItems = currentFeaturedItems;
+        }
+        
         // Only make the API call if there are changes to update (community ID is always included)
-        await api.updateGarageSale(editingSale.id, updateData);
+        if (Object.keys(updateData).length > 1) { // More than just communityId
+          await api.updateGarageSale(editingSale.id, updateData);
+        }
       } else {
         // Parse the address from the form
         const addressData = parseAddress(formData.address);
@@ -236,7 +279,7 @@ const GarageSalesAdmin = () => {
             country: 'Canada' // Ensure country is included
           },
           description: formData.description || 'GARAGE SALE',
-          highlightedItems: [], // Default to empty array if not provided
+          highlightedItems: formData.featuredItems || [], // Use featured items from form
           name: formData.name || 'Garage Sale',
           community: communityId || 'GENPUB',
           userId: userInfo?.id || userInfo?.userId || 'anonymous', // Ensure we have a fallback user ID
@@ -276,7 +319,8 @@ const GarageSalesAdmin = () => {
       setEditingSale(null);
       setFormData({
         address: '',
-        description: ''
+        description: '',
+        featuredItems: []
       });
       // Force refresh the list after adding/editing with the current community ID
       await fetchGarageSales(communityId, true);
@@ -663,6 +707,39 @@ const GarageSalesAdmin = () => {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <label>Featured Items</label>
+            {formData.featuredItems?.map((item, index) => (
+              <div 
+                key={index} 
+                className={styles.featuredItemInput}
+              >
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => handleFeaturedItemChange(e, index)}
+                  placeholder="e.g., Furniture, Electronics, Toys"
+                />
+                {formData.featuredItems.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFeaturedItem(index)}
+                    className={styles.removeItemButton}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddFeaturedItem}
+              className={styles.addItemButton}
+            >
+              + Add item
+            </button>
+          </div>
+
           <div className={styles.formActions}>
             <button type="submit" className={styles.saveButton}>
               {editingSale ? 'Save Changes' : 'Create Garage Sale'}
@@ -690,6 +767,18 @@ const GarageSalesAdmin = () => {
               </div>
               <h3>{sale.address}</h3>
               <p>{sale.description}</p>
+              {sale.featuredItems?.length > 0 && (
+                <div className={styles.featuredItemsContainer}>
+                  <div className={styles.featuredItemsLabel}>Featured Items:</div>
+                  <div className={styles.featuredItemsList}>
+                    {sale.featuredItems.map((item, index) => (
+                      <span key={index} className={styles.featuredItem}>
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className={styles.saleActions}>
                 {/* <button
                   className={styles.viewMapButton}
