@@ -599,7 +599,7 @@ const GarageSales = () => {
         
         <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
           <List disablePadding>
-            {optimizedRouteAddresses.map((waypoint, index) => (
+            {optimizedRouteAddresses.slice(0, -1).map((waypoint, index) => (
               <React.Fragment key={index}>
                 <ListItem sx={{ py: 2, px: 3 }}>
                   <ListItemIcon sx={{ minWidth: 40 }}>
@@ -625,7 +625,7 @@ const GarageSales = () => {
                     primaryTypographyProps={{ fontWeight: 500 }}
                   />
                 </ListItem>
-                {index < optimizedRouteAddresses.length - 1 && <Divider component="li" />}
+                {index < optimizedRouteAddresses.length - 2 && <Divider component="li" />}
               </React.Fragment>
             ))}
           </List>
