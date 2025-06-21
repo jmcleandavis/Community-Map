@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './ListActiveCommunitySalesEvents.css';
 
 function formatDate(dateString) {
@@ -31,6 +33,8 @@ const ListActiveCommunitySalesEvents = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOrder, setSortOrder] = useState('upcoming'); // 'upcoming', 'recent', or 'alphabetical'
+  const { userInfo } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -132,25 +136,75 @@ const ListActiveCommunitySalesEvents = () => {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && filteredSales.length === 0 && <p>No active community sales found.</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {filteredSales.map(sale => (
-  <li key={sale.id} style={{ marginBottom: 24, padding: 0, border: 'none', borderRadius: 8, background: 'none' }}>
-    <button
-      className="community-sale-btn"
-      onClick={() => {
-        window.location.href = `/?communityId=${sale.id}`;
-      }}
-      aria-label={`View ${sale.name} on map`}
-    >
-      <h2 style={{ margin: 0 }}>{sale.name}</h2>
-      <div style={{ color: '#555', fontSize: 15 }}>
-        <strong>Location:</strong> {sale.location} <br />
-        <span style={{ display: 'block', margin: '8px 0', color: '#333' }}>{sale.description}</span>
-        <strong>Start:</strong> {formatDate(sale.startDate)} <br />
-        <strong>End:</strong> {formatDate(sale.endDate)}
-      </div>
-    </button>
-  </li>
-))}
+        {filteredSales.map(sale => {
+          const isManagedByUser = userInfo?.userId === sale.userId || userInfo?.id === sale.userId;
+          
+          return (
+            <li key={sale.id} style={{ 
+              marginBottom: 24, 
+              padding: 0, 
+              border: 'none', 
+              borderRadius: 8, 
+              background: 'none',
+              position: 'relative'
+            }}>
+              <button
+                className="community-sale-btn"
+                onClick={() => {
+                  window.location.href = `/?communityId=${sale.id}`;
+                }}
+                aria-label={`View ${sale.name} on map`}
+                style={{
+                  width: isManagedByUser ? 'calc(100% - 100px)' : '100%',
+                  textAlign: 'left',
+                  padding: '16px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  background: '#fff',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-block',
+                  verticalAlign: 'top',
+                  marginRight: isManagedByUser ? '8px' : '0',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'}
+                onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
+              >
+                <h2 style={{ margin: 0 }}>{sale.name}</h2>
+                <div style={{ color: '#555', fontSize: 15 }}>
+                  <strong>Location:</strong> {sale.location} <br />
+                  <span style={{ display: 'block', margin: '8px 0', color: '#333' }}>{sale.description}</span>
+                  <strong>Start:</strong> {formatDate(sale.startDate)} <br />
+                  <strong>End:</strong> {formatDate(sale.endDate)}
+                </div>
+              </button>
+              
+              {isManagedByUser && (
+                <button
+                  onClick={() => navigate(`/admin/community-sales`)}
+                  style={{
+                    width: '90px',
+                    height: '100%',
+                    padding: '16px 8px',
+                    border: '1px solid #1976d2',
+                    borderRadius: '8px',
+                    background: '#1976d2',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease',
+                    verticalAlign: 'top',
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  Manage
+                </button>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
