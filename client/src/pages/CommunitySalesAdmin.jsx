@@ -693,9 +693,7 @@ const CommunitySalesAdmin = () => {
                     }}
                     title="Generate QR Code"
                   >
-                    <span role="img" aria-label="QR Code">
-                      📷
-                    </span>
+                    QR Code
                   </button>
                   <button 
                     className="edit-button"
