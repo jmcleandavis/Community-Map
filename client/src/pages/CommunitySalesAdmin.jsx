@@ -133,6 +133,7 @@ const CommunitySalesAdmin = () => {
   // Handle canceling edit/add
   const handleCancelEdit = () => {
     setEditingSale(null);
+    setIsAddingNew(false);
     setFormData({
       name: '',
       description: '',
@@ -140,7 +141,82 @@ const CommunitySalesAdmin = () => {
       endDate: '',
       location: ''
     });
-    setIsAddingNew(false);
+    setSubmitError(null);
+  };
+
+  // Generate QR code for a specific community sale
+  const generateQRCode = (sale) => {
+    // Create a URL that points to the map with the community ID
+    let baseUrl = import.meta.env.VITE_COMMUNITYMAP_API_URL || window.location.origin;
+    if (baseUrl.includes('://') && !baseUrl.includes('://www.')) {
+      baseUrl = baseUrl.replace('://', '://www.');
+    } else if (!baseUrl.includes('://')) {
+      baseUrl = `https://www.${baseUrl}`;
+    }
+    const mapUrl = `${baseUrl}/?communityId=${sale.id}`;
+    
+    // Generate QR code URL using a free QR code service
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mapUrl)}`;
+    
+    // Create a custom HTML page with the QR code
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${sale.name || 'Community Garage Sale'} QR Code</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+          }
+          .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          h1 {
+            margin-top: 0;
+            color: #333;
+          }
+          .instructions {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            max-width: 500px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="qr-container">
+          <h1>${sale.name || 'Community Garage Sale'}</h1>
+          <img src="${qrCodeUrl}" alt="QR Code for ${sale.name || 'Community Garage Sale'}" />
+          <p>Scan this QR code to access the ${sale.name || 'Community Garage Sale'} map on your mobile device.</p>
+          <p>You can print this page or save the QR code image for distribution.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Create a blob from the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    
+    // Open the custom HTML page in a new tab
+    const newTab = window.open(blobUrl, '_blank');
+    
+    // Clean up the blob URL when the tab is closed
+    if (newTab) {
+      newTab.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+      };
+    }
   };
 
   // Handle form input changes
@@ -604,9 +680,23 @@ const CommunitySalesAdmin = () => {
                   Location: {sale.location}
                 </div>
               )}
-              <div className="card-description">{sale.description}</div>
+              {sale.description && (
+                <div className="card-description">{sale.description}</div>
+              )}
               <div className="card-actions">
                 <div className="left-buttons">
+                  <button 
+                    className="qr-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      generateQRCode(sale);
+                    }}
+                    title="Generate QR Code"
+                  >
+                    <span role="img" aria-label="QR Code">
+                      📷
+                    </span>
+                  </button>
                   <button 
                     className="edit-button"
                     onClick={() => handleEdit(sale)}
