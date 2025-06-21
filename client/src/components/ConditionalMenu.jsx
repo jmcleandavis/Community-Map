@@ -18,8 +18,8 @@ const ConditionalMenu = () => {
     return <MenuBar />; // Don't show any menu for info pages
   }
   
-  // Single Garage Sales page should always use MenuBar
-  if (location.pathname === '/single-garage-sales') {
+  // Single Garage Sales and Register Garage Sale pages should always use MenuBar
+  if (location.pathname === '/single-garage-sales' || location.pathname === '/register-garage-sale') {
     return <MenuBar />;
   }
     
