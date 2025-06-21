@@ -643,13 +643,6 @@ const GarageSalesAdmin = () => {
             Add New Garage Sale
           </button>
           
-          <button
-            className={styles.qrCodeButton}
-            onClick={handleCreateQRCode}
-          >
-            Create QR Code
-          </button>
-          
           {adminSelectedSales.size > 0 && (
             <>
               <button 
