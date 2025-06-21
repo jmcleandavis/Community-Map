@@ -13,9 +13,14 @@ const ConditionalMenu = () => {
     return <MenuBar />; // Don't show any menu for admin pages
   }
   
- // Info pages should never show the hamburger menu  
+  // Info pages should never show the hamburger menu  
   if (location.pathname.startsWith('/info')) {
     return <MenuBar />; // Don't show any menu for info pages
+  }
+  
+  // Single Garage Sales page should always use MenuBar
+  if (location.pathname === '/single-garage-sales') {
+    return <MenuBar />;
   }
     
   // Pages that should always use the HamburgerMenu regardless of navigation path
