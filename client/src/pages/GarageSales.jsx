@@ -930,6 +930,26 @@ const GarageSales = () => {
                         boxSizing: 'border-box'
                       }} >No Items to Highlight</Box>
                     )}
+                    {sale.paymentTypes?.length > 0 && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontWeight: 500,
+                          mt: 0,
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          textAlign: 'center',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <Box component="span" fontWeight={500}>Payment Types:</Box> <br />{sale.paymentTypes.join(', ')}
+                      </Typography>
+                    )}
                   </CardContent>
                 </CardActionArea>
               </Card>

@@ -93,7 +93,19 @@ export function GarageSalesProvider({ children }) {
             position: position,
             highlightedItems: Array.isArray(sale.highlightedItems) ? sale.highlightedItems.join(', ') : '',
             // Also include featuredItems for backward compatibility
-            featuredItems: sale.highlightedItems || []
+            featuredItems: sale.highlightedItems || [],
+            paymentTypes: (sale.paymentTypes || []).map(pt => {
+              const normalizeMap = {
+                'CASH': 'Cash',
+                'VISA': 'Visa',
+                'MASTERCARD': 'Mastercard',
+                'AMERICAN EXPRESS': 'American Express',
+                'DEBIT': 'Debit',
+                'EMAIL TRANSFER': 'Email Transfer',
+                'MasterCard': 'Mastercard'
+              };
+              return normalizeMap[pt] || pt;
+            })
           };
         });
 

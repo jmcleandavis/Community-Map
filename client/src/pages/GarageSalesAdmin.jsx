@@ -179,7 +179,7 @@ const GarageSalesAdmin = () => {
 
   // Available payment types - matching backend format (uppercase)
   const availablePaymentTypes = [
-    { display: 'Cash', value: 'CASH' },
+    { display: 'Cash', value: 'Cash' },
     { display: 'Visa', value: 'Visa' },
     { display: 'Mastercard', value: 'MasterCard' },
     { display: 'American Express', value: 'American Express' },
