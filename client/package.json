@@ -15,7 +15,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "lint:docs": "node ../.agents/scripts/lint-docs.js",
+    "lint:structure": "node ../.agents/scripts/lint-structure.js",
+    "lint:agents": "node ../.agents/scripts/lint-structure.js && node ../.agents/scripts/lint-docs.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

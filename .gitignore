@@ -44,3 +44,6 @@ markdown-preview.html
 coverage
 client/coverage
 *.lcov
+
+# AI agent scratch space
+.agents/.scratch/

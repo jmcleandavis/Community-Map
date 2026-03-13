@@ -1,0 +1,28 @@
+{
+  "requiredFiles": [
+    "AI-INSTRUCTIONS.md",
+    "product-overview.md",
+    "project-overview.md"
+  ],
+  "requiredFolders": [
+    "operations",
+    "reference",
+    "architecture",
+    "scripts"
+  ],
+  "optionalItems": [
+    ".scratch"
+  ],
+  "nestedRequirements": {
+    "architecture": ["integrations"]
+  },
+  "tokenLimits": {
+    "AI-INSTRUCTIONS.md": 1000,
+    "product-overview.md": 500,
+    "project-overview.md": 100,
+    "operations/*.md": 500,
+    "reference/*.md": 500,
+    "architecture/*.md": 500,
+    "**/INDEX.md": 200
+  }
+}
