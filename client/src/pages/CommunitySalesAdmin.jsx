@@ -63,7 +63,9 @@ const CommunitySalesAdmin = () => {
               description: sale.description,
               startDate: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
               endDate: sale.endDate ? new Date(sale.endDate).toISOString().split('T')[0] : '',
-              location: sale.location
+              location: sale.location,
+              facebookUrl: sale.facebookUrl || '',
+              websiteUrl: sale.websiteUrl || ''
             }))
           : [];
         
@@ -95,7 +97,9 @@ const CommunitySalesAdmin = () => {
     description: '',
     startDate: '',
     endDate: '',
-    location: ''
+    location: '',
+    facebookUrl: '',
+    websiteUrl: ''
   });
 
   // Handle search input changes
@@ -111,7 +115,9 @@ const CommunitySalesAdmin = () => {
       description: '',
       startDate: '',
       endDate: '',
-      location: ''
+      location: '',
+      facebookUrl: '',
+      websiteUrl: ''
     });
     setIsAddingNew(true);
   };
@@ -125,9 +131,10 @@ const CommunitySalesAdmin = () => {
       description: sale.description,
       startDate: sale.startDate || '',
       endDate: sale.endDate || '',
-      location: sale.location || ''
+      location: sale.location || '',
+      facebookUrl: sale.facebookUrl || '',
+      websiteUrl: sale.websiteUrl || ''
     });
-    // Scroll to the top of the page to make the form visible
     window.scrollTo(0, 0);
   };
 
@@ -140,7 +147,9 @@ const CommunitySalesAdmin = () => {
       description: '',
       startDate: '',
       endDate: '',
-      location: ''
+      location: '',
+      facebookUrl: '',
+      websiteUrl: ''
     });
     setSubmitError(null);
   };
@@ -275,10 +284,11 @@ const CommunitySalesAdmin = () => {
           description: submissionData.description,
           startDate: formatDateForApi(submissionData.startDate, true, submissionData),
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
-          location: submissionData.location
+          location: submissionData.location,
+          facebookUrl: submissionData.facebookUrl || '',
+          websiteUrl: submissionData.websiteUrl || ''
         };
         
-        // Debug information
         logger.log('[CommunitySalesAdmin] API Update Data:', apiData);
         logger.log('[CommunitySalesAdmin] Updating community sale with ID:', editingSale.id);
         
@@ -309,7 +319,6 @@ const CommunitySalesAdmin = () => {
         
         const result = await response.json();
         
-        // Update the community sale in the local state
         setCommunitySales(prev => 
           prev.map(sale => 
             sale.id === editingSale.id 
@@ -320,7 +329,9 @@ const CommunitySalesAdmin = () => {
                   startDate: result.data?.startDate ? new Date(result.data.startDate).toISOString().split('T')[0] : formData.startDate,
                   endDate: result.data?.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : formData.endDate,
                   location: result.data?.location || formData.location,
-                  userId: result.data?.userId || userId
+                  userId: result.data?.userId || userId,
+                  facebookUrl: result.data?.facebookUrl || formData.facebookUrl || '',
+                  websiteUrl: result.data?.websiteUrl || formData.websiteUrl || ''
                 } 
               : sale
           )
@@ -348,10 +359,11 @@ const CommunitySalesAdmin = () => {
           description: submissionData.description,
           startDate: formatDateForApi(submissionData.startDate, true, submissionData),
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
-          location: submissionData.location
+          location: submissionData.location,
+          facebookUrl: submissionData.facebookUrl || '',
+          websiteUrl: submissionData.websiteUrl || ''
         };
         
-        // Debug information
         logger.log('[CommunitySalesAdmin] API Request Data:', apiData);
         logger.log('[CommunitySalesAdmin] UserInfo:', userInfo);
         logger.log('[CommunitySalesAdmin] Using sessionId:', sessionId);
@@ -377,7 +389,6 @@ const CommunitySalesAdmin = () => {
         
         const result = await response.json();
         
-        // Add the new community sale to the local state
         const newSale = {
           id: result.data.id,
           name: result.data.name,
@@ -385,7 +396,9 @@ const CommunitySalesAdmin = () => {
           startDate: result.data.startDate ? new Date(result.data.startDate).toISOString().split('T')[0] : '',
           endDate: result.data.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : '',
           location: result.data.location,
-          userId: result.data.userId
+          userId: result.data.userId,
+          facebookUrl: result.data.facebookUrl || '',
+          websiteUrl: result.data.websiteUrl || ''
         };
         
         setCommunitySales(prev => [...prev, newSale]);
@@ -401,7 +414,9 @@ const CommunitySalesAdmin = () => {
         description: '',
         startDate: '',
         endDate: '',
-        location: ''
+        location: '',
+        facebookUrl: '',
+        websiteUrl: ''
       });
     } catch (err) {
       logger.error('[CommunitySalesAdmin] Error creating/updating community sale:', err);
@@ -687,6 +702,28 @@ const CommunitySalesAdmin = () => {
               value={formData.location}
               onChange={handleInputChange}
               placeholder="Enter location..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Facebook Page URL:</label>
+            <input
+              type="url"
+              name="facebookUrl"
+              value={formData.facebookUrl}
+              onChange={handleInputChange}
+              placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Website URL:</label>
+            <input
+              type="url"
+              name="websiteUrl"
+              value={formData.websiteUrl}
+              onChange={handleInputChange}
+              placeholder="https://..."
             />
           </div>
           

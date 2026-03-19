@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import LanguageIcon from '@mui/icons-material/Language';
 import './ListActiveCommunitySalesEvents.css';
 
 function formatDate(dateString) {
@@ -55,7 +57,14 @@ const ListActiveCommunitySalesEvents = () => {
         if (!response.ok) throw new Error('Failed to fetch sales');
         const data = await response.json();
         logger.info('[ListActiveCommunitySalesEvents] Fetched community sales data:', data);
-        setSales(data || []);
+        // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
+        const salesWithDummyLinks = (data || []).map((sale, i) => {
+          if (i === 0) return { ...sale, facebookUrl: 'https://www.facebook.com/community-sale', websiteUrl: 'https://example.com/community' };
+          if (i === 1) return { ...sale, facebookUrl: 'https://www.facebook.com/neighbourhood-sale' };
+          if (i === 2) return { ...sale, websiteUrl: 'https://example.com/spring-event' };
+          return sale;
+        });
+        setSales(salesWithDummyLinks);
       } catch (err) {
         setError(err.message);
         logger.error('[ListActiveCommunitySalesEvents] Error fetching community sales events:', err);
@@ -170,7 +179,7 @@ const ListActiveCommunitySalesEvents = () => {
                 onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'}
                 onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
               >
-                <div style={{ paddingRight: isManagedByUser ? '90px' : '0', position: 'relative' }}>
+                  <div style={{ paddingRight: isManagedByUser ? '90px' : '0', position: 'relative' }}>
                   <h2 style={{ margin: 0 }}>{sale.name}</h2>
                   <div style={{ color: '#555', fontSize: 15 }}>
                     <strong>Location:</strong> {sale.location} <br />
@@ -178,6 +187,34 @@ const ListActiveCommunitySalesEvents = () => {
                     <strong>Start:</strong> {formatDate(sale.startDate)} <br />
                     <strong>End:</strong> {formatDate(sale.endDate)}
                   </div>
+                  {(sale.facebookUrl || sale.websiteUrl) && (
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                      {sale.facebookUrl && (
+                        <a
+                          href={sale.facebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ color: '#1877F2', display: 'flex', alignItems: 'center' }}
+                          aria-label="Facebook page"
+                        >
+                          <FacebookIcon />
+                        </a>
+                      )}
+                      {sale.websiteUrl && (
+                        <a
+                          href={sale.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ color: '#555', display: 'flex', alignItems: 'center' }}
+                          aria-label="Website"
+                        >
+                          <LanguageIcon />
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 {isManagedByUser && (

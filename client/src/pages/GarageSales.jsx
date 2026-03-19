@@ -35,7 +35,9 @@ import {
   CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Facebook as FacebookIcon,
+  Language as LanguageIcon
 } from '@mui/icons-material';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
@@ -949,6 +951,51 @@ const GarageSales = () => {
                       >
                         <Box component="span" fontWeight={500}>Payment Types:</Box> <br />{sale.paymentTypes.join(', ')}
                       </Typography>
+                    )}
+                    {(sale.facebookUrl || sale.websiteUrl) && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          justifyContent: 'center',
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        {sale.facebookUrl && (
+                          <IconButton
+                            component="a"
+                            href={sale.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            size="small"
+                            sx={{ color: '#1877F2' }}
+                            aria-label="Facebook page"
+                          >
+                            <FacebookIcon />
+                          </IconButton>
+                        )}
+                        {sale.websiteUrl && (
+                          <IconButton
+                            component="a"
+                            href={sale.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            size="small"
+                            sx={{ color: 'text.secondary' }}
+                            aria-label="Website"
+                          >
+                            <LanguageIcon />
+                          </IconButton>
+                        )}
+                      </Box>
                     )}
                   </CardContent>
                 </CardActionArea>

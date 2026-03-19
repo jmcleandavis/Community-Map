@@ -17,13 +17,15 @@ const RegisterGarageSale = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    street: '',     // Full street address (e.g., '123 Main St')
+    street: '',
     unit: '',
     city: '',
     provState: '',
     postalZipCode: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    facebookUrl: '',
+    websiteUrl: ''
   });
   
   // Featured items as separate array
@@ -62,7 +64,6 @@ const RegisterGarageSale = () => {
           if (userSale) {
             setExistingSale(userSale);
             
-            // Pre-fill form with existing data
             setFormData({
               name: userSale.name || '',
               description: userSale.description || '',
@@ -72,7 +73,9 @@ const RegisterGarageSale = () => {
               provState: userSale.address?.provState || '',
               postalZipCode: userSale.address?.postalZipCode || '',
               startDate: userSale.startDate || '',
-              endDate: userSale.endDate || ''
+              endDate: userSale.endDate || '',
+              facebookUrl: userSale.facebookUrl || '',
+              websiteUrl: userSale.websiteUrl || ''
             });
             setFeaturedItems(userSale.highlightedItems || ['']);
           }
@@ -247,7 +250,9 @@ const RegisterGarageSale = () => {
           timezone: "America/Toronto"
         },
         community: 'GENPUB',
-        userId: userId // Use the explicitly obtained user ID
+        userId: userId,
+        facebookUrl: formData.facebookUrl || '',
+        websiteUrl: formData.websiteUrl || ''
       };
       
       logger.log('[RegisterGarageSale] Sale Data Payload:', JSON.stringify(saleData, null, 2)); // Debug log
@@ -358,7 +363,9 @@ const RegisterGarageSale = () => {
           provState: '',
           postalZipCode: '',
           startDate: '',
-          endDate: ''
+          endDate: '',
+          facebookUrl: '',
+          websiteUrl: ''
         });
         setFeaturedItems(['']);
       }
@@ -376,7 +383,6 @@ const RegisterGarageSale = () => {
     setError(null);
     
     if (existingSale) {
-      // Reset form to existing sale data
       setFormData({
         name: existingSale.name || '',
         description: existingSale.description || '',
@@ -388,7 +394,9 @@ const RegisterGarageSale = () => {
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
         startDate: existingSale.dateTime?.start ? existingSale.dateTime.start.split('T')[0] : '',
-        endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : ''
+        endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : '',
+        facebookUrl: existingSale.facebookUrl || '',
+        websiteUrl: existingSale.websiteUrl || ''
       });
       setFeaturedItems(existingSale.highlightedItems || ['']);
     }
@@ -416,7 +424,6 @@ const RegisterGarageSale = () => {
       setExistingSale(null);
       setGenpubSales([]);
       
-      // Reset form
       setFormData({
         name: 'Garage Sale',
         description: '',
@@ -426,7 +433,9 @@ const RegisterGarageSale = () => {
         provState: '',
         postalZipCode: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        facebookUrl: '',
+        websiteUrl: ''
       });
       setFeaturedItems(['']);
       setIsEditing(false);
@@ -519,7 +528,6 @@ const RegisterGarageSale = () => {
         endDate
       }); // Debug log
       
-      // Pre-fill form with existing data
       setFormData({
         name: existingSale.name || 'Garage Sale',
         description: existingSale.description || '',
@@ -529,7 +537,9 @@ const RegisterGarageSale = () => {
         provState: existingSale.address?.provState || '',
         postalZipCode: existingSale.address?.postalZipCode || '',
         startDate,
-        endDate
+        endDate,
+        facebookUrl: existingSale.facebookUrl || '',
+        websiteUrl: existingSale.websiteUrl || ''
       });
       
       // Pre-fill featured items - ensure we always have at least one empty field for adding new items
@@ -854,6 +864,30 @@ const RegisterGarageSale = () => {
               name="endDate"
               value={formData.endDate}
               onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="facebookUrl">Facebook Page URL</label>
+            <input
+              type="url"
+              id="facebookUrl"
+              name="facebookUrl"
+              value={formData.facebookUrl}
+              onChange={handleInputChange}
+              placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="websiteUrl">Website URL</label>
+            <input
+              type="url"
+              id="websiteUrl"
+              name="websiteUrl"
+              value={formData.websiteUrl}
+              onChange={handleInputChange}
+              placeholder="https://..."
             />
           </div>
           

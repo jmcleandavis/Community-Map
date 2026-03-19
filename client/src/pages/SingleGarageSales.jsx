@@ -35,7 +35,9 @@ import {
   CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Facebook as FacebookIcon,
+  Language as LanguageIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
@@ -140,7 +142,7 @@ const SingleGarageSales = () => {
               address: formattedAddress,
               addressLine1,
               addressLine2,
-              fullAddress: addressObj, // Store the full address object for reference
+              fullAddress: addressObj,
               description: sale.description || '',
               name: sale.name || 'GARAGE SALE',
               highlightedItems: Array.isArray(sale.highlightedItems) ? sale.highlightedItems.join(', ') : '',
@@ -148,8 +150,17 @@ const SingleGarageSales = () => {
               position: {
                 lat: parseFloat(addressObj.lat) || 0,
                 lng: parseFloat(addressObj.long) || 0
-              }
+              },
+              facebookUrl: sale.facebookUrl || '',
+              websiteUrl: sale.websiteUrl || ''
             };
+          });
+
+          // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
+          salesData.forEach((sale, i) => {
+            if (i === 0) { sale.facebookUrl = 'https://www.facebook.com/example-sale'; sale.websiteUrl = 'https://example.com/garage-sale'; }
+            if (i === 1) { sale.facebookUrl = 'https://www.facebook.com/another-sale'; }
+            if (i === 2) { sale.websiteUrl = 'https://example.com/spring-sale'; }
           });
 
           logger.log('[SingleGarageSales] Processed sales data:', salesData);
@@ -938,7 +949,7 @@ const SingleGarageSales = () => {
                         color="primary"
                         sx={{
                           fontWeight: 500,
-                          mt: 0, // Align to top (no auto margin)
+                          mt: 0,
                           pt: 1,
                           px: 2,
                           pb: 1,
@@ -948,7 +959,6 @@ const SingleGarageSales = () => {
                           width: '100%',
                           boxSizing: 'border-box',
                           minHeight: '20px',
-                          // whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: "wrap",
                         }}
@@ -958,7 +968,7 @@ const SingleGarageSales = () => {
                     ) : (
                       <Box sx={{
                         minHeight: '20px',
-                        mt: 0, // Align to top (no auto margin)
+                        mt: 0,
                         pt: 1,
                         px: 2,
                         pb: 1,
@@ -967,6 +977,51 @@ const SingleGarageSales = () => {
                         width: '100%',
                         boxSizing: 'border-box'
                       }} >No Items to Highlight</Box>
+                    )}
+                    {(sale.facebookUrl || sale.websiteUrl) && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          justifyContent: 'center',
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        {sale.facebookUrl && (
+                          <IconButton
+                            component="a"
+                            href={sale.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            size="small"
+                            sx={{ color: '#1877F2' }}
+                            aria-label="Facebook page"
+                          >
+                            <FacebookIcon />
+                          </IconButton>
+                        )}
+                        {sale.websiteUrl && (
+                          <IconButton
+                            component="a"
+                            href={sale.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            size="small"
+                            sx={{ color: 'text.secondary' }}
+                            aria-label="Website"
+                          >
+                            <LanguageIcon />
+                          </IconButton>
+                        )}
+                      </Box>
                     )}
                   </CardContent>
                 </CardActionArea>

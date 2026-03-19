@@ -17,6 +17,7 @@ Community Map is a web application that lets neighborhoods organize and browse c
 | Community Sales Events | Group multiple garage sales under a single community event |
 | Admin Dashboard | Review, approve, and export garage sale listings |
 | Payment Method Tracking | Each listing indicates accepted payment types (cash, card, etc.) |
+| External Links | Sellers can add Facebook page and website URLs to their listings for promotion and shopper discovery |
 
 ## Key Terminology
 
@@ -24,5 +25,6 @@ Community Map is a web application that lets neighborhoods organize and browse c
 |------|---------|
 | Garage Sale | An individual seller's listing with address, hours, and payment info |
 | Community Sale | A neighborhood-wide event grouping multiple garage sales |
+| GENPUB | Special community ID for standalone garage sales not tied to any community event |
 | Listing | A registered garage sale entry on the map |
 | Admin | A privileged user who manages and approves listings |

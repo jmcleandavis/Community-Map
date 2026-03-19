@@ -92,7 +92,6 @@ export function GarageSalesProvider({ children }) {
             description: sale.description || 'No description available',
             position: position,
             highlightedItems: Array.isArray(sale.highlightedItems) ? sale.highlightedItems.join(', ') : '',
-            // Also include featuredItems for backward compatibility
             featuredItems: sale.highlightedItems || [],
             paymentTypes: (sale.paymentTypes || []).map(pt => {
               const normalizeMap = {
@@ -105,8 +104,17 @@ export function GarageSalesProvider({ children }) {
                 'MasterCard': 'Mastercard'
               };
               return normalizeMap[pt] || pt;
-            })
+            }),
+            facebookUrl: sale.facebookUrl || '',
+            websiteUrl: sale.websiteUrl || ''
           };
+        });
+
+        // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
+        processedData.forEach((sale, i) => {
+          if (i === 0) { sale.facebookUrl = 'https://www.facebook.com/example-sale'; sale.websiteUrl = 'https://example.com/garage-sale'; }
+          if (i === 1) { sale.facebookUrl = 'https://www.facebook.com/another-sale'; }
+          if (i === 2) { sale.websiteUrl = 'https://example.com/spring-sale'; }
         });
 
         setGarageSales(processedData);

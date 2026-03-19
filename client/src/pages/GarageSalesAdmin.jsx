@@ -44,7 +44,9 @@ const GarageSalesAdmin = () => {
     address: '',
     description: '',
     featuredItems: [],
-    paymentTypes: []
+    paymentTypes: [],
+    facebookUrl: '',
+    websiteUrl: ''
   });
   const [submitError, setSubmitError] = useState(null);
   
@@ -113,7 +115,9 @@ const GarageSalesAdmin = () => {
       address: '',
       description: '',
       featuredItems: [],
-      paymentTypes: []
+      paymentTypes: [],
+      facebookUrl: '',
+      websiteUrl: ''
     });
     setIsAddingNew(true);
     setSubmitError('');
@@ -126,9 +130,10 @@ const GarageSalesAdmin = () => {
       address: sale.address,
       description: sale.description,
       featuredItems: sale.featuredItems || [],
-      paymentTypes: sale.paymentTypes || []
+      paymentTypes: sale.paymentTypes || [],
+      facebookUrl: sale.facebookUrl || '',
+      websiteUrl: sale.websiteUrl || ''
     });
-    // Scroll to the top of the page to make the form visible
     window.scrollTo(0, 0);
   };
 
@@ -138,7 +143,9 @@ const GarageSalesAdmin = () => {
       address: '',
       description: '',
       featuredItems: [],
-      paymentTypes: []
+      paymentTypes: [],
+      facebookUrl: '',
+      websiteUrl: ''
     });
     setIsAddingNew(false);
   };
@@ -271,9 +278,15 @@ const GarageSalesAdmin = () => {
         if (paymentTypesChanged) {
           updateData.paymentTypes = currentPaymentTypes;
         }
+
+        if ((formData.facebookUrl || '') !== (editingSale.facebookUrl || '')) {
+          updateData.facebookUrl = formData.facebookUrl || '';
+        }
+        if ((formData.websiteUrl || '') !== (editingSale.websiteUrl || '')) {
+          updateData.websiteUrl = formData.websiteUrl || '';
+        }
         
-        // Only make the API call if there are changes to update (community ID is always included)
-        if (Object.keys(updateData).length > 1) { // More than just communityId
+        if (Object.keys(updateData).length > 1) {
           await api.updateGarageSale(editingSale.id, updateData);
         }
       } else {
@@ -313,10 +326,11 @@ const GarageSalesAdmin = () => {
           endDate: formData.endDate ? 
             new Date(`${formData.endDate}T23:59:59-04:00`).toISOString().split('T')[0] : 
             new Date(Date.now() + 86400000).toISOString().split('T')[0],
-          // Add any additional fields that might be required
           status: 'active',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          facebookUrl: formData.facebookUrl || '',
+          websiteUrl: formData.websiteUrl || ''
         };
         
         logger.log('[GarageSalesAdmin] Creating garage sale with data:', JSON.stringify(saleData, null, 2));
@@ -335,9 +349,10 @@ const GarageSalesAdmin = () => {
         address: '',
         description: '',
         featuredItems: [],
-        paymentTypes: []
+        paymentTypes: [],
+        facebookUrl: '',
+        websiteUrl: ''
       });
-      // Force refresh the list after adding/editing with the current community ID
       await fetchGarageSales(communityId, true);
     } catch (error) {
       logger.error('[GarageSalesAdmin] Error saving garage sale:', error);
@@ -816,6 +831,28 @@ const GarageSalesAdmin = () => {
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Facebook Page URL:</label>
+            <input
+              type="url"
+              name="facebookUrl"
+              value={formData.facebookUrl}
+              onChange={handleInputChange}
+              placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Website URL:</label>
+            <input
+              type="url"
+              name="websiteUrl"
+              value={formData.websiteUrl}
+              onChange={handleInputChange}
+              placeholder="https://..."
+            />
           </div>
 
           <div className={styles.formActions}>
