@@ -1,8 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Alert,
+  CircularProgress,
+  Stack,
+  Chip,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+} from '@mui/material';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useCommunityName } from '../hooks/useCommunityName';
 import api from '../utils/api';
-import './GarageSalesBulkUpload.css';
 import { logger } from '../utils/logger';
 
 const GarageSalesBulkUpload = () => {
@@ -15,10 +33,9 @@ const GarageSalesBulkUpload = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Use custom hook for community name fetching
   useCommunityName(communityId, communityName, setCommunityName, {
     componentName: 'GarageSalesBulkUpload',
-    skipIfExists: false // Always fetch when communityId changes
+    skipIfExists: false,
   });
 
   const handleCommunityIdChange = (e) => {
@@ -31,11 +48,9 @@ const GarageSalesBulkUpload = () => {
     }
   };
 
-  // Community name fetching handled by useCommunityName hook
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!communityId || !file) {
       alert('Please enter a Community ID and select a JSON file');
       return;
@@ -46,42 +61,36 @@ const GarageSalesBulkUpload = () => {
     setErrors([]);
 
     try {
-      // Community name is automatically fetched by the hook
-      
-      // Read the file
       const fileReader = new FileReader();
-      
+
       fileReader.onload = async (event) => {
         try {
           const jsonData = JSON.parse(event.target.result);
-          
+
           if (!Array.isArray(jsonData)) {
             throw new Error('Invalid JSON format. Expected an array of garage sales.');
           }
-          
+
           setResults(prev => ({ ...prev, total: jsonData.length }));
-          
+
           const successfulUploads = [];
           const failedUploads = [];
-          
-          // Process each garage sale
+
           for (const sale of jsonData) {
             try {
               if (!sale.street || !sale.address) {
                 throw new Error(`Missing required fields: ${JSON.stringify(sale)}`);
               }
-              
-              // Format the address data as required by the API
+
               const addressData = {
                 street: sale.street,
                 streetNumber: sale.address,
                 city: sale.city || '',
                 state: sale.state || '',
                 postalCode: sale.postalCode || '',
-                unit: sale.unit || ''
+                unit: sale.unit || '',
               };
-              
-              // Create the garage sale
+
               await api.createGarageSale(
                 addressData,
                 sale.description || 'Garage Sale',
@@ -89,27 +98,23 @@ const GarageSalesBulkUpload = () => {
                 sale.highlightedItems || [],
                 communityId
               );
-              
+
               successfulUploads.push(sale);
             } catch (error) {
-              failedUploads.push({
-                sale,
-                error: error.message
-              });
+              failedUploads.push({ sale, error: error.message });
             }
           }
-          
+
           setResults({
             success: successfulUploads.length,
             failed: failedUploads.length,
-            total: jsonData.length
+            total: jsonData.length,
           });
-          
+
           setErrors(failedUploads.map(item => ({
             address: `${item.sale.address} ${item.sale.street}`,
-            error: item.error
+            error: item.error,
           })));
-          
         } catch (error) {
           logger.error('[GarageSalesBulkUpload] Error processing JSON:', error);
           setErrors([{ address: 'N/A', error: `Error processing JSON file: ${error.message}` }]);
@@ -117,14 +122,13 @@ const GarageSalesBulkUpload = () => {
           setIsUploading(false);
         }
       };
-      
+
       fileReader.onerror = () => {
         setErrors([{ address: 'N/A', error: 'Error reading file' }]);
         setIsUploading(false);
       };
-      
+
       fileReader.readAsText(file);
-      
     } catch (error) {
       logger.error('[GarageSalesBulkUpload] Error during upload:', error);
       setErrors([{ address: 'N/A', error: `Error during upload: ${error.message}` }]);
@@ -148,117 +152,134 @@ const GarageSalesBulkUpload = () => {
   };
 
   return (
-    <div className="garage-sales-bulk-upload">
-      <h1>Bulk Upload Garage Sales</h1>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="communityId">Community ID:</label>
-          <input
-            type="text"
-            id="communityId"
-            value={communityId}
-            onChange={handleCommunityIdChange}
-            placeholder="Enter community ID"
-            required
-          />
-          {communityName && (
-            <div className="community-name">
-              Community Name: <strong>{communityName}</strong>
-            </div>
-          )}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="jsonFile">JSON File:</label>
-          <input
-            type="file"
-            id="jsonFile"
-            accept=".json"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            required
-          />
-          <div className="file-format-info">
-            <h3>Expected JSON Format:</h3>
-            <pre>
+    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+      <Typography variant="h2" gutterBottom>Bulk Upload Garage Sales</Typography>
+
+      <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Community ID</Typography>
+              <input
+                type="text"
+                id="communityId"
+                value={communityId}
+                onChange={handleCommunityIdChange}
+                placeholder="Enter community ID"
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: '1px solid #e2e8f0',
+                  fontSize: '0.9375rem',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {communityName && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Community: <strong>{communityName}</strong>
+                </Typography>
+              )}
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>JSON File</Typography>
+              <input
+                type="file"
+                id="jsonFile"
+                accept=".json"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                required
+              />
+
+              <Paper elevation={0} sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Expected JSON Format:</Typography>
+                <Box component="pre" sx={{ fontSize: '0.75rem', overflow: 'auto', m: 0, color: 'text.secondary' }}>
 {`[
   {
     "street": "STREET NAME",
     "address": "STREET NUMBER",
     "description": "DESCRIPTION",
-    "city": "CITY", // optional
-    "state": "STATE", // optional
-    "postalCode": "POSTAL CODE", // optional
-    "unit": "UNIT" // optional
-  },
-  ...
+    "city": "CITY",
+    "state": "STATE",
+    "postalCode": "POSTAL CODE",
+    "unit": "UNIT"
+  }
 ]`}
-            </pre>
-          </div>
-        </div>
-        
-        <div className="button-group">
-          <button 
-            type="submit" 
-            className="submit-button" 
-            disabled={isUploading || !communityId || !file}
-          >
-            {isUploading ? 'Uploading...' : 'Upload Garage Sales'}
-          </button>
-          <button 
-            type="button" 
-            className="reset-button" 
-            onClick={handleReset}
-            disabled={isUploading}
-          >
-            Reset
-          </button>
-          {results.success > 0 && (
-            <button 
-              type="button" 
-              className="admin-button" 
-              onClick={handleGoToAdmin}
-            >
-              Go to Garage Sales Admin
-            </button>
-          )}
-        </div>
-      </form>
-      
+                </Box>
+              </Paper>
+            </Box>
+
+            <Stack direction="row" spacing={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isUploading || !communityId || !file}
+                startIcon={isUploading ? <CircularProgress size={18} color="inherit" /> : <UploadFileIcon />}
+              >
+                {isUploading ? 'Uploading...' : 'Upload Garage Sales'}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleReset}
+                disabled={isUploading}
+                startIcon={<RestartAltIcon />}
+              >
+                Reset
+              </Button>
+              {results.success > 0 && (
+                <Button
+                  variant="outlined"
+                  onClick={handleGoToAdmin}
+                  startIcon={<AdminPanelSettingsIcon />}
+                >
+                  Go to Admin
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </form>
+      </Paper>
+
       {(results.success > 0 || results.failed > 0) && (
-        <div className="upload-results">
-          <h2>Upload Results</h2>
-          <div className="results-summary">
-            <p>Total: <strong>{results.total}</strong></p>
-            <p>Successful: <strong className="success">{results.success}</strong></p>
-            <p>Failed: <strong className="error">{results.failed}</strong></p>
-          </div>
-          
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <Typography variant="h4" gutterBottom>Upload Results</Typography>
+          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Chip label={`Total: ${results.total}`} />
+            <Chip label={`Success: ${results.success}`} color="success" />
+            {results.failed > 0 && <Chip label={`Failed: ${results.failed}`} color="error" />}
+          </Stack>
+
           {errors.length > 0 && (
-            <div className="error-list">
-              <h3>Failed Uploads:</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Address</th>
-                    <th>Error</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {errors.map((error, index) => (
-                    <tr key={index}>
-                      <td>{error.address}</td>
-                      <td>{error.error}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Failed Uploads:</Typography>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Address</strong></TableCell>
+                      <TableCell><strong>Error</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {errors.map((error, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{error.address}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="error">{error.error}</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
           )}
-        </div>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 

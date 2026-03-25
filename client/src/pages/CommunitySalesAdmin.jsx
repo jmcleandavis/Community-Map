@@ -1,5 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  Stack,
+  Paper,
+  Chip,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  TextField as MuiTextField
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+import MapIcon from '@mui/icons-material/Map';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useAuth } from '../context/AuthContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
 import api from '../utils/api';
@@ -600,13 +624,17 @@ const CommunitySalesAdmin = () => {
   });
 
   return (
-    <div className="sales-admin" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <h1>Community Sales Events Administration</h1>
+    <Box className="sales-admin" sx={{ maxWidth: 1100, mx: 'auto' }}>
+      <Typography variant="h2" gutterBottom sx={{ textAlign: 'center' }}>
+        Community Sales Events Administration
+      </Typography>
       
       <div className="user-info">
         <div className="user-name">{userInfo?.fName || ''} {userInfo?.lName || ''}</div>
         <div className="user-email">{userEmail}</div>
       </div>
+
+      <Divider sx={{ my: 2 }} />
       
       <div className="admin-controls">
         <div className="search-container">
@@ -620,32 +648,39 @@ const CommunitySalesAdmin = () => {
         </div>
       </div>
       
-      <div className="admin-button-row">
-        <button 
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center" className="admin-button-row">
+        <Button
+          variant="contained"
+          color="primary"
           className="create-community-sales-button"
           onClick={handleAddNew}
           disabled={isAddingNew}
         >
           Create a New Community Sales Event
-        </button>
+        </Button>
         
         {selectedSales.size > 0 && (
           <>
-            <button 
+            <Chip size="small" color="primary" variant="outlined" label={`${selectedSales.size} selected`} />
+            <Button
+              variant="outlined"
+              color="inherit"
               className="select-all-button"
               onClick={handleDeselectAll}
             >
               Deselect All
-            </button>
-            <button 
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
               className="delete-selected-button"
               onClick={handleDeleteSelected}
             >
               Delete Selected ({selectedSales.size})
-            </button>
+            </Button>
           </>
         )}
-      </div>
+      </Stack>
       
       {(isAddingNew || editingSale) && (
         <form onSubmit={handleSubmit} className="sale-form">
@@ -728,116 +763,147 @@ const CommunitySalesAdmin = () => {
           </div>
           
           <div className="form-actions">
-            <button type="submit" className="save-button" disabled={submitting}>
+            <Button type="submit" variant="contained" color="primary" className="save-button" disabled={submitting}>
               {submitting ? 'Saving...' : (editingSale ? 'Save Changes' : 'Create Community Sale')}
-            </button>
-            <button type="button" className="cancel-button" onClick={handleCancelEdit} disabled={submitting}>
+            </Button>
+            <Button type="button" variant="outlined" color="inherit" className="cancel-button" onClick={handleCancelEdit} disabled={submitting}>
               Cancel
-            </button>
+            </Button>
           </div>
           
           {submitError && (
-            <div className="error-message">
+            <Alert severity="error" sx={{ mt: 2 }}>
               {submitError}
-            </div>
+            </Alert>
           )}
         </form>
       )}
       
       {loading ? (
-        <div className="loading-state">
-          <h3>Loading community sales...</h3>
-        </div>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
-        <div className="error-state">
-          <h3>Error</h3>
-          <p>{error}</p>
-        </div>
+        <Alert severity="error" sx={{ my: 2 }}>
+          <Typography variant="h4" component="div" gutterBottom>
+            Error
+          </Typography>
+          <Typography>{error}</Typography>
+        </Alert>
       ) : filteredSales.length === 0 ? (
-        <div className="empty-state">
-          <h3>No Community Sales Found</h3>
-        </div>
+        <Paper variant="outlined" className="empty-state">
+          <Typography variant="h4" gutterBottom>
+            No Community Sales Found
+          </Typography>
+        </Paper>
       ) : (
         <div className="sales-grid">
           {filteredSales.map(sale => (
-            <div key={sale.id} className="sale-card">
-              <label className="checkbox-container">
-                <input
-                  type="checkbox"
-                  checked={selectedSales.has(sale.id)}
-                  onChange={() => handleCheckboxChange(sale.id)}
-                />
-                <span className="checkmark"></span>
-              </label>
-              <div className="card-header">
-                <h3 className="card-title">{sale.name}</h3>
-              </div>
-              {(sale.startDate || sale.endDate) && (
-                <div className="card-date">
-                  {sale.startDate && `Starts: ${new Date(sale.startDate).toLocaleDateString()}`}
-                  {sale.startDate && sale.endDate && <br />}
-                  {sale.endDate && `Ends: ${new Date(sale.endDate).toLocaleDateString()}`}
+            <Card key={sale.id} className="sale-card" variant="outlined">
+              <CardContent sx={{ p: 0, flex: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: 0 } }}>
+                <label className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    checked={selectedSales.has(sale.id)}
+                    onChange={() => handleCheckboxChange(sale.id)}
+                  />
+                  <span className="checkmark"></span>
+                </label>
+                <div className="card-header">
+                  <Typography variant="h4" component="h3" className="card-title" gutterBottom>
+                    {sale.name}
+                  </Typography>
                 </div>
-              )}
-              {sale.location && (
-                <div className="card-location">
-                  Location: {sale.location}
+                {(sale.startDate || sale.endDate) && (
+                  <div className="card-date">
+                    {sale.startDate && `Starts: ${new Date(sale.startDate).toLocaleDateString()}`}
+                    {sale.startDate && sale.endDate && <br />}
+                    {sale.endDate && `Ends: ${new Date(sale.endDate).toLocaleDateString()}`}
+                  </div>
+                )}
+                {sale.location && (
+                  <div className="card-location">
+                    Location: {sale.location}
+                  </div>
+                )}
+                {sale.description && (
+                  <div className="card-description">{sale.description}</div>
+                )}
+                <div className="card-actions">
+                  <div className="left-buttons">
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      size="small"
+                      className="qr-button"
+                      startIcon={<QrCodeIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        generateQRCode(sale);
+                      }}
+                      title="Generate QR Code"
+                    >
+                      QR Code
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      className="edit-button"
+                      startIcon={<EditIcon />}
+                      onClick={() => handleEdit(sale)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      className="delete-button"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleDelete(sale.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                  <div className="right-buttons">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      className="view-on-map-button"
+                      startIcon={<MapIcon />}
+                      onClick={() => handleViewOnMap(sale)}
+                    >
+                      View the Map
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      className="manage-button"
+                      onClick={() => handleManageSale(sale)}
+                    >
+                      Manage Garage Sales
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      className="export-csv-button"
+                      startIcon={<DownloadIcon />}
+                      onClick={() => handleExportCSV(sale)}
+                    >
+                      Export CSV
+                    </Button>
+                  </div>
                 </div>
-              )}
-              {sale.description && (
-                <div className="card-description">{sale.description}</div>
-              )}
-              <div className="card-actions">
-                <div className="left-buttons">
-                  <button 
-                    className="qr-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      generateQRCode(sale);
-                    }}
-                    title="Generate QR Code"
-                  >
-                    QR Code
-                  </button>
-                  <button 
-                    className="edit-button"
-                    onClick={() => handleEdit(sale)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="delete-button"
-                    onClick={() => handleDelete(sale.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-                <div className="right-buttons">
-                  <button 
-                    className="view-on-map-button"
-                    onClick={() => handleViewOnMap(sale)}
-                  >
-                    View the Map
-                  </button>
-                  <button 
-                    className="manage-button"
-                    onClick={() => handleManageSale(sale)}
-                  >
-                    Manage Garage Sales
-                  </button>
-                  <button 
-                    className="export-csv-button"
-                    onClick={() => handleExportCSV(sale)}
-                  >
-                    Export CSV
-                  </button>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
-    </div>
+    </Box>
   );
 };
 

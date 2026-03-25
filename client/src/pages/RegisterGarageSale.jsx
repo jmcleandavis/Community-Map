@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  Paper,
+  Stack,
+  Chip,
+  TextField as MuiTextField,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '../context/NavigationContext';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { parseStreetAddress } from '../utils/addressFormatter';
-import './RegisterGarageSale.css'; // Use dedicated CSS for this component
+import './RegisterGarageSale.css';
 import api from '../utils/api';
 import { logger } from '../utils/logger';
 
@@ -578,87 +593,94 @@ const RegisterGarageSale = () => {
   const userEmail = userInfo?.email || userInfo?.preferred_username || '';
 
   return (
-    <div className="garage-sales-container" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <h1 style={{fontWeight: "600"}}>
-        {existingSale && !isEditing ? '' : 'Register a Garage Sale'}
-      </h1>
-      {!existingSale || isEditing ? (
-        <p className="subheading" style={{ marginTop: '0.5rem', color: '#666' }}>
-          (If you want to register more than one garage sale then please use the "Manage Community Sales" Page)
-        </p>
-      ) : null}
-      
-      {loading && <div className="loading">Loading...</div>}
-      
-      {error && (
-        <div className="error">
-          {error}
-          <button className="retry-button" onClick={() => setError(null)}>Dismiss</button>
-        </div>
+    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+      {(!existingSale || isEditing) && (
+        <>
+          <Typography variant="h2" gutterBottom>Register a Garage Sale</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            If you want to register more than one garage sale then please use the "Manage Community Sales" page.
+          </Typography>
+        </>
       )}
-      
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       {success && !isEditing && (
-        <div className="success-message">
-          {success}
-        </div>
+        <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>
       )}
       
       {existingSale && !isEditing ? (
-        <div className="existing-sale-container">
-          <div className="garage-sale-card">
-            <div className="register-sale-content">
-              <h3>{existingSale.name || 'GARAGE SALE'}</h3>
-              
-              <div className="sale-address-details">
-                {existingSale.address && (
-                  <>
-                    <p className="address-line">
-                      {existingSale.address.streetNum} {existingSale.address.street}
-                      {existingSale.address.unit && (
-                        <span>, Unit {existingSale.address.unit}</span>
-                      )}
-                    </p>
-                    <p className="address-line">
-                      {existingSale.address.city}, {existingSale.address.provState}
-                    </p>
-                    {existingSale.address.postalZipCode && (
-                      <p className="address-line">
-                        {existingSale.address.postalZipCode}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-              
-              {existingSale.description && (
-                <p className="sale-description">{existingSale.description}</p>
+        <Box>
+          <Typography variant="h2" gutterBottom>Your Garage Sale</Typography>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h4" gutterBottom>{existingSale.name || 'GARAGE SALE'}</Typography>
+
+              {existingSale.address && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1">
+                    {existingSale.address.streetNum} {existingSale.address.street}
+                    {existingSale.address.unit && `, Unit ${existingSale.address.unit}`}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {existingSale.address.city}, {existingSale.address.provState}
+                  </Typography>
+                  {existingSale.address.postalZipCode && (
+                    <Typography variant="body2" color="text.secondary">
+                      {existingSale.address.postalZipCode}
+                    </Typography>
+                  )}
+                </Box>
               )}
-              
-              <p className="sale-items">
-                <strong>Featured Items:</strong> {
-                  existingSale.highlightedItems && 
-                  Array.isArray(existingSale.highlightedItems) && 
-                  existingSale.highlightedItems.length > 0 
-                    ? existingSale.highlightedItems.filter(item => item.trim() !== '').join(', ')
-                    : 'None'
-                }
-              </p>
-              
-              <div className="sale-dates">
-                <p><strong>Start Date:</strong> {new Date(existingSale.dateTime.start).toLocaleDateString()}</p>
-                <p><strong>End Date:</strong> {new Date(existingSale.dateTime.end).toLocaleDateString()}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="sale-actions">
-            <button className="edit-button" onClick={handleEditClick}>Edit Garage Sale</button>
-            <button className="delete-button" onClick={handleDelete}>Delete Garage Sale</button>
-          </div>
-          <div className="sale-note">
-            <p>To create additional garage sales, please visit the <strong>Community Sales Page</strong>.</p>
-          </div>
-        </div>
+
+              {existingSale.description && (
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                  {existingSale.description}
+                </Typography>
+              )}
+
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Featured Items:</strong>{' '}
+                {existingSale.highlightedItems &&
+                 Array.isArray(existingSale.highlightedItems) &&
+                 existingSale.highlightedItems.length > 0
+                  ? existingSale.highlightedItems.filter(item => item.trim() !== '').join(', ')
+                  : 'None'}
+              </Typography>
+
+              <Stack direction="row" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Start:</strong> {new Date(existingSale.dateTime.start).toLocaleDateString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>End:</strong> {new Date(existingSale.dateTime.end).toLocaleDateString()}
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Button variant="contained" startIcon={<EditIcon />} onClick={handleEditClick}>
+              Edit Garage Sale
+            </Button>
+            <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleDelete}>
+              Delete Garage Sale
+            </Button>
+          </Stack>
+          <Typography variant="body2" color="text.secondary">
+            To create additional garage sales, please visit the <strong>Community Sales Page</strong>.
+          </Typography>
+        </Box>
       ) : (
         <form className="garage-sale-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -891,19 +913,19 @@ const RegisterGarageSale = () => {
             />
           </div>
           
-          <div className="form-actions">
+          <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
             {isEditing && (
-              <button type="button" className="cancel-button" onClick={handleCancelEdit}>
+              <Button variant="outlined" onClick={handleCancelEdit}>
                 Cancel
-              </button>
+              </Button>
             )}
-            <button type="submit" className="submit-button" disabled={loading}>
+            <Button type="submit" variant="contained" disabled={loading}>
               {loading ? 'Saving...' : (isEditing ? 'Update Garage Sale' : 'Register Garage Sale')}
-            </button>
-          </div>
+            </Button>
+          </Stack>
         </form>
       )}
-    </div>
+    </Box>
   );
 };
 

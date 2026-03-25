@@ -3,47 +3,10 @@
   height: 100%;
   margin: 0;
   padding: 0;
-  text-align: center;
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 }
 
 .app {
@@ -100,73 +63,4 @@ body {
     transform: scale(1);
     opacity: 1;
   }
-}
-/* Add this to your App.css or relevant stylesheet */
-.landing-layout-container {
-  display: flex; /* Already existing */
-  gap: 40px; /* Already existing */
-  padding: 20px; /* Already existing */
-  max-width: 1200px; /* Already existing */
-  margin: 40px auto; /* Already existing */
-  flex-wrap: wrap; /* Already existing */
-  justify-content: center; /* Already existing */
-  /* CRITICAL CHANGE: This ensures all flex items (your .help-column cards) stretch to the height of the tallest item in the row. */
-  align-items: stretch;
-}
-
-.landing-image {
-  flex: 1; /* Allows the image to grow and shrink */
-  min-width: 300px; /* Prevents image from becoming too small before wrapping */
-  max-width: 50%; /* Ensures it takes up roughly half the width initially */
-  height: auto; /* Maintains aspect ratio */
-  /* Remove any conflicting width/height properties if they exist elsewhere */
-}
-
-.landing-section {
-  flex: 1; /* Allows the section to grow and shrink */
-  min-width: 300px; /* Ensures text section doesn't become too narrow */
-  max-width: 50%; /* Ensures it takes up roughly half the width initially */
-  text-align: left; /* Align text to the left within this section */
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 768px) { /* Adjust breakpoint as needed */
-  .landing-layout-container {
-    flex-direction: column; /* Stacks items vertically on smaller screens */
-    gap: 20px; /* Adjust gap for vertical stacking */
-  }
-
-  .landing-image,
-  .landing-section {
-    max-width: 100%; /* Make them take full width when stacked */
-  }
-
-  .landing-section {
-      text-align: center; /* Center text when stacked on small screens if preferred */
-  }
-}
-
-/* Ensure your existing .cta-button styles are defined. Example: */
-.cta-button {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #4CAF50; /* Example green color */
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.cta-button:hover {
-  background-color: #45a049; /* Slightly darker green on hover */
-}
-
-.cta-button.secondary {
-  background-color: #f44336; /* Example red color for secondary */
-}
-
-.cta-button.secondary:hover {
-  background-color: #da190b; /* Slightly darker red on hover */
 }

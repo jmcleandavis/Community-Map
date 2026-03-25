@@ -645,49 +645,27 @@ const GarageSales = () => {
 
   // Main component return
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
       <Box mb={4}>
-        {/* <Typography variant="h4" component="h1" gutterBottom> */}
-        <h1>{communityId === 'GENPUB' ? 'Garage Sales' : (communityName || 'Garage Sales')}</h1>
-        {/* </Typography><br /> */}
-        {/* 
-        {isAuthenticated && userInfo && (
-          <Box mb={3}>
-            <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
-              {userInfo.fName} {userInfo.lName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {userEmail}
-            </Typography>
-          </Box>
-        )} */}
+        <Typography variant="h2" gutterBottom>
+          {communityId === 'GENPUB' ? 'Garage Sales' : (communityName || 'Garage Sales')}
+        </Typography>
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column', // Changed to 'column' to stack items vertically
-            gap: 2,
-            mb: 3,
-            alignItems: 'stretch' // Ensures children (TextField and button Box) stretch to full width
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
           <TextField
             fullWidth
+            size="small"
             variant="outlined"
             placeholder="Search by address or description..."
             value={searchTerm}
             onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              flex: 1,
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'background.paper',
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
               },
             }}
           />
@@ -1016,7 +994,7 @@ const GarageSales = () => {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-    </Container>
+    </Box>
   );
 };
 

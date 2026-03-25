@@ -1,4 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  Stack,
+  Paper,
+  Chip,
+  Divider,
+  IconButton,
+  TextField as MuiTextField,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
@@ -643,7 +661,9 @@ const GarageSalesAdmin = () => {
   if (loading) {
     return (
       <div className="garage-sales-admin">
-        <div className="loading">Loading garage sales...</div>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
       </div>
     );
   }
@@ -651,52 +671,34 @@ const GarageSalesAdmin = () => {
   if (error) {
     return (
       <div className="garage-sales-admin">
-        <div className="error">{error}</div>
-        <button className="retry-button" onClick={fetchGarageSales}>
-          Retry
-        </button>
+        <Stack spacing={2} sx={{ p: 2 }}>
+          <Alert severity="error">{error}</Alert>
+          <Button variant="contained" color="primary" className="retry-button" onClick={fetchGarageSales}>
+            Retry
+          </Button>
+        </Stack>
       </div>
     );
   }
 
   return (
-    <div className={styles.garageSalesAdmin}>
-      <h1 className={styles.title}>{communityName ? `${communityName}` : 'Garage Sales Administration'}</h1>
-      <div className={styles.userInfo}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto' }} className={styles.garageSalesAdmin}>
+      <Typography variant="h2" gutterBottom className={styles.title}>
+        {communityName ? `${communityName}` : 'Garage Sales Administration'}
+      </Typography>
+      <Paper elevation={0} variant="outlined" className={styles.userInfo}>
         <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
         <div className={styles.userEmail}>{userEmail}</div>
-      </div>
+      </Paper>
       
       {submitError && (
-        <div style={{
-          backgroundColor: '#ffebee',
-          color: '#c62828',
-          padding: '12px',
-          borderRadius: '4px',
-          margin: '10px 20px',
-          border: '1px solid #ef9a9a',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span style={{ fontWeight: 'bold' }}>Error:</span>
-          <span>{submitError}</span>
-          <button 
-            onClick={() => setSubmitError(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'none',
-              border: 'none',
-              color: '#c62828',
-              cursor: 'pointer',
-              fontSize: '16px',
-              padding: '0 4px'
-            }}
-            aria-label="Dismiss error"
-          >
-            &times;
-          </button>
-        </div>
+        <Alert
+          severity="error"
+          onClose={() => setSubmitError(null)}
+          sx={{ mx: 2, mb: 2 }}
+        >
+          {submitError}
+        </Alert>
       )}
       
       <div className={styles.adminControls}>
@@ -710,53 +712,66 @@ const GarageSalesAdmin = () => {
           />
         </div>
         
-        <div className={styles.buttonsContainer}>
-          <button 
+        <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1} className={styles.buttonsContainer}>
+          <Button
+            variant="contained"
+            color="primary"
             className={styles.addNewButton}
             onClick={handleAddNew}
             disabled={isAddingNew}
           >
             Add New Garage Sale
-          </button>
+          </Button>
           
           {adminSelectedSales.size > 0 && (
             <>
-              <button 
+              <Button
+                variant="outlined"
+                color="primary"
                 className={styles.selectAllButton}
                 onClick={handleSelectAll}
               >
                 Select All
-              </button>
-              <button 
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
                 className={styles.deselectAllButton}
                 onClick={handleDeselectAll}
               >
                 Deselect All
-              </button>
-              <button 
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
                 className={styles.deleteSelectedButton}
                 onClick={handleDeleteSelected}
               >
                 Delete Selected ({adminSelectedSales.size})
-              </button>
+              </Button>
             </>
           )}
           
-          <button 
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<ArrowBackIcon />}
             className={styles.backToCommunityButton}
             onClick={handleBackToCommunitySales}
           >
             Back to Community Sales
-          </button>
+          </Button>
           
-          <button 
+          <Button
+            variant="outlined"
+            color="primary"
             className={styles.exportCsvButton}
             onClick={handleExportCSV}
             disabled={!garageSales || garageSales.length === 0}
           >
             Export CSV
-          </button>
-        </div>
+          </Button>
+        </Stack>
       </div>
 
       {(isAddingNew || editingSale) && (
@@ -798,23 +813,27 @@ const GarageSalesAdmin = () => {
                   placeholder="e.g., Furniture, Electronics, Toys"
                 />
                 {formData.featuredItems.length > 1 && (
-                  <button
+                  <IconButton
                     type="button"
+                    size="small"
                     onClick={() => handleRemoveFeaturedItem(index)}
                     className={styles.removeItemButton}
+                    aria-label="Remove featured item"
                   >
                     ×
-                  </button>
+                  </IconButton>
                 )}
               </div>
             ))}
-            <button
+            <Button
               type="button"
+              variant="outlined"
+              size="small"
               onClick={handleAddFeaturedItem}
               className={styles.addItemButton}
             >
               + Add item
-            </button>
+            </Button>
           </div>
 
           <div className={styles.formGroup}>
@@ -855,89 +874,100 @@ const GarageSalesAdmin = () => {
             />
           </div>
 
-          <div className={styles.formActions}>
-            <button type="submit" className={styles.saveButton}>
+          <Stack direction="row" spacing={2} className={styles.formActions}>
+            <Button type="submit" variant="contained" color="primary" className={styles.saveButton}>
               {editingSale ? 'Save Changes' : 'Create Garage Sale'}
-            </button>
-            <button type="button" className={styles.cancelButton} onClick={handleCancelEdit}>
+            </Button>
+            <Button type="button" variant="outlined" color="primary" className={styles.cancelButton} onClick={handleCancelEdit}>
               Cancel
-            </button>
-          </div>
+            </Button>
+          </Stack>
         </form>
       )}
 
       <div className={`${styles.salesGrid} ${filteredSales.length === 1 ? styles.singleCard : ''}`}>
         {filteredSales && filteredSales.length > 0 ? (
           filteredSales.map(sale => (
-            <div key={sale.id} className={styles.saleCard}>
-              <div className={styles.cardHeader}>
-                <label className={styles.checkboxContainer}>
-                  <input
-                    type="checkbox"
-                    checked={adminSelectedSales.has(sale.id)}
-                    onChange={() => handleAdminCheckboxChange(sale.id)}
-                  />
-                  <span className={styles.checkmark}></span>
-                </label>
-              </div>
-              <h3>{sale.address}</h3>
-              <p>{sale.description}</p>
-              {sale.featuredItems?.length > 0 && (
-                <div className={styles.featuredItemsContainer}>
-                  <div className={styles.featuredItemsLabel}>Featured Items:</div>
-                  <div className={styles.featuredItemsList}>
-                    {sale.featuredItems.map((item, index) => (
-                      <span key={index} className={styles.featuredItem}>
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+            <Card key={sale.id} variant="outlined" className={styles.saleCard}>
+              <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                <div className={styles.cardHeader}>
+                  <label className={styles.checkboxContainer}>
+                    <input
+                      type="checkbox"
+                      checked={adminSelectedSales.has(sale.id)}
+                      onChange={() => handleAdminCheckboxChange(sale.id)}
+                    />
+                    <span className={styles.checkmark}></span>
+                  </label>
                 </div>
-              )}
-              {sale.paymentTypes?.length > 0 && (
-                <div className={styles.featuredItemsContainer}>
-                  <div className={styles.featuredItemsLabel}>Payment Types:</div>
-                  <div className={styles.featuredItemsList}>
-                    {sale.paymentTypes.map((type, index) => (
-                      <span key={index} className={styles.featuredItem}>
-                        {type}
-                      </span>
-                    ))}
+                <Typography variant="h4" component="h3" gutterBottom>
+                  {sale.address}
+                </Typography>
+                <Typography variant="body1" component="p" sx={{ mb: 1 }}>
+                  {sale.description}
+                </Typography>
+                {sale.featuredItems?.length > 0 && (
+                  <div className={styles.featuredItemsContainer}>
+                    <div className={styles.featuredItemsLabel}>Featured Items:</div>
+                    <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} className={styles.featuredItemsList}>
+                      {sale.featuredItems.map((item, index) => (
+                        <Chip key={index} size="small" label={item} className={styles.featuredItem} />
+                      ))}
+                    </Stack>
                   </div>
-                </div>
-              )}
-              <div className={styles.saleActions}>
-                {/* <button
-                  className={styles.viewMapButton}
-                  onClick={() => handleViewOnMap(sale)}
-                >
-                  View on Map
-                </button> */}
-                <button
-                  className={styles.editButton}
-                  onClick={() => handleEdit(sale)}
-                >
-                  Edit
-                </button>
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => handleDelete(sale.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+                )}
+                {sale.paymentTypes?.length > 0 && (
+                  <div className={styles.featuredItemsContainer}>
+                    <div className={styles.featuredItemsLabel}>Payment Types:</div>
+                    <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} className={styles.featuredItemsList}>
+                      {sale.paymentTypes.map((type, index) => (
+                        <Chip key={index} size="small" label={type} className={styles.featuredItem} />
+                      ))}
+                    </Stack>
+                  </div>
+                )}
+                <Divider sx={{ my: 1.5 }} />
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap className={styles.saleActions}>
+                  {/* <Button
+                    className={styles.viewMapButton}
+                    onClick={() => handleViewOnMap(sale)}
+                  >
+                    View on Map
+                  </Button> */}
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    className={styles.editButton}
+                    onClick={() => handleEdit(sale)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    className={styles.deleteButton}
+                    onClick={() => handleDelete(sale.id)}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
           ))
         ) : (
-          <div className={styles.noResults}>No garage sales found</div>
+          <Alert severity="info" className={styles.noResults}>
+            No garage sales found
+          </Alert>
         )}
       </div>
       
-      <div className={styles.totalCount}>
+      <Typography component="div" variant="body2" className={styles.totalCount} sx={{ mt: 2 }}>
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {adminSelectedSales.size > 0 && ` (${adminSelectedSales.size} selected)`}
-      </div>
-    </div>
+      </Typography>
+    </Box>
   );
 };
 

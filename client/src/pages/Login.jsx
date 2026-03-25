@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Alert,
+  CircularProgress,
+  Divider,
+  TextField as MuiTextField,
+  Stack
+} from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { useInitialPage } from '../context/InitialPageContext';
 import ReactGA from 'react-ga4';
@@ -285,14 +296,24 @@ const Login = () => {
     if (isForgotPassword) {
       return (
         <>
-          <h2>Forgot Password</h2>
-          {error && <div className="error-message">{error}</div>}
-          {successMessage && <div className="success-message">{successMessage}</div>}
+          <Typography variant="h2" gutterBottom>
+            Forgot Password
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
 
           {!successMessage && (
             <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <input
+              <Stack spacing={2}>
+                <MuiTextField
                   type="email"
                   id="email"
                   name="email"
@@ -300,36 +321,51 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
+                  fullWidth
                 />
-              </div>
-              <button
-                type="submit"
-                className="submit-button"
-                disabled={loading}
-              >
-                {loading ? 'Processing...' : 'Send Reset Link'}
-              </button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  fullWidth
+                >
+                  {loading ? (
+                    <>
+                      <CircularProgress size={18} sx={{ mr: 1 }} color="inherit" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </Button>
+              </Stack>
             </form>
           )}
 
-          <button
-            className="back-button"
-            onClick={backToLogin}
-            disabled={loading}
-          >
+          <Button variant="outlined" onClick={backToLogin} disabled={loading} fullWidth sx={{ mt: 2 }}>
             Back to Login
-          </button>
+          </Button>
         </>
       );
     } else if (isResetPassword) {
       return (
         <>
-          <h2>Reset Password</h2>
-          {error && <div className="error-message">{error}</div>}
-          {successMessage && <div className="success-message">{successMessage}</div>}
+          <Typography variant="h2" gutterBottom>
+            Reset Password
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <input
+            <Stack spacing={2}>
+              <MuiTextField
                 type="password"
                 id="newPassword"
                 name="newPassword"
@@ -337,10 +373,9 @@ const Login = () => {
                 value={formData.newPassword}
                 onChange={handleInputChange}
                 required
+                fullWidth
               />
-            </div>
-            <div className="form-group">
-              <input
+              <MuiTextField
                 type="password"
                 id="confirmNewPassword"
                 name="confirmNewPassword"
@@ -348,45 +383,62 @@ const Login = () => {
                 value={formData.confirmNewPassword}
                 onChange={handleInputChange}
                 required
+                fullWidth
               />
-            </div>
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Reset Password'}
-            </button>
+              <Button type="submit" variant="contained" disabled={loading} fullWidth>
+                {loading ? (
+                  <>
+                    <CircularProgress size={18} sx={{ mr: 1 }} color="inherit" />
+                    Processing...
+                  </>
+                ) : (
+                  'Reset Password'
+                )}
+              </Button>
+            </Stack>
           </form>
         </>
       );
     } else {
       return (
         <>
-          <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
-          {error && <div className="error-message">{error}</div>}
-          {successMessage && <div className="success-message">{successMessage}</div>}
+          <Typography variant="h2" gutterBottom>
+            {isLogin ? 'Login' : 'Sign Up'}
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
 
-          <button
-            className="google-button"
+          <Button
+            variant="outlined"
+            fullWidth
             onClick={handleGoogleLogin}
             disabled={loading}
+            startIcon={
+              <img
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                alt="Google"
+                className="google-icon"
+              />
+            }
           >
-            <img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
-              alt="Google"
-              className="google-icon"
-            />
             Sign in with Google
-          </button>
+          </Button>
 
-          <div className="or-divider">OR</div>
+          <Divider sx={{ my: 3 }}>OR</Divider>
 
           <form onSubmit={handleSubmit}>
-            {!isLogin && (
-              <>
-                <div className="form-group">
-                  <input
+            <Stack spacing={2}>
+              {!isLogin && (
+                <>
+                  <MuiTextField
                     type="text"
                     id="firstName"
                     name="firstName"
@@ -394,10 +446,9 @@ const Login = () => {
                     value={formData.firstName}
                     onChange={handleInputChange}
                     required={!isLogin}
+                    fullWidth
                   />
-                </div>
-                <div className="form-group">
-                  <input
+                  <MuiTextField
                     type="text"
                     id="lastName"
                     name="lastName"
@@ -405,13 +456,12 @@ const Login = () => {
                     value={formData.lastName}
                     onChange={handleInputChange}
                     required={!isLogin}
+                    fullWidth
                   />
-                </div>
-              </>
-            )}
+                </>
+              )}
 
-            <div className="form-group">
-              <input
+              <MuiTextField
                 type="email"
                 id="email"
                 name="email"
@@ -419,10 +469,9 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+                fullWidth
               />
-            </div>
-            <div className="form-group">
-              <input
+              <MuiTextField
                 type="password"
                 id="password"
                 name="password"
@@ -430,11 +479,10 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
+                fullWidth
               />
-            </div>
-            {!isLogin && (
-              <div className="form-group">
-                <input
+              {!isLogin && (
+                <MuiTextField
                   type="password"
                   id="confirmPassword"
                   name="confirmPassword"
@@ -442,64 +490,68 @@ const Login = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required={!isLogin}
+                  fullWidth
                 />
-              </div>
-            )}
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
-            </button>
+              )}
+              <Button type="submit" variant="contained" disabled={loading} fullWidth>
+                {loading ? (
+                  <>
+                    <CircularProgress size={18} sx={{ mr: 1 }} color="inherit" />
+                    Processing...
+                  </>
+                ) : isLogin ? (
+                  'Login'
+                ) : (
+                  'Sign Up'
+                )}
+              </Button>
+            </Stack>
           </form>
 
-          <div className="form-footer">
+          <Stack spacing={1} sx={{ mt: 2 }} className="form-footer">
             {isLogin ? (
               <>
-                <button
-                  className="toggle-form-button"
+                <Button
+                  variant="outlined"
                   onClick={() => {
                     setIsLogin(false);
                     setIsForgotPassword(false);
                     setError('');
                   }}
                   disabled={loading}
+                  fullWidth
                 >
                   Need an account? Sign Up
-                </button>
-                <button
-                  className="forgot-password-button"
-                  onClick={toggleForgotPassword}
-                  disabled={loading}
-                >
+                </Button>
+                <Button variant="outlined" onClick={toggleForgotPassword} disabled={loading} fullWidth>
                   Forgot Password?
-                </button>
+                </Button>
               </>
             ) : (
-              <button
-                className="toggle-form-button"
+              <Button
+                variant="outlined"
                 onClick={() => {
                   setIsLogin(true);
                   setError('');
                 }}
                 disabled={loading}
+                fullWidth
               >
                 Already have an account? Login
-              </button>
+              </Button>
             )}
-          </div>
+          </Stack>
         </>
       );
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-form">
+    <Box sx={{ maxWidth: 500, mx: 'auto' }}>
+      <Paper variant="outlined" sx={{ p: 4 }}>
         {renderForm()}
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 };
 

@@ -674,53 +674,30 @@ const SingleGarageSales = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
       <Box mb={4}>
-    
-    <h2 style={{fontWeight: "200"}}>    Hi {userInfo?.fName || ''}, {localCommunityName || 'Garage Sales'}</h2>  
+        <Typography variant="h2" gutterBottom>
+          {userInfo?.fName ? `Hi ${userInfo.fName}, ` : ''}{localCommunityName || 'Garage Sales'}
+        </Typography>
 
-{/* 
-        {isAuthenticated && userInfo && (
-          <Box mb={3}>
-            <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
-              {userInfo.fName} {userInfo.lName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {userEmail}
-            </Typography>
-          </Box>
-        )} */}
-
-<Box
-  sx={{
-    display: 'flex',
-    flexDirection: 'column', // Changed to 'column' to stack items vertically
-    gap: 2,
-    mb: 3,
-    alignItems: 'stretch' // Ensures children (TextField and button Box) stretch to full width
-  }}
->
-  <TextField
-    fullWidth
-    variant="outlined"
-    placeholder="Search by address or description..."
-    value={searchTerm}
-    onChange={handleSearchChange}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon color="action" />
-        </InputAdornment>
-      ),
-    }}
-    sx={{
-      flex: 1, // This flex property on a column item will make it grow, but not necessary for full width here
-      '& .MuiOutlinedInput-root': {
-        backgroundColor: 'background.paper',
-      },
-      mb: 1 // Add a small margin-bottom to separate from buttons if gap isn't enough
-    }}
-  />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            placeholder="Search by address or description..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
 
 
   <Box
@@ -1053,7 +1030,7 @@ const SingleGarageSales = () => {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-    </Container>
+    </Box>
   );
 };
 

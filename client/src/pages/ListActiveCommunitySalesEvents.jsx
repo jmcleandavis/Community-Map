@@ -1,20 +1,37 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger';
+import {
+  Box,
+  Typography,
+  TextField,
+  MenuItem,
+  Card,
+  CardContent,
+  CardActionArea,
+  Button,
+  Chip,
+  Stack,
+  CircularProgress,
+  Alert,
+  IconButton,
+  InputAdornment,
+  Grid,
+} from '@mui/material';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import LanguageIcon from '@mui/icons-material/Language';
-import './ListActiveCommunitySalesEvents.css';
+import SearchIcon from '@mui/icons-material/Search';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 function formatDate(dateString) {
   if (!dateString) return '';
-  // Get only the date part if there's a T
   const [datePart] = dateString.split('T');
   const date = new Date(datePart);
   const day = date.getDate();
   const month = date.toLocaleString('default', { month: 'long' });
   const year = date.getFullYear();
-  // Add ordinal suffix
   function ordinal(n) {
     if (n > 3 && n < 21) return 'th';
     switch (n % 10) {
@@ -35,7 +52,7 @@ const ListActiveCommunitySalesEvents = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortOrder, setSortOrder] = useState('upcoming'); // 'upcoming', 'recent', or 'alphabetical'
+  const [sortOrder, setSortOrder] = useState('upcoming');
   const { userInfo } = useAuth();
   const navigate = useNavigate();
 
@@ -57,7 +74,6 @@ const ListActiveCommunitySalesEvents = () => {
         if (!response.ok) throw new Error('Failed to fetch sales');
         const data = await response.json();
         logger.info('[ListActiveCommunitySalesEvents] Fetched community sales data:', data);
-        // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
         const salesWithDummyLinks = (data || []).map((sale, i) => {
           if (i === 0) return { ...sale, facebookUrl: 'https://www.facebook.com/community-sale', websiteUrl: 'https://example.com/community' };
           if (i === 1) return { ...sale, facebookUrl: 'https://www.facebook.com/neighbourhood-sale' };
@@ -67,7 +83,7 @@ const ListActiveCommunitySalesEvents = () => {
         setSales(salesWithDummyLinks);
       } catch (err) {
         setError(err.message);
-        logger.error('[ListActiveCommunitySalesEvents] Error fetching community sales events:', err);
+        logger.error('[ListActiveCommunitySalesEvents] Error:', err);
       } finally {
         setLoading(false);
       }
@@ -75,9 +91,7 @@ const ListActiveCommunitySalesEvents = () => {
     fetchSales();
   }, []);
 
-  // Sort and filter sales based on search text and sort order
   const sortAndFilterSales = () => {
-    // First filter by search text
     const filtered = sales.filter(sale => {
       const searchText = search.toLowerCase();
       return (
@@ -88,168 +102,179 @@ const ListActiveCommunitySalesEvents = () => {
         formatDate(sale.endDate).toLowerCase().includes(searchText)
       );
     });
-    
-    // Then sort based on selected sort order
+
     return filtered.sort((a, b) => {
       const now = new Date();
       const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
       const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
-      
+
       switch (sortOrder) {
         case 'upcoming':
-          // Sort by closest upcoming dates first (ascending from today)
-          // Events in the past will be at the end
-          if (dateA < now && dateB >= now) return 1; // B is upcoming, A is past
-          if (dateA >= now && dateB < now) return -1; // A is upcoming, B is past
-          return dateA - dateB; // Both in same category, sort by date
+          if (dateA < now && dateB >= now) return 1;
+          if (dateA >= now && dateB < now) return -1;
+          return dateA - dateB;
         case 'recent':
-          // Sort by most distant future dates first (descending from furthest in future)
-          // Events in the past will be at the end
-          if (dateA < now && dateB >= now) return 1; // B is upcoming, A is past
-          if (dateA >= now && dateB < now) return -1; // A is upcoming, B is past
-          return dateB - dateA; // Both in same category, sort by date in reverse
-        case 'alphabetical':
-          // Sort alphabetically by name
-          // Handle null or undefined names by converting to empty strings
+          if (dateA < now && dateB >= now) return 1;
+          if (dateA >= now && dateB < now) return -1;
+          return dateB - dateA;
+        case 'alphabetical': {
           const nameA = (a.name || '').toLowerCase();
           const nameB = (b.name || '').toLowerCase();
           return nameA.localeCompare(nameB);
+        }
         default:
           return dateA - dateB;
       }
     });
   };
-  
+
   const filteredSales = sortAndFilterSales();
 
+  const isUpcoming = (dateString) => {
+    if (!dateString) return false;
+    return new Date(dateString) >= new Date();
+  };
+
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-      <h1>Community Sales Events</h1>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <input
-          type="text"
+    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+      <Typography variant="h2" sx={{ mb: 3 }}>Community Sales Events</Typography>
+
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          size="small"
           placeholder="Search by community or location..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ flex: 1, padding: 10, borderRadius: 6, border: '1px solid #bbb', fontSize: 16, marginRight: '10px' }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            },
+          }}
         />
-        <select 
+        <TextField
+          select
+          size="small"
           value={sortOrder}
           onChange={e => setSortOrder(e.target.value)}
-          style={{ padding: '10px', borderRadius: 6, border: '1px solid #bbb', fontSize: 16 }}
+          sx={{ minWidth: 180 }}
         >
-          <option value="upcoming">Upcoming Events</option>
-          <option value="recent">Latest Events</option>
-          <option value="alphabetical">Alphabetical</option>
-        </select>
-      </div>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!loading && !error && filteredSales.length === 0 && <p>No active community sales found.</p>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+          <MenuItem value="upcoming">Upcoming Events</MenuItem>
+          <MenuItem value="recent">Latest Events</MenuItem>
+          <MenuItem value="alphabetical">Alphabetical</MenuItem>
+        </TextField>
+      </Stack>
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {!loading && !error && filteredSales.length === 0 && (
+        <Alert severity="info">No active community sales found.</Alert>
+      )}
+
+      <Stack spacing={2}>
         {filteredSales.map(sale => {
           const isManagedByUser = userInfo?.userId === sale.userId || userInfo?.id === sale.userId;
-          
+          const upcoming = isUpcoming(sale.endDate);
+
           return (
-            <li key={sale.id} style={{ 
-              marginBottom: 24, 
-              padding: 0, 
-              border: 'none', 
-              borderRadius: 8, 
-              background: 'none',
-              position: 'relative'
-            }}>
-              <button
-                className="community-sale-btn"
-                onClick={() => {
-                  window.location.href = `/?communityId=${sale.id}`;
-                }}
-                aria-label={`View ${sale.name} on map`}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '16px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  background: '#fff',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  position: 'relative',
-                }}
-                onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'}
-                onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
+            <Card key={sale.id}>
+              <CardActionArea
+                onClick={() => { window.location.href = `/?communityId=${sale.id}`; }}
+                sx={{ p: 0 }}
               >
-                  <div style={{ paddingRight: isManagedByUser ? '90px' : '0', position: 'relative' }}>
-                  <h2 style={{ margin: 0 }}>{sale.name}</h2>
-                  <div style={{ color: '#555', fontSize: 15 }}>
-                    <strong>Location:</strong> {sale.location} <br />
-                    <span style={{ display: 'block', margin: '8px 0', color: '#333' }}>{sale.description}</span>
-                    <strong>Start:</strong> {formatDate(sale.startDate)} <br />
-                    <strong>End:</strong> {formatDate(sale.endDate)}
-                  </div>
-                  {(sale.facebookUrl || sale.websiteUrl) && (
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                      {sale.facebookUrl && (
-                        <a
-                          href={sale.facebookUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ color: '#1877F2', display: 'flex', alignItems: 'center' }}
-                          aria-label="Facebook page"
-                        >
-                          <FacebookIcon />
-                        </a>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                        <Typography variant="h4" noWrap>{sale.name}</Typography>
+                        <Chip
+                          label={upcoming ? 'Upcoming' : 'Past'}
+                          color={upcoming ? 'success' : 'default'}
+                          size="small"
+                          variant={upcoming ? 'filled' : 'outlined'}
+                        />
+                      </Stack>
+
+                      {sale.location && (
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5 }}>
+                          <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2" color="text.secondary">{sale.location}</Typography>
+                        </Stack>
                       )}
-                      {sale.websiteUrl && (
-                        <a
-                          href={sale.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ color: '#555', display: 'flex', alignItems: 'center' }}
-                          aria-label="Website"
-                        >
-                          <LanguageIcon />
-                        </a>
+
+                      {sale.description && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          {sale.description}
+                        </Typography>
                       )}
-                    </div>
-                  )}
-                </div>
-                
-                {isManagedByUser && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/admin/community-sales`);
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '16px',
-                      right: '16px',
-                      width: '80px',
-                      padding: '8px 0',
-                      border: '1px solid #1976d2',
-                      borderRadius: '6px',
-                      background: '#1976d2',
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
-                  >
-                    Manage
-                  </button>
-                )}
-              </button>
-            </li>
+
+                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <CalendarTodayIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            {formatDate(sale.startDate)} — {formatDate(sale.endDate)}
+                          </Typography>
+                        </Stack>
+
+                        {(sale.facebookUrl || sale.websiteUrl) && (
+                          <Stack direction="row" spacing={1}>
+                            {sale.facebookUrl && (
+                              <IconButton
+                                size="small"
+                                href={sale.facebookUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                sx={{ color: '#1877F2' }}
+                              >
+                                <FacebookIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                            {sale.websiteUrl && (
+                              <IconButton
+                                size="small"
+                                href={sale.websiteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                color="default"
+                              >
+                                <LanguageIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                          </Stack>
+                        )}
+                      </Stack>
+                    </Box>
+
+                    {isManagedByUser && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={(e) => { e.stopPropagation(); navigate('/admin/community-sales'); }}
+                        sx={{ ml: 2, flexShrink: 0 }}
+                      >
+                        Manage
+                      </Button>
+                    )}
+                  </Stack>
+                </CardContent>
+              </CardActionArea>
+            </Card>
           );
         })}
-      </ul>
-    </div>
+      </Stack>
+    </Box>
   );
 };
 

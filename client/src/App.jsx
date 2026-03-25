@@ -8,7 +8,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme/theme';
 import './App.css';
 import HamburgerMenu from './components/HamburgerMenu';
-import ConditionalMenu from './components/ConditionalMenu';
+import DashboardLayout from './components/DashboardLayout';
 import InfoPage from './pages/Info';
 import ListActiveCommunitySalesEvents from './pages/ListActiveCommunitySalesEvents';
 import Help from './pages/Help';
@@ -33,16 +33,25 @@ import { CommunitySalesProvider } from './context/CommunitySalesContext';
 import { InitialPageProvider } from './context/InitialPageContext';
 import DocumentTitle from './components/DocumentTitle';
 
+const DashboardRoute = ({ children }) => (
+  <DashboardLayout>{children}</DashboardLayout>
+);
+
+const ProtectedDashboardRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <DashboardLayout>{children}</DashboardLayout>;
+};
+
 function App() {
-  const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID; // Make sure you have this in your .env file
+  const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
   ReactGA.initialize(GA_MEASUREMENT_ID);
-  const location = useLocation(); // Get the current location object
+  const location = useLocation();
 
-
-  // Google Maps libraries
   const libraries = useMemo(() => ['places', 'marker'], []);
 
-  // Map container style
   const mapContainerStyle = useMemo(() => ({
     width: '100%',
     height: '100vh'
@@ -65,13 +74,11 @@ function App() {
     zoomControlOptions: {
       position: window.google?.maps?.ControlPosition?.RIGHT_CENTER
     }
-  }), []); // Empty dependency array since these options don't change
+  }), []);
 
-    // Track page views with Google Analytics
-    useEffect(() => {
-      ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
-    }, [location]); // Re-run this effect whenever the location changes
-  
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -92,57 +99,41 @@ function App() {
                       <div className="app">
                         <Routes>
                           <Route path="/loginRedirect" element={<LoginRedirect />} />
+
+                          {/* Dashboard routes */}
                           <Route path="/about" element={
-                            <>
-                              <ConditionalMenu />
-                              <LandingPage />
-                            </>
+                            <DashboardRoute><LandingPage /></DashboardRoute>
                           } />
                           <Route path="/info" element={
-                            <>
-                              <ConditionalMenu />
-                              <InfoPage />
-                            </>
+                            <DashboardRoute><InfoPage /></DashboardRoute>
                           } />
                           <Route path="/help" element={
-                            <>
-                              <ConditionalMenu />
-                              <Help />
-                            </>
+                            <DashboardRoute><Help /></DashboardRoute>
                           } />
                           <Route path="/list-active-community-sales-events" element={
-                            <>
-                              <ConditionalMenu />
-                              <ListActiveCommunitySalesEvents />
-                            </>
+                            <DashboardRoute><ListActiveCommunitySalesEvents /></DashboardRoute>
                           } />
                           <Route path="/login" element={
-                            <>
-                              <ConditionalMenu />
-                              <Login />
-                            </>
+                            <DashboardRoute><Login /></DashboardRoute>
                           } />
                           <Route path="/reset-password" element={
-                            <>
-                              <ConditionalMenu />
-                              <PasswordReset />
-                            </>
+                            <DashboardRoute><PasswordReset /></DashboardRoute>
                           } />
                           <Route path="/sales" element={
-                            <>
-                              <ConditionalMenu />
-                              <GarageSales />
-                            </>
+                            <DashboardRoute><GarageSales /></DashboardRoute>
                           } />
                           <Route path="/single-garage-sales" element={
-                            <>
-                              <ConditionalMenu />
-                              <SingleGarageSales />
-                            </>
+                            <DashboardRoute><SingleGarageSales /></DashboardRoute>
                           } />
+                          <Route path="/landing" element={
+                            <DashboardRoute><LandingPage /></DashboardRoute>
+                          } />
+                          <Route path="/lander" element={<LanderRedirect />} />
+
+                          {/* Map route - unchanged, keeps HamburgerMenu */}
                           <Route path="/" element={
                             <>
-                              <ConditionalMenu />
+                              <HamburgerMenu />
                               <div className="map-container">
                                 <MapView
                                   mapContainerStyle={mapContainerStyle}
@@ -151,44 +142,19 @@ function App() {
                               </div>
                             </>
                           } />
-                          <Route path="/landing" element={
-                            <>
-                              <ConditionalMenu />
-                              <LandingPage />
-                            </>
-                          } />
-                          <Route path="/lander" element={<LanderRedirect />} />
+
+                          {/* Protected dashboard routes */}
                           <Route path="/admin/community-sales" element={
-                            <ProtectedRouteWrapper>
-                              <>
-                                <ConditionalMenu />
-                                <CommunitySalesAdmin />
-                              </>
-                            </ProtectedRouteWrapper>
+                            <ProtectedDashboardRoute><CommunitySalesAdmin /></ProtectedDashboardRoute>
                           } />
                           <Route path="/admin/sales" element={
-                            <ProtectedRouteWrapper>
-                              <>
-                                <ConditionalMenu />
-                                <GarageSalesAdmin />
-                              </>
-                            </ProtectedRouteWrapper>
+                            <ProtectedDashboardRoute><GarageSalesAdmin /></ProtectedDashboardRoute>
                           } />
                           <Route path="/admin/bulk-upload" element={
-                            <ProtectedRouteWrapper>
-                              <>
-                                <ConditionalMenu />
-                                <GarageSalesBulkUpload />
-                              </>
-                            </ProtectedRouteWrapper>
+                            <ProtectedDashboardRoute><GarageSalesBulkUpload /></ProtectedDashboardRoute>
                           } />
                           <Route path="/register-garage-sale" element={
-                            <ProtectedRouteWrapper>
-                              <>
-                                <ConditionalMenu />
-                                <RegisterGarageSale />
-                              </>
-                            </ProtectedRouteWrapper>
+                            <ProtectedDashboardRoute><RegisterGarageSale /></ProtectedDashboardRoute>
                           } />
                         </Routes>
                       </div>
@@ -203,17 +169,5 @@ function App() {
     </ThemeProvider>
   );
 }
-
-// Move ProtectedRoute inside App to avoid circular dependency
-const ProtectedRouteWrapper = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-
-  // Only check if the user is authenticated, no longer requiring admin status
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
 
 export default App;

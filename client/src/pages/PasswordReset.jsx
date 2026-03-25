@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Alert,
+  CircularProgress,
+  TextField as MuiTextField,
+  Stack
+} from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import './PasswordReset.css';
 import { logger } from '../utils/logger';
@@ -137,64 +147,80 @@ const PasswordReset = () => {
 
   logger.log('[PasswordReset] Rendering with email:', email);
   return (
-    <div className="password-reset-container">
-      <div className="password-reset-card">
-        <h2>Reset Your Password</h2>
+    <Box sx={{ maxWidth: 500, mx: 'auto' }}>
+      <Paper variant="outlined" sx={{ p: 4 }}>
+        <Typography variant="h2" gutterBottom>
+          Reset Your Password
+        </Typography>
         
         {message.text && (
-          <div className={`message ${message.type}`}>
+          <Alert severity={message.type === 'success' ? 'success' : 'error'} sx={{ mb: 2 }}>
             {message.text}
-          </div>
+          </Alert>
         )}
 
         {isTokenValid && message.type !== 'success' && (
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Email Address</label>
-              <div className="email-display">{email || 'No email available'}</div>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="password">New Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <small className="password-requirements">
-                Password must be at least 8 characters with at least one uppercase letter, 
-                one lowercase letter, one number, and one special character.
-              </small>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm New Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              className="reset-password-button"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Resetting...' : 'Reset Password'}
-            </button>
+            <Stack spacing={2}>
+              <div className="form-group">
+                <Typography component="label" variant="body2" display="block" sx={{ mb: 0.5 }}>
+                  Email Address
+                </Typography>
+                <div className="email-display">{email || 'No email available'}</div>
+              </div>
+              
+              <div className="form-group">
+                <MuiTextField
+                  type="password"
+                  id="password"
+                  label="New Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  fullWidth
+                />
+                <Typography variant="caption" component="p" className="password-requirements" sx={{ mt: 1 }}>
+                  Password must be at least 8 characters with at least one uppercase letter, 
+                  one lowercase letter, one number, and one special character.
+                </Typography>
+              </div>
+              
+              <div className="form-group">
+                <MuiTextField
+                  type="password"
+                  id="confirmPassword"
+                  label="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  fullWidth
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                variant="contained"
+                disabled={isLoading}
+                fullWidth
+              >
+                {isLoading ? (
+                  <>
+                    <CircularProgress size={18} sx={{ mr: 1 }} color="inherit" />
+                    Resetting...
+                  </>
+                ) : (
+                  'Reset Password'
+                )}
+              </Button>
+            </Stack>
           </form>
         )}
         
         <div className="links">
           <a href="/login" className="login-link">Return to Login</a>
         </div>
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 };
 
