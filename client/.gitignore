@@ -1,5 +1,5 @@
 # Environment variables
-.env
+#.env
 .env backend
 .env production
 backend/.env
