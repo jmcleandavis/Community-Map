@@ -19,8 +19,7 @@ import {
   InputAdornment,
   Grid,
 } from '@mui/material';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import LanguageIcon from '@mui/icons-material/Language';
+import { getSocialIcon } from '../utils/socialIcons';
 import SearchIcon from '@mui/icons-material/Search';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -74,13 +73,7 @@ const ListActiveCommunitySalesEvents = () => {
         if (!response.ok) throw new Error('Failed to fetch sales');
         const data = await response.json();
         logger.info('[ListActiveCommunitySalesEvents] Fetched community sales data:', data);
-        const salesWithDummyLinks = (data || []).map((sale, i) => {
-          if (i === 0) return { ...sale, facebookUrl: 'https://www.facebook.com/community-sale', websiteUrl: 'https://example.com/community' };
-          if (i === 1) return { ...sale, facebookUrl: 'https://www.facebook.com/neighbourhood-sale' };
-          if (i === 2) return { ...sale, websiteUrl: 'https://example.com/spring-event' };
-          return sale;
-        });
-        setSales(salesWithDummyLinks);
+        setSales(data || []);
       } catch (err) {
         setError(err.message);
         logger.error('[ListActiveCommunitySalesEvents] Error:', err);
@@ -226,32 +219,26 @@ const ListActiveCommunitySalesEvents = () => {
                           </Typography>
                         </Stack>
 
-                        {(sale.facebookUrl || sale.websiteUrl) && (
+                        {Object.keys(sale.socialAndWeb || {}).length > 0 && (
                           <Stack direction="row" spacing={1}>
-                            {sale.facebookUrl && (
-                              <IconButton
-                                size="small"
-                                href={sale.facebookUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                sx={{ color: '#1877F2' }}
-                              >
-                                <FacebookIcon fontSize="small" />
-                              </IconButton>
-                            )}
-                            {sale.websiteUrl && (
-                              <IconButton
-                                size="small"
-                                href={sale.websiteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                color="default"
-                              >
-                                <LanguageIcon fontSize="small" />
-                              </IconButton>
-                            )}
+                            {Object.entries(sale.socialAndWeb).map(([key, url]) => {
+                              if (!url) return null;
+                              const Icon = getSocialIcon(key);
+                              return (
+                                <IconButton
+                                  key={key}
+                                  size="small"
+                                  component="a"
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  color="default"
+                                >
+                                  <Icon fontSize="small" />
+                                </IconButton>
+                              );
+                            })}
                           </Stack>
                         )}
                       </Stack>

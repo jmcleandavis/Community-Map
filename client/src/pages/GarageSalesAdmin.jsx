@@ -63,8 +63,9 @@ const GarageSalesAdmin = () => {
     description: '',
     featuredItems: [],
     paymentTypes: [],
-    facebookUrl: '',
-    websiteUrl: ''
+    fb: '',
+    instagram: '',
+    website: ''
   });
   const [submitError, setSubmitError] = useState(null);
   
@@ -134,8 +135,9 @@ const GarageSalesAdmin = () => {
       description: '',
       featuredItems: [],
       paymentTypes: [],
-      facebookUrl: '',
-      websiteUrl: ''
+      fb: '',
+      instagram: '',
+      website: ''
     });
     setIsAddingNew(true);
     setSubmitError('');
@@ -149,8 +151,9 @@ const GarageSalesAdmin = () => {
       description: sale.description,
       featuredItems: sale.featuredItems || [],
       paymentTypes: sale.paymentTypes || [],
-      facebookUrl: sale.facebookUrl || '',
-      websiteUrl: sale.websiteUrl || ''
+      fb: sale.socialAndWeb?.fb || '',
+      instagram: sale.socialAndWeb?.instagram || '',
+      website: sale.socialAndWeb?.website || ''
     });
     window.scrollTo(0, 0);
   };
@@ -162,8 +165,9 @@ const GarageSalesAdmin = () => {
       description: '',
       featuredItems: [],
       paymentTypes: [],
-      facebookUrl: '',
-      websiteUrl: ''
+      fb: '',
+      instagram: '',
+      website: ''
     });
     setIsAddingNew(false);
   };
@@ -246,67 +250,44 @@ const GarageSalesAdmin = () => {
     setSubmitError(null);
     try {
       if (editingSale) {
-        // Prepare the update data based on what changed
-        const updateData = {
-          // Always include the community ID in the payload
-          community: communityId
+        // Backend requires the full payload on every update (same structure as create)
+        // Strip geocode fields (lat/long) that the PATCH endpoint does not accept
+        const sanitizeAddress = (addr) => {
+          const { lat, long, latitude, longitude, ...rest } = addr || {};
+          return rest;
         };
-        
-        // Check if address was updated
-        if (formData.address !== editingSale.address) {
-          // Parse address components using utility
-          const addressParts = parseAddressString(formData.address);
-          updateData.address = {
-            street: addressParts.street,
-            streetNum: addressParts.streetNumber,
-            city: addressParts.city,
-            provState: addressParts.state,
-            postalZipCode: '',
-            unit: ''
-          };
-        }
-        
-        // Check if description was updated
-        if (formData.description !== editingSale.description) {
-          updateData.description = formData.description;
-        }
-        
-        // Check if featured items were updated
-        const currentFeaturedItems = formData.featuredItems?.filter(item => item.trim() !== '') || [];
-        const existingFeaturedItems = editingSale.featuredItems || [];
-        
-        // Check if featured items have changed (order-insensitive comparison)
-        const itemsChanged = 
-          currentFeaturedItems.length !== existingFeaturedItems.length ||
-          !currentFeaturedItems.every(item => existingFeaturedItems.includes(item));
-          
-        if (itemsChanged) {
-          updateData.highlightedItems = currentFeaturedItems;
-        }
-        
-        // Check if payment types were updated
-        const currentPaymentTypes = formData.paymentTypes?.filter(type => type.trim() !== '') || [];
-        const existingPaymentTypes = editingSale.paymentTypes || [];
-        
-        // Check if payment types have changed (order-insensitive comparison)
-        const paymentTypesChanged = 
-          currentPaymentTypes.length !== existingPaymentTypes.length ||
-          !currentPaymentTypes.every(type => existingPaymentTypes.includes(type));
-          
-        if (paymentTypesChanged) {
-          updateData.paymentTypes = currentPaymentTypes;
-        }
 
-        if ((formData.facebookUrl || '') !== (editingSale.facebookUrl || '')) {
-          updateData.facebookUrl = formData.facebookUrl || '';
-        }
-        if ((formData.websiteUrl || '') !== (editingSale.websiteUrl || '')) {
-          updateData.websiteUrl = formData.websiteUrl || '';
-        }
-        
-        if (Object.keys(updateData).length > 1) {
-          await api.updateGarageSale(editingSale.id, updateData);
-        }
+        const address = formData.address !== editingSale.address
+          ? (() => {
+              const parts = parseAddressString(formData.address);
+              return {
+                street: parts.street,
+                streetNum: parts.streetNumber,
+                city: parts.city,
+                provState: parts.state,
+                postalZipCode: '',
+                unit: ''
+              };
+            })()
+          : sanitizeAddress(editingSale.rawAddress);
+
+        const updateData = {
+          address,
+          description: formData.description,
+          highlightedItems: formData.featuredItems?.filter(item => item.trim() !== '') || [],
+          name: editingSale.name || 'Garage Sale',
+          community: communityId,
+          userId: editingSale.userId,
+          paymentTypes: formData.paymentTypes?.filter(type => type.trim() !== '') || [],
+          socialAndWeb: {
+            ...(formData.fb ? { fb: formData.fb } : {}),
+            ...(formData.instagram ? { instagram: formData.instagram } : {}),
+            ...(formData.website ? { website: formData.website } : {}),
+          },
+          dateTime: editingSale.dateTime
+        };
+
+        await api.updateGarageSale(editingSale.id, updateData);
       } else {
         // Parse the address from the form using utility
         const addressData = parseAddressString(formData.address);
@@ -347,8 +328,11 @@ const GarageSalesAdmin = () => {
           status: 'active',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          facebookUrl: formData.facebookUrl || '',
-          websiteUrl: formData.websiteUrl || ''
+          socialAndWeb: {
+            ...(formData.fb ? { fb: formData.fb } : {}),
+            ...(formData.instagram ? { instagram: formData.instagram } : {}),
+            ...(formData.website ? { website: formData.website } : {}),
+          }
         };
         
         logger.log('[GarageSalesAdmin] Creating garage sale with data:', JSON.stringify(saleData, null, 2));
@@ -368,8 +352,9 @@ const GarageSalesAdmin = () => {
         description: '',
         featuredItems: [],
         paymentTypes: [],
-        facebookUrl: '',
-        websiteUrl: ''
+        fb: '',
+        instagram: '',
+        website: ''
       });
       await fetchGarageSales(communityId, true);
     } catch (error) {
@@ -856,10 +841,21 @@ const GarageSalesAdmin = () => {
             <label>Facebook Page URL:</label>
             <input
               type="url"
-              name="facebookUrl"
-              value={formData.facebookUrl}
+              name="fb"
+              value={formData.fb}
               onChange={handleInputChange}
               placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Instagram URL:</label>
+            <input
+              type="url"
+              name="instagram"
+              value={formData.instagram}
+              onChange={handleInputChange}
+              placeholder="https://www.instagram.com/..."
             />
           </div>
 
@@ -867,8 +863,8 @@ const GarageSalesAdmin = () => {
             <label>Website URL:</label>
             <input
               type="url"
-              name="websiteUrl"
-              value={formData.websiteUrl}
+              name="website"
+              value={formData.website}
               onChange={handleInputChange}
               placeholder="https://..."
             />

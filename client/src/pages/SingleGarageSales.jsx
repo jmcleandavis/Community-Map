@@ -36,9 +36,9 @@ import {
   Check as CheckIcon,
   Close as CloseIcon,
   ArrowBack as ArrowBackIcon,
-  Facebook as FacebookIcon,
   Language as LanguageIcon
 } from '@mui/icons-material';
+import { getSocialIcon } from '../utils/socialIcons';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
 import { useSearch } from '../context/SearchContext';
@@ -151,16 +151,8 @@ const SingleGarageSales = () => {
                 lat: parseFloat(addressObj.lat) || 0,
                 lng: parseFloat(addressObj.long) || 0
               },
-              facebookUrl: sale.facebookUrl || '',
-              websiteUrl: sale.websiteUrl || ''
+              socialAndWeb: sale.socialAndWeb || {}
             };
-          });
-
-          // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
-          salesData.forEach((sale, i) => {
-            if (i === 0) { sale.facebookUrl = 'https://www.facebook.com/example-sale'; sale.websiteUrl = 'https://example.com/garage-sale'; }
-            if (i === 1) { sale.facebookUrl = 'https://www.facebook.com/another-sale'; }
-            if (i === 2) { sale.websiteUrl = 'https://example.com/spring-sale'; }
           });
 
           logger.log('[SingleGarageSales] Processed sales data:', salesData);
@@ -955,7 +947,7 @@ const SingleGarageSales = () => {
                         boxSizing: 'border-box'
                       }} >No Items to Highlight</Box>
                     )}
-                    {(sale.facebookUrl || sale.websiteUrl) && (
+                    {Object.keys(sale.socialAndWeb || {}).length > 0 && (
                       <Box
                         sx={{
                           display: 'flex',
@@ -970,34 +962,25 @@ const SingleGarageSales = () => {
                           boxSizing: 'border-box',
                         }}
                       >
-                        {sale.facebookUrl && (
-                          <IconButton
-                            component="a"
-                            href={sale.facebookUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            size="small"
-                            sx={{ color: '#1877F2' }}
-                            aria-label="Facebook page"
-                          >
-                            <FacebookIcon />
-                          </IconButton>
-                        )}
-                        {sale.websiteUrl && (
-                          <IconButton
-                            component="a"
-                            href={sale.websiteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            size="small"
-                            sx={{ color: 'text.secondary' }}
-                            aria-label="Website"
-                          >
-                            <LanguageIcon />
-                          </IconButton>
-                        )}
+                        {Object.entries(sale.socialAndWeb).map(([key, url]) => {
+                          if (!url) return null;
+                          const Icon = getSocialIcon(key);
+                          return (
+                            <IconButton
+                              key={key}
+                              component="a"
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              size="small"
+                              sx={{ color: 'text.secondary' }}
+                              aria-label={key}
+                            >
+                              <Icon />
+                            </IconButton>
+                          );
+                        })}
                       </Box>
                     )}
                   </CardContent>

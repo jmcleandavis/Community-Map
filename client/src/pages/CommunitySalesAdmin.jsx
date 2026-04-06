@@ -88,8 +88,9 @@ const CommunitySalesAdmin = () => {
               startDate: sale.startDate ? new Date(sale.startDate).toISOString().split('T')[0] : '',
               endDate: sale.endDate ? new Date(sale.endDate).toISOString().split('T')[0] : '',
               location: sale.location,
-              facebookUrl: sale.facebookUrl || '',
-              websiteUrl: sale.websiteUrl || ''
+              fb: sale.socialAndWeb?.fb || '',
+              instagram: sale.socialAndWeb?.instagram || '',
+              website: sale.socialAndWeb?.website || ''
             }))
           : [];
         
@@ -122,8 +123,9 @@ const CommunitySalesAdmin = () => {
     startDate: '',
     endDate: '',
     location: '',
-    facebookUrl: '',
-    websiteUrl: ''
+    fb: '',
+    instagram: '',
+    website: ''
   });
 
   // Handle search input changes
@@ -140,8 +142,9 @@ const CommunitySalesAdmin = () => {
       startDate: '',
       endDate: '',
       location: '',
-      facebookUrl: '',
-      websiteUrl: ''
+      fb: '',
+      instagram: '',
+      website: ''
     });
     setIsAddingNew(true);
   };
@@ -156,8 +159,9 @@ const CommunitySalesAdmin = () => {
       startDate: sale.startDate || '',
       endDate: sale.endDate || '',
       location: sale.location || '',
-      facebookUrl: sale.facebookUrl || '',
-      websiteUrl: sale.websiteUrl || ''
+      fb: sale.fb || sale.socialAndWeb?.fb || '',
+      instagram: sale.instagram || sale.socialAndWeb?.instagram || '',
+      website: sale.website || sale.socialAndWeb?.website || ''
     });
     window.scrollTo(0, 0);
   };
@@ -172,8 +176,9 @@ const CommunitySalesAdmin = () => {
       startDate: '',
       endDate: '',
       location: '',
-      facebookUrl: '',
-      websiteUrl: ''
+      fb: '',
+      instagram: '',
+      website: ''
     });
     setSubmitError(null);
   };
@@ -309,10 +314,13 @@ const CommunitySalesAdmin = () => {
           startDate: formatDateForApi(submissionData.startDate, true, submissionData),
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
           location: submissionData.location,
-          facebookUrl: submissionData.facebookUrl || '',
-          websiteUrl: submissionData.websiteUrl || ''
+          socialAndWeb: {
+            ...(submissionData.fb ? { fb: submissionData.fb } : {}),
+            ...(submissionData.instagram ? { instagram: submissionData.instagram } : {}),
+            ...(submissionData.website ? { website: submissionData.website } : {}),
+          }
         };
-        
+
         logger.log('[CommunitySalesAdmin] API Update Data:', apiData);
         logger.log('[CommunitySalesAdmin] Updating community sale with ID:', editingSale.id);
         
@@ -354,9 +362,11 @@ const CommunitySalesAdmin = () => {
                   endDate: result.data?.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : formData.endDate,
                   location: result.data?.location || formData.location,
                   userId: result.data?.userId || userId,
-                  facebookUrl: result.data?.facebookUrl || formData.facebookUrl || '',
-                  websiteUrl: result.data?.websiteUrl || formData.websiteUrl || ''
-                } 
+                  fb: result.data?.socialAndWeb?.fb || formData.fb || '',
+                  instagram: result.data?.socialAndWeb?.instagram || formData.instagram || '',
+                  website: result.data?.socialAndWeb?.website || formData.website || '',
+                  socialAndWeb: result.data?.socialAndWeb || {}
+                }
               : sale
           )
         );
@@ -384,10 +394,13 @@ const CommunitySalesAdmin = () => {
           startDate: formatDateForApi(submissionData.startDate, true, submissionData),
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
           location: submissionData.location,
-          facebookUrl: submissionData.facebookUrl || '',
-          websiteUrl: submissionData.websiteUrl || ''
+          socialAndWeb: {
+            ...(submissionData.fb ? { fb: submissionData.fb } : {}),
+            ...(submissionData.instagram ? { instagram: submissionData.instagram } : {}),
+            ...(submissionData.website ? { website: submissionData.website } : {}),
+          }
         };
-        
+
         logger.log('[CommunitySalesAdmin] API Request Data:', apiData);
         logger.log('[CommunitySalesAdmin] UserInfo:', userInfo);
         logger.log('[CommunitySalesAdmin] Using sessionId:', sessionId);
@@ -421,8 +434,10 @@ const CommunitySalesAdmin = () => {
           endDate: result.data.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : '',
           location: result.data.location,
           userId: result.data.userId,
-          facebookUrl: result.data.facebookUrl || '',
-          websiteUrl: result.data.websiteUrl || ''
+          fb: result.data.socialAndWeb?.fb || '',
+          instagram: result.data.socialAndWeb?.instagram || '',
+          website: result.data.socialAndWeb?.website || '',
+          socialAndWeb: result.data.socialAndWeb || {}
         };
         
         setCommunitySales(prev => [...prev, newSale]);
@@ -439,8 +454,9 @@ const CommunitySalesAdmin = () => {
         startDate: '',
         endDate: '',
         location: '',
-        facebookUrl: '',
-        websiteUrl: ''
+        fb: '',
+        instagram: '',
+        website: ''
       });
     } catch (err) {
       logger.error('[CommunitySalesAdmin] Error creating/updating community sale:', err);
@@ -744,10 +760,21 @@ const CommunitySalesAdmin = () => {
             <label>Facebook Page URL:</label>
             <input
               type="url"
-              name="facebookUrl"
-              value={formData.facebookUrl}
+              name="fb"
+              value={formData.fb}
               onChange={handleInputChange}
               placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Instagram URL:</label>
+            <input
+              type="url"
+              name="instagram"
+              value={formData.instagram}
+              onChange={handleInputChange}
+              placeholder="https://www.instagram.com/..."
             />
           </div>
 
@@ -755,8 +782,8 @@ const CommunitySalesAdmin = () => {
             <label>Website URL:</label>
             <input
               type="url"
-              name="websiteUrl"
-              value={formData.websiteUrl}
+              name="website"
+              value={formData.website}
               onChange={handleInputChange}
               placeholder="https://..."
             />

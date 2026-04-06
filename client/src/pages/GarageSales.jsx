@@ -36,9 +36,9 @@ import {
   Check as CheckIcon,
   Close as CloseIcon,
   ArrowBack as ArrowBackIcon,
-  Facebook as FacebookIcon,
   Language as LanguageIcon
 } from '@mui/icons-material';
+import { getSocialIcon } from '../utils/socialIcons';
 import { useGarageSales } from '../context/GarageSalesContext';
 import { useAuth } from '../context/AuthContext';
 import { useDisplay } from '../context/DisplayContext';
@@ -930,7 +930,7 @@ const GarageSales = () => {
                         <Box component="span" fontWeight={500}>Payment Types:</Box> <br />{sale.paymentTypes.join(', ')}
                       </Typography>
                     )}
-                    {(sale.facebookUrl || sale.websiteUrl) && (
+                    {Object.keys(sale.socialAndWeb || {}).length > 0 && (
                       <Box
                         sx={{
                           display: 'flex',
@@ -945,34 +945,25 @@ const GarageSales = () => {
                           boxSizing: 'border-box',
                         }}
                       >
-                        {sale.facebookUrl && (
-                          <IconButton
-                            component="a"
-                            href={sale.facebookUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            size="small"
-                            sx={{ color: '#1877F2' }}
-                            aria-label="Facebook page"
-                          >
-                            <FacebookIcon />
-                          </IconButton>
-                        )}
-                        {sale.websiteUrl && (
-                          <IconButton
-                            component="a"
-                            href={sale.websiteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            size="small"
-                            sx={{ color: 'text.secondary' }}
-                            aria-label="Website"
-                          >
-                            <LanguageIcon />
-                          </IconButton>
-                        )}
+                        {Object.entries(sale.socialAndWeb).map(([key, url]) => {
+                          if (!url) return null;
+                          const Icon = getSocialIcon(key);
+                          return (
+                            <IconButton
+                              key={key}
+                              component="a"
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              size="small"
+                              sx={{ color: 'text.secondary' }}
+                              aria-label={key}
+                            >
+                              <Icon />
+                            </IconButton>
+                          );
+                        })}
                       </Box>
                     )}
                   </CardContent>

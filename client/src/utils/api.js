@@ -479,18 +479,34 @@ const getUserAddressList = async (userId) => {
 const updateGarageSale = async (saleId, updateData) => {
   try {
     const sessionId = await getSessionId();
-    
+
     const response = await mapsApi.patch(`/v1/updateAddress/${saleId}`, updateData, {
       headers: {
         'sessionId': sessionId
       }
     });
-    
+
     logger.log('[api] Updated garage sale:', response.data);
     return response.data;
   } catch (error) {
-    logger.error('[api] Error updating garage sale:', error);
-    throw error;
+    logger.error('[api] Error updating garage sale:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.config?.headers,
+      url: error.config?.url,
+      data: error.config?.data
+    });
+
+    if (error.response?.status === 400) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.response?.data?.errorMsg ||
+        'Invalid request. Please check your input and try again.'
+      );
+    }
+
+    throw new Error(error.response?.data?.message || 'Failed to update garage sale. Please try again.');
   }
 };
 

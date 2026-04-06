@@ -39,8 +39,9 @@ const RegisterGarageSale = () => {
     postalZipCode: '',
     startDate: '',
     endDate: '',
-    facebookUrl: '',
-    websiteUrl: ''
+    fb: '',
+    instagram: '',
+    website: ''
   });
   
   // Featured items as separate array
@@ -89,8 +90,9 @@ const RegisterGarageSale = () => {
               postalZipCode: userSale.address?.postalZipCode || '',
               startDate: userSale.startDate || '',
               endDate: userSale.endDate || '',
-              facebookUrl: userSale.facebookUrl || '',
-              websiteUrl: userSale.websiteUrl || ''
+              fb: userSale.socialAndWeb?.fb || '',
+              instagram: userSale.socialAndWeb?.instagram || '',
+              website: userSale.socialAndWeb?.website || ''
             });
             setFeaturedItems(userSale.highlightedItems || ['']);
           }
@@ -266,8 +268,11 @@ const RegisterGarageSale = () => {
         },
         community: 'GENPUB',
         userId: userId,
-        facebookUrl: formData.facebookUrl || '',
-        websiteUrl: formData.websiteUrl || ''
+        socialAndWeb: {
+          ...(formData.fb ? { fb: formData.fb } : {}),
+          ...(formData.instagram ? { instagram: formData.instagram } : {}),
+          ...(formData.website ? { website: formData.website } : {}),
+        }
       };
       
       logger.log('[RegisterGarageSale] Sale Data Payload:', JSON.stringify(saleData, null, 2)); // Debug log
@@ -379,8 +384,9 @@ const RegisterGarageSale = () => {
           postalZipCode: '',
           startDate: '',
           endDate: '',
-          facebookUrl: '',
-          websiteUrl: ''
+          fb: '',
+          instagram: '',
+          website: ''
         });
         setFeaturedItems(['']);
       }
@@ -410,8 +416,9 @@ const RegisterGarageSale = () => {
         postalZipCode: existingSale.address?.postalZipCode || '',
         startDate: existingSale.dateTime?.start ? existingSale.dateTime.start.split('T')[0] : '',
         endDate: existingSale.dateTime?.end ? existingSale.dateTime.end.split('T')[0] : '',
-        facebookUrl: existingSale.facebookUrl || '',
-        websiteUrl: existingSale.websiteUrl || ''
+        fb: existingSale.socialAndWeb?.fb || '',
+        instagram: existingSale.socialAndWeb?.instagram || '',
+        website: existingSale.socialAndWeb?.website || ''
       });
       setFeaturedItems(existingSale.highlightedItems || ['']);
     }
@@ -449,8 +456,9 @@ const RegisterGarageSale = () => {
         postalZipCode: '',
         startDate: '',
         endDate: '',
-        facebookUrl: '',
-        websiteUrl: ''
+        fb: '',
+        instagram: '',
+        website: ''
       });
       setFeaturedItems(['']);
       setIsEditing(false);
@@ -553,8 +561,9 @@ const RegisterGarageSale = () => {
         postalZipCode: existingSale.address?.postalZipCode || '',
         startDate,
         endDate,
-        facebookUrl: existingSale.facebookUrl || '',
-        websiteUrl: existingSale.websiteUrl || ''
+        fb: existingSale.socialAndWeb?.fb || '',
+        instagram: existingSale.socialAndWeb?.instagram || '',
+        website: existingSale.socialAndWeb?.website || ''
       });
       
       // Pre-fill featured items - ensure we always have at least one empty field for adding new items
@@ -890,24 +899,36 @@ const RegisterGarageSale = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="facebookUrl">Facebook Page URL</label>
+            <label htmlFor="fb">Facebook Page URL</label>
             <input
               type="url"
-              id="facebookUrl"
-              name="facebookUrl"
-              value={formData.facebookUrl}
+              id="fb"
+              name="fb"
+              value={formData.fb}
               onChange={handleInputChange}
               placeholder="https://www.facebook.com/..."
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="websiteUrl">Website URL</label>
+            <label htmlFor="instagram">Instagram URL</label>
             <input
               type="url"
-              id="websiteUrl"
-              name="websiteUrl"
-              value={formData.websiteUrl}
+              id="instagram"
+              name="instagram"
+              value={formData.instagram}
+              onChange={handleInputChange}
+              placeholder="https://www.instagram.com/..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="website">Website URL</label>
+            <input
+              type="url"
+              id="website"
+              name="website"
+              value={formData.website}
               onChange={handleInputChange}
               placeholder="https://..."
             />

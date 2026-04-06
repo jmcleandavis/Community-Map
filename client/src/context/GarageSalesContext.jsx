@@ -89,6 +89,9 @@ export function GarageSalesProvider({ children }) {
             id: sale.id,
             name: sale.name || '',
             address: address,
+            rawAddress: sale.address || {},
+            userId: sale.userId || '',
+            dateTime: sale.dateTime || {},
             description: sale.description || 'No description available',
             position: position,
             highlightedItems: Array.isArray(sale.highlightedItems) ? sale.highlightedItems.join(', ') : '',
@@ -105,16 +108,8 @@ export function GarageSalesProvider({ children }) {
               };
               return normalizeMap[pt] || pt;
             }),
-            facebookUrl: sale.facebookUrl || '',
-            websiteUrl: sale.websiteUrl || ''
+            socialAndWeb: sale.socialAndWeb || {}
           };
-        });
-
-        // TODO: Remove dummy data once backend supports facebookUrl/websiteUrl
-        processedData.forEach((sale, i) => {
-          if (i === 0) { sale.facebookUrl = 'https://www.facebook.com/example-sale'; sale.websiteUrl = 'https://example.com/garage-sale'; }
-          if (i === 1) { sale.facebookUrl = 'https://www.facebook.com/another-sale'; }
-          if (i === 2) { sale.websiteUrl = 'https://example.com/spring-sale'; }
         });
 
         setGarageSales(processedData);
