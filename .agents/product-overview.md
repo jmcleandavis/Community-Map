@@ -17,7 +17,7 @@ Community Map is a web application that lets neighborhoods organize and browse c
 | Community Sales Events | Group multiple garage sales under a single community event |
 | Admin Dashboard | Review, approve, and export garage sale listings |
 | Payment Method Tracking | Each listing indicates accepted payment types (cash, card, etc.) |
-| External Links | Sellers can add Facebook page and website URLs to their listings for promotion and shopper discovery |
+| External Links | Sellers and community admins can add social media and website links (`socialAndWeb`) to their listings. Supported platforms: Facebook, Instagram, Twitter/X, YouTube, LinkedIn, Pinterest. Unknown keys display a generic web icon. Both garage sales and community sales support this field. |
 
 ## Key Terminology
 
@@ -28,3 +28,4 @@ Community Map is a web application that lets neighborhoods organize and browse c
 | GENPUB | Special community ID for standalone garage sales not tied to any community event |
 | Listing | A registered garage sale entry on the map |
 | Admin | A privileged user who manages and approves listings |
+| socialAndWeb | A free-form object on both entity types storing social media and website links. Keys are platform identifiers (e.g. `fb`, `instagram`, `website`). Any key is valid; the frontend resolves known keys to branded icons and falls back to a globe icon for unknown keys. |

@@ -27,10 +27,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 function formatDate(dateString) {
   if (!dateString) return '';
   const [datePart] = dateString.split('T');
-  const date = new Date(datePart);
-  const day = date.getDate();
-  const month = date.toLocaleString('default', { month: 'long' });
-  const year = date.getFullYear();
+  const [year, monthIndex, day] = datePart.split('-').map(Number);
   function ordinal(n) {
     if (n > 3 && n < 21) return 'th';
     switch (n % 10) {
@@ -40,6 +37,8 @@ function formatDate(dateString) {
       default: return 'th';
     }
   }
+  // Construct with local time parts to avoid UTC-to-local day shift
+  const month = new Date(year, monthIndex - 1, day).toLocaleString('default', { month: 'long' });
   return `${month} ${day}${ordinal(day)}, ${year}`;
 }
 

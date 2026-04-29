@@ -276,6 +276,16 @@ const CommunitySalesAdmin = () => {
     return dateString + (isStartDate ? defaultStartTime : defaultEndTime);
   };
 
+  // Format a "YYYY-MM-DD" date string for display, parsed as a local date
+  // (avoids the UTC-midnight rollback that new Date("YYYY-MM-DD") causes)
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '';
+    const datePart = String(dateString).split('T')[0];
+    const [year, month, day] = datePart.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    return new Date(year, month - 1, day).toLocaleDateString();
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -843,9 +853,9 @@ const CommunitySalesAdmin = () => {
                 </div>
                 {(sale.startDate || sale.endDate) && (
                   <div className="card-date">
-                    {sale.startDate && `Starts: ${new Date(sale.startDate).toLocaleDateString()}`}
+                    {sale.startDate && `Starts: ${formatDateForDisplay(sale.startDate)}`}
                     {sale.startDate && sale.endDate && <br />}
-                    {sale.endDate && `Ends: ${new Date(sale.endDate).toLocaleDateString()}`}
+                    {sale.endDate && `Ends: ${formatDateForDisplay(sale.endDate)}`}
                   </div>
                 )}
                 {sale.location && (
