@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(curl:*)",
-      "Read(//c/Users/User/.claude/**)",
-      "Read(//c/Users/User/.claude/commands/**)"
-    ]
-  }
-}

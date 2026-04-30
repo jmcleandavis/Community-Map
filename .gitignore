@@ -47,3 +47,6 @@ client/coverage
 
 # AI agent scratch space
 .agents/.scratch/
+
+# Claude local config
+.claude/
