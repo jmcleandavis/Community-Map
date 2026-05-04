@@ -48,8 +48,9 @@ export function useCommunityName(
     try {
       logger.log(`[${componentName}] Fetching community name for ID:`, communityId);
 
-      // Use the most reliable endpoint that works across multiple components
-      const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/getAddressByCommunity/${communityId}`;
+      // /v1/communitySales/all returns a list of community sales each with a `name`,
+      // so we look up the matching entry by id. There is no get-by-id endpoint.
+      const apiUrl = `${import.meta.env.VITE_MAPS_API_URL}/v1/communitySales/all`;
 
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -61,7 +62,8 @@ export function useCommunityName(
 
       if (response.ok) {
         const data = await response.json();
-        const name = data.name || 'Community Sale';
+        const match = Array.isArray(data) ? data.find(sale => sale.id === communityId) : null;
+        const name = match?.name || 'Community Sale';
 
         logger.log(`[${componentName}] Fetched community name:`, name);
 

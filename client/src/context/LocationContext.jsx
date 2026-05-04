@@ -8,7 +8,7 @@ export function LocationProvider({ children }) {
   const [shouldCenterOnUser, setShouldCenterOnUser] = useState(false);
   const [error, setError] = useState(null);
 
-  const centerOnUserLocation = useCallback(() => {
+  const fetchUserLocation = useCallback((centerOnLocation) => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser.');
       return;
@@ -22,7 +22,9 @@ export function LocationProvider({ children }) {
         };
         logger.log('[LocationContext] User location obtained:', pos);
         setUserLocation(pos);
-        setShouldCenterOnUser(true);
+        if (centerOnLocation) {
+          setShouldCenterOnUser(true);
+        }
         setError(null);
       },
       (error) => {
@@ -37,15 +39,20 @@ export function LocationProvider({ children }) {
     );
   }, []);
 
+  const centerOnUserLocation = useCallback(() => {
+    fetchUserLocation(true);
+  }, [fetchUserLocation]);
+
   const clearCenterOnUser = useCallback(() => {
     setShouldCenterOnUser(false);
   }, []);
 
-  // Get initial location when component mounts
+  // Get initial location on mount without auto-centring; the map should
+  // default to the community, and only an explicit "My Location" click recentres.
   useEffect(() => {
     logger.log('[LocationContext] Getting initial location');
-    centerOnUserLocation();
-  }, [centerOnUserLocation]);
+    fetchUserLocation(false);
+  }, [fetchUserLocation]);
 
   const value = {
     userLocation,
