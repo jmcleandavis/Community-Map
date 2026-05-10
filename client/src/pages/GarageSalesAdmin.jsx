@@ -250,9 +250,8 @@ const GarageSalesAdmin = () => {
     setSubmitError(null);
     try {
       if (editingSale) {
-        // Only send fields the user has actually changed. The backend's PATCH
-        // allow-list rejects unrelated fields (notably paymentTypes and
-        // socialAndWeb) when included on every save. See CSE-112.
+        // Only send fields the user has actually changed — keeps PATCH
+        // payloads small and skips the API call entirely on a no-op save.
         const updateData = { community: communityId };
 
         if (formData.address !== editingSale.address) {
