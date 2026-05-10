@@ -250,44 +250,62 @@ const GarageSalesAdmin = () => {
     setSubmitError(null);
     try {
       if (editingSale) {
-        // Backend requires the full payload on every update (same structure as create)
-        // Strip geocode fields (lat/long) that the PATCH endpoint does not accept
-        const sanitizeAddress = (addr) => {
-          const { lat, long, latitude, longitude, ...rest } = addr || {};
-          return rest;
+        // Only send fields the user has actually changed. The backend's PATCH
+        // allow-list rejects unrelated fields (notably paymentTypes and
+        // socialAndWeb) when included on every save. See CSE-112.
+        const updateData = { community: communityId };
+
+        if (formData.address !== editingSale.address) {
+          const parts = parseAddressString(formData.address);
+          updateData.address = {
+            street: parts.street,
+            streetNum: parts.streetNumber,
+            city: parts.city,
+            provState: parts.state,
+            postalZipCode: '',
+            unit: ''
+          };
+        }
+
+        if (formData.description !== editingSale.description) {
+          updateData.description = formData.description;
+        }
+
+        const currentFeaturedItems = formData.featuredItems?.filter(item => item.trim() !== '') || [];
+        const existingFeaturedItems = editingSale.featuredItems || [];
+        const featuredItemsChanged =
+          currentFeaturedItems.length !== existingFeaturedItems.length ||
+          !currentFeaturedItems.every(item => existingFeaturedItems.includes(item));
+        if (featuredItemsChanged) {
+          updateData.highlightedItems = currentFeaturedItems;
+        }
+
+        const currentPaymentTypes = formData.paymentTypes?.filter(type => type.trim() !== '') || [];
+        const existingPaymentTypes = editingSale.paymentTypes || [];
+        const paymentTypesChanged =
+          currentPaymentTypes.length !== existingPaymentTypes.length ||
+          !currentPaymentTypes.every(type => existingPaymentTypes.includes(type));
+        if (paymentTypesChanged) {
+          updateData.paymentTypes = currentPaymentTypes;
+        }
+
+        const existingSocial = editingSale.socialAndWeb || {};
+        const currentSocial = {
+          ...(formData.fb ? { fb: formData.fb } : {}),
+          ...(formData.instagram ? { instagram: formData.instagram } : {}),
+          ...(formData.website ? { website: formData.website } : {}),
         };
+        const socialChanged =
+          (existingSocial.fb || '') !== (currentSocial.fb || '') ||
+          (existingSocial.instagram || '') !== (currentSocial.instagram || '') ||
+          (existingSocial.website || '') !== (currentSocial.website || '');
+        if (socialChanged) {
+          updateData.socialAndWeb = currentSocial;
+        }
 
-        const address = formData.address !== editingSale.address
-          ? (() => {
-              const parts = parseAddressString(formData.address);
-              return {
-                street: parts.street,
-                streetNum: parts.streetNumber,
-                city: parts.city,
-                provState: parts.state,
-                postalZipCode: '',
-                unit: ''
-              };
-            })()
-          : sanitizeAddress(editingSale.rawAddress);
-
-        const updateData = {
-          address,
-          description: formData.description,
-          highlightedItems: formData.featuredItems?.filter(item => item.trim() !== '') || [],
-          name: editingSale.name || 'Garage Sale',
-          community: communityId,
-          userId: editingSale.userId,
-          paymentTypes: formData.paymentTypes?.filter(type => type.trim() !== '') || [],
-          socialAndWeb: {
-            ...(formData.fb ? { fb: formData.fb } : {}),
-            ...(formData.instagram ? { instagram: formData.instagram } : {}),
-            ...(formData.website ? { website: formData.website } : {}),
-          },
-          dateTime: editingSale.dateTime
-        };
-
-        await api.updateGarageSale(editingSale.id, updateData);
+        if (Object.keys(updateData).length > 1) {
+          await api.updateGarageSale(editingSale.id, updateData);
+        }
       } else {
         // Parse the address from the form using utility
         const addressData = parseAddressString(formData.address);

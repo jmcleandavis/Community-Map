@@ -281,9 +281,24 @@ const RegisterGarageSale = () => {
       try {
         let apiResponse;
         if (existingSale && isEditing) {
-          // Update existing garage sale
-          logger.log('[RegisterGarageSale] Updating existing garage sale with data:', JSON.stringify(saleData, null, 2));
-          apiResponse = await api.updateGarageSale(existingSale.id, saleData);
+          // Backend's PATCH allow-list rejects socialAndWeb when included on
+          // every save — only send it when the user actually changed it.
+          // See CSE-112.
+          const existingSocial = existingSale.socialAndWeb || {};
+          const currentSocial = saleData.socialAndWeb || {};
+          const socialChanged =
+            (existingSocial.fb || '') !== (currentSocial.fb || '') ||
+            (existingSocial.instagram || '') !== (currentSocial.instagram || '') ||
+            (existingSocial.website || '') !== (currentSocial.website || '');
+
+          const updatePayload = { ...saleData };
+          delete updatePayload.socialAndWeb;
+          if (socialChanged) {
+            updatePayload.socialAndWeb = currentSocial;
+          }
+
+          logger.log('[RegisterGarageSale] Updating existing garage sale with data:', JSON.stringify(updatePayload, null, 2));
+          apiResponse = await api.updateGarageSale(existingSale.id, updatePayload);
           // Set fromLanding to true and persist in sessionStorage
           setFromLanding(true);
           // Store in sessionStorage to persist across page reload
