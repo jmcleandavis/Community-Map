@@ -27,6 +27,7 @@ import { useCommunityName } from '../hooks/useCommunityName';
 import AutoResizeTextArea from '../components/AutoResizeTextArea';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { parseAddressString } from '../utils/addressFormatter';
+import { uploadImageToCloudinary } from '../utils/imageUpload';
 import api from '../utils/api';
 import styles from './GarageSalesAdmin.module.css';
 import CommunityQRCode from '../components/CommunityQRCode';
@@ -65,8 +66,10 @@ const GarageSalesAdmin = () => {
     paymentTypes: [],
     fb: '',
     instagram: '',
-    website: ''
+    website: '',
+    images: []
   });
+  const [imageUploading, setImageUploading] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   
   // --- QR Code Section ---
@@ -137,7 +140,8 @@ const GarageSalesAdmin = () => {
       paymentTypes: [],
       fb: '',
       instagram: '',
-      website: ''
+      website: '',
+      images: []
     });
     setIsAddingNew(true);
     setSubmitError('');
@@ -153,7 +157,8 @@ const GarageSalesAdmin = () => {
       paymentTypes: sale.paymentTypes || [],
       fb: sale.socialAndWeb?.fb || '',
       instagram: sale.socialAndWeb?.instagram || '',
-      website: sale.socialAndWeb?.website || ''
+      website: sale.socialAndWeb?.website || '',
+      images: sale.images || []
     });
     window.scrollTo(0, 0);
   };
@@ -167,7 +172,8 @@ const GarageSalesAdmin = () => {
       paymentTypes: [],
       fb: '',
       instagram: '',
-      website: ''
+      website: '',
+      images: []
     });
     setIsAddingNew(false);
   };
@@ -238,6 +244,37 @@ const GarageSalesAdmin = () => {
     });
   };
 
+  const handleImageAdd = async (file) => {
+    setImageUploading(true);
+    try {
+      const { url, publicId } = await uploadImageToCloudinary(file);
+      setFormData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), { description: '', url, publicId }]
+      }));
+    } catch (err) {
+      logger.error('[GarageSalesAdmin] Image upload failed:', err);
+      setSubmitError('Image upload failed. Please try again.');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageRemove = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleImageDescriptionChange = (index, value) => {
+    setFormData(prev => {
+      const updated = [...(prev.images || [])];
+      updated[index] = { ...updated[index], description: value };
+      return { ...prev, images: updated };
+    });
+  };
+
   const handleAddressSelect = (selected) => {
     setFormData(prev => ({
       ...prev,
@@ -302,6 +339,14 @@ const GarageSalesAdmin = () => {
           updateData.socialAndWeb = currentSocial;
         }
 
+        const currentImages = formData.images || [];
+        const existingImages = editingSale.images || [];
+        const imagesChanged =
+          JSON.stringify(currentImages) !== JSON.stringify(existingImages);
+        if (imagesChanged) {
+          updateData.images = currentImages;
+        }
+
         if (Object.keys(updateData).length > 1) {
           await api.updateGarageSale(editingSale.id, updateData);
         }
@@ -349,7 +394,8 @@ const GarageSalesAdmin = () => {
             ...(formData.fb ? { fb: formData.fb } : {}),
             ...(formData.instagram ? { instagram: formData.instagram } : {}),
             ...(formData.website ? { website: formData.website } : {}),
-          }
+          },
+          images: formData.images || []
         };
         
         logger.log('[GarageSalesAdmin] Creating garage sale with data:', JSON.stringify(saleData, null, 2));
@@ -371,7 +417,8 @@ const GarageSalesAdmin = () => {
         paymentTypes: [],
         fb: '',
         instagram: '',
-        website: ''
+        website: '',
+        images: []
       });
       await fetchGarageSales(communityId, true);
     } catch (error) {
@@ -802,6 +849,59 @@ const GarageSalesAdmin = () => {
           </div>
 
           <div className={styles.formGroup}>
+            <label>Images</label>
+            <div className={styles.imageUploadSection}>
+              {(formData.images || []).map((img, index) => (
+                <div key={index} className={styles.imagePreviewItem}>
+                  <img
+                    src={img.url}
+                    alt={img.description || `Image ${index + 1}`}
+                    className={styles.imagePreview}
+                  />
+                  <input
+                    type="text"
+                    value={img.description}
+                    onChange={(e) => handleImageDescriptionChange(index, e.target.value)}
+                    placeholder="Caption (optional)"
+                    className={styles.imageCaptionInput}
+                  />
+                  <IconButton
+                    type="button"
+                    size="small"
+                    onClick={() => handleImageRemove(index)}
+                    className={styles.removeItemButton}
+                    aria-label="Remove image"
+                  >
+                    ×
+                  </IconButton>
+                </div>
+              ))}
+              <label className={styles.imageUploadLabel}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={imageUploading}
+                  onChange={(e) => {
+                    Array.from(e.target.files).forEach(file => handleImageAdd(file));
+                    e.target.value = '';
+                  }}
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  type="button"
+                  variant="outlined"
+                  size="small"
+                  component="span"
+                  disabled={imageUploading}
+                >
+                  {imageUploading ? 'Uploading…' : '+ Add Images'}
+                </Button>
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
             <label>Featured Items</label>
             {formData.featuredItems?.map((item, index) => (
               <div 
@@ -935,6 +1035,21 @@ const GarageSalesAdmin = () => {
                     <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} className={styles.featuredItemsList}>
                       {sale.paymentTypes.map((type, index) => (
                         <Chip key={index} size="small" label={type} className={styles.featuredItem} />
+                      ))}
+                    </Stack>
+                  </div>
+                )}
+                {sale.images?.length > 0 && (
+                  <div className={styles.featuredItemsContainer}>
+                    <div className={styles.featuredItemsLabel}>Images ({sale.images.length}):</div>
+                    <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5} sx={{ mt: 0.5 }}>
+                      {sale.images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img.url}
+                          alt={img.description || `Image ${i + 1}`}
+                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4, border: '1px solid #ddd' }}
+                        />
                       ))}
                     </Stack>
                   </div>

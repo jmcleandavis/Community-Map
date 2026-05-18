@@ -27,11 +27,13 @@ import { logger } from '../utils/logger';
 import communityMapImage from '../assets/community-map-example.jpg';
 import { useNavigation } from '../context/NavigationContext';
 import { useCommunitySales } from '../context/CommunitySalesContext';
+import { useAuth } from '../context/AuthContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { setFromLanding, fromMap } = useNavigation();
   const { currentCommunityId } = useCommunitySales();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     sessionStorage.setItem('initialPage', '/landing');
@@ -91,10 +93,12 @@ const LandingPage = () => {
           Create interactive maps for your neighborhood's community sales, making it easy for visitors to find what they're looking for.
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" useFlexGap>
-          <Button variant="contained" size="large" onClick={() => handleNavigation('/login')}
-            sx={{ bgcolor: 'white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}>
-            Get Started Today
-          </Button>
+          {!isAuthenticated && (
+            <Button variant="contained" size="large" onClick={() => handleNavigation('/login')}
+              sx={{ bgcolor: 'white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}>
+              Get Started Today
+            </Button>
+          )}
           {fromMap && (
             <Button variant="outlined" size="large" startIcon={<ArrowBackIcon />}
               onClick={() => navigate(`/?communityId=${currentCommunityId || ''}`)}
@@ -240,10 +244,12 @@ const LandingPage = () => {
         <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 3, maxWidth: 600, mx: 'auto' }}>
           Create your first community garage sale map today and make it easier for everyone to find what they're looking for.
         </Typography>
-        <Button variant="contained" size="large" onClick={() => handleNavigation('/login')}
-          sx={{ bgcolor: 'white', color: '#1e293b', '&:hover': { bgcolor: 'grey.200' } }}>
-          Sign Up Now
-        </Button>
+        {!isAuthenticated && (
+          <Button variant="contained" size="large" onClick={() => handleNavigation('/login')}
+            sx={{ bgcolor: 'white', color: '#1e293b', '&:hover': { bgcolor: 'grey.200' } }}>
+            Sign Up Now
+          </Button>
+        )}
       </Paper>
 
       {/* Footer credits */}

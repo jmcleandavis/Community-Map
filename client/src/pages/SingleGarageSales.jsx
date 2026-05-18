@@ -151,7 +151,8 @@ const SingleGarageSales = () => {
                 lat: parseFloat(addressObj.lat) || 0,
                 lng: parseFloat(addressObj.long) || 0
               },
-              socialAndWeb: sale.socialAndWeb || {}
+              socialAndWeb: sale.socialAndWeb || {},
+              images: sale.images || []
             };
           });
 
@@ -946,6 +947,39 @@ const SingleGarageSales = () => {
                         width: '100%',
                         boxSizing: 'border-box'
                       }} >No Items to Highlight</Box>
+                    )}
+                    {sale.images?.length > 0 && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 1,
+                          flexWrap: 'wrap',
+                          justifyContent: 'center',
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {sale.images.map((img, i) => (
+                          <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                            <img
+                              src={img.url}
+                              alt={img.description || `Image ${i + 1}`}
+                              style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }}
+                            />
+                            {img.description && (
+                              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 80 }}>
+                                {img.description}
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
                     )}
                     {Object.keys(sale.socialAndWeb || {}).length > 0 && (
                       <Box

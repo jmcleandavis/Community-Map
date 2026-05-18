@@ -108,7 +108,8 @@ export function GarageSalesProvider({ children }) {
               };
               return normalizeMap[pt] || pt;
             }),
-            socialAndWeb: sale.socialAndWeb || {}
+            socialAndWeb: sale.socialAndWeb || {},
+            images: sale.images || []
           };
         });
 
