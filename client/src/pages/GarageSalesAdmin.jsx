@@ -735,7 +735,7 @@ const GarageSalesAdmin = () => {
       <Typography variant="h2" gutterBottom className={styles.title}>
         {communityName ? `${communityName}` : 'Garage Sales Administration'}
       </Typography>
-      <Paper elevation={0} variant="outlined" className={styles.userInfo}>
+      <Paper elevation={0} className={styles.userInfo}>
         <div className={styles.userName}>{userInfo?.fName} {userInfo?.lName}</div>
         <div className={styles.userEmail}>{userEmail}</div>
       </Paper>
