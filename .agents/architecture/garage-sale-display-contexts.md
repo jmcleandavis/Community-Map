@@ -1,23 +1,32 @@
 # Garage Sale Display Contexts
 
-Three components render garage sale data. Each shows a different subset of fields.
+Four contexts render garage sale data. Each shows a different subset of fields.
 
 ## Field Matrix
 
-| Field | Public Listing Card (`GarageSales.jsx`) | Detail View (`SingleGarageSales.jsx`) | Admin Card (`GarageSalesAdmin.jsx`) |
-|---|---|---|---|
-| Address | ✅ | ✅ | ✅ |
-| Description | ✅ | ✅ | ✅ |
-| Highlighted Items | ✅ | ✅ | ✅ |
-| Images | ✅ 80×80, with captions | ✅ 80×80, with captions | ✅ 60×60, no captions |
-| Payment Types | ✅ | ✅ | ✅ |
-| Social/Web Links | ✅ (icon buttons) | ✅ (icon buttons) | ❌ |
-| Edit / Delete buttons | ❌ | ❌ | ✅ |
-| Start/End Times | ❌ | ✅ | ❌ |
+| Field | Public Listing Card (`GarageSales.jsx`) | Detail Modal (`GarageSales.jsx` Dialog) | Detail View (`SingleGarageSales.jsx`) | Admin Card (`GarageSalesAdmin.jsx`) |
+|---|---|---|---|---|
+| Address | ✅ truncated | ✅ full | ✅ full | ✅ |
+| Name | ✅ | ✅ (subtitle) | ✅ | ✅ |
+| Description | ✅ truncated | ✅ full | ✅ full | ✅ |
+| Highlighted Items | ✅ truncated | ✅ full | ✅ full | ✅ |
+| Images | ✅ 80×80, with captions | ✅ 150×150, with captions | ✅ 80×80, with captions | ✅ 60×60, no captions |
+| Payment Types | ✅ | ✅ | ✅ | ✅ |
+| Social/Web Links | ✅ (icon buttons) | ✅ (icon buttons) | ✅ (icon buttons) | ❌ |
+| Edit / Delete buttons | ❌ | ❌ | ❌ | ✅ |
+| Start/End Times | ❌ | ❌ | ✅ | ❌ |
 
 ## Rule
 
-When adding a new field to the garage sale data model, update **all three components** unless there is a deliberate reason to exclude one. The public listing card is the most likely to be missed — verify it explicitly.
+When adding a new field to the garage sale data model, update **all four contexts** unless there is a deliberate reason to exclude one. The public listing card and modal are the most likely to be missed — verify both explicitly.
+
+## Interaction Model (Public Listing Page)
+
+On the `/sales` page, the card has two distinct click zones:
+- **Checkbox (top-left corner)**: toggles selection — requires authentication
+- **Card body (everywhere else)**: opens the detail modal — no authentication required
+
+Viewing details is public. Selecting sales (for route planning) requires login.
 
 ## Image Display
 
