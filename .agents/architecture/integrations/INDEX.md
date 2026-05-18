@@ -9,7 +9,7 @@ Search this file for keywords. Add entries as documentation grows.
 - [Document Name](./document.md)
 -->
 
-**Keywords**: maps API, updateAddress, PATCH, paymentTypes, socialAndWeb, update payload, br-maps-mgt-api, mapsApi axios
+**Keywords**: maps API, updateAddress, PATCH, paymentTypes, socialAndWeb, update payload, br-maps-mgt-api, mapsApi axios, community sales, null, clearing fields, merge semantics, communitySales update
 - [Maps Management API](./maps-api.md) — backend that owns sale records; how the client connects and shapes update payloads
 
 **Keywords**: images, upload, Cloudinary, storage, photos, image upload, unsigned preset, publicId

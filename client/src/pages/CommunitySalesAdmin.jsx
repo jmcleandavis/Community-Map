@@ -325,9 +325,9 @@ const CommunitySalesAdmin = () => {
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
           location: submissionData.location,
           socialAndWeb: {
-            ...(submissionData.fb ? { fb: submissionData.fb } : {}),
-            ...(submissionData.instagram ? { instagram: submissionData.instagram } : {}),
-            ...(submissionData.website ? { website: submissionData.website } : {}),
+            fb: submissionData.fb || null,
+            instagram: submissionData.instagram || null,
+            website: submissionData.website || null,
           }
         };
 
@@ -372,10 +372,14 @@ const CommunitySalesAdmin = () => {
                   endDate: result.data?.endDate ? new Date(result.data.endDate).toISOString().split('T')[0] : formData.endDate,
                   location: result.data?.location || formData.location,
                   userId: result.data?.userId || userId,
-                  fb: result.data?.socialAndWeb?.fb || formData.fb || '',
-                  instagram: result.data?.socialAndWeb?.instagram || formData.instagram || '',
-                  website: result.data?.socialAndWeb?.website || formData.website || '',
-                  socialAndWeb: result.data?.socialAndWeb || {}
+                  fb: submissionData.fb || '',
+                  instagram: submissionData.instagram || '',
+                  website: submissionData.website || '',
+                  socialAndWeb: {
+                    fb: submissionData.fb || null,
+                    instagram: submissionData.instagram || null,
+                    website: submissionData.website || null,
+                  }
                 }
               : sale
           )
@@ -405,9 +409,9 @@ const CommunitySalesAdmin = () => {
           endDate: formatDateForApi(submissionData.endDate, false, submissionData),
           location: submissionData.location,
           socialAndWeb: {
-            ...(submissionData.fb ? { fb: submissionData.fb } : {}),
-            ...(submissionData.instagram ? { instagram: submissionData.instagram } : {}),
-            ...(submissionData.website ? { website: submissionData.website } : {}),
+            fb: submissionData.fb || null,
+            instagram: submissionData.instagram || null,
+            website: submissionData.website || null,
           }
         };
 

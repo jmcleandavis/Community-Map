@@ -25,7 +25,10 @@ import {
   CircularProgress,
   Alert,
   CardActionArea,
-  CardActions
+  CardActions,
+  Dialog,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -72,6 +75,7 @@ const GarageSales = () => {
   const [optimizedRouteAddresses, setOptimizedRouteAddresses] = useState([]);
   const [showRouteList, setShowRouteList] = useState(false);
   const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
+  const [expandedSale, setExpandedSale] = useState(null);
 
   // Use custom hook for user address list management
   const { userAddressList, selectionsInitialized, setSelectionsInitialized } = useUserAddressList(
@@ -101,6 +105,10 @@ const GarageSales = () => {
   useEffect(() => {
     fetchGarageSales(communityId);
   }, [fetchGarageSales, communityId]);
+
+  const handleCardExpand = (sale) => {
+    setExpandedSale(sale);
+  };
 
   const handleSelectionWithAuth = (saleId) => {
     if (!isAuthenticated) {
@@ -752,7 +760,7 @@ const GarageSales = () => {
                 }}
               >
                 <CardActionArea
-                  onClick={() => handleSelectionWithAuth(sale.id)}
+                  onClick={() => handleCardExpand(sale)}
                   sx={{
                     flexGrow: 1,
                     display: 'flex',
@@ -910,6 +918,39 @@ const GarageSales = () => {
                         boxSizing: 'border-box'
                       }} >No Items to Highlight</Box>
                     )}
+                    {sale.images?.length > 0 && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 1,
+                          flexWrap: 'wrap',
+                          justifyContent: 'center',
+                          pt: 1,
+                          px: 2,
+                          pb: 1,
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {sale.images.map((img, i) => (
+                          <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                            <img
+                              src={img.url}
+                              alt={img.description || `Image ${i + 1}`}
+                              style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }}
+                            />
+                            {img.description && (
+                              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 80 }}>
+                                {img.description}
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
                     {sale.paymentTypes?.length > 0 && (
                       <Typography
                         variant="body2"
@@ -980,6 +1021,106 @@ const GarageSales = () => {
           {selectedSales.size > 0 && ` • ${selectedSales.size} selected`}
         </Typography>
       </Box>
+
+      <Dialog
+        open={!!expandedSale}
+        onClose={() => setExpandedSale(null)}
+        maxWidth="lg"
+        fullWidth
+        scroll="paper"
+        PaperProps={{ sx: { minHeight: '70vh' } }}
+      >
+        {expandedSale && (
+          <>
+            <DialogTitle sx={{ pr: 6, pb: 2 }}>
+              <Typography component="div" sx={{ fontWeight: 600, fontSize: 'clamp(1.25rem, 3vw, 2.125rem)', lineHeight: 1.2 }}>
+                {expandedSale.address}
+              </Typography>
+              {expandedSale.name && (
+                <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
+                  {expandedSale.name}
+                </Typography>
+              )}
+              <IconButton
+                onClick={() => setExpandedSale(null)}
+                sx={{ position: 'absolute', top: 8, right: 8 }}
+                aria-label="Close"
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers sx={{ p: 3 }}>
+              {expandedSale.description && (
+                <Box mb={3}>
+                  <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
+                    {expandedSale.description}
+                  </Typography>
+                </Box>
+              )}
+              {expandedSale.images?.length > 0 && (
+                <Box mb={3} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {expandedSale.images.map((img, i) => (
+                    <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      <img
+                        src={img.url}
+                        alt={img.description || `Image ${i + 1}`}
+                        style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: 8 }}
+                      />
+                      {img.description && (
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', maxWidth: 200, fontSize: 'clamp(0.7rem, 1.2vw, 0.875rem)' }}>
+                          {img.description}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              {expandedSale.highlightedItems && (
+                <Box mb={3}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }} gutterBottom>
+                    Highlights & Items
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.8rem, 1.5vw, 1rem)' }}>
+                    {expandedSale.highlightedItems}
+                  </Typography>
+                </Box>
+              )}
+              {expandedSale.paymentTypes?.length > 0 && (
+                <Box mb={3}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }} gutterBottom>
+                    Payment Types
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.8rem, 1.5vw, 1rem)' }}>
+                    {expandedSale.paymentTypes.join(', ')}
+                  </Typography>
+                </Box>
+              )}
+              {Object.keys(expandedSale.socialAndWeb || {}).length > 0 && (
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                  {Object.entries(expandedSale.socialAndWeb).map(([key, url]) => {
+                    if (!url) return null;
+                    const Icon = getSocialIcon(key);
+                    return (
+                      <IconButton
+                        key={key}
+                        component="a"
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        sx={{ color: 'text.secondary' }}
+                        aria-label={key}
+                      >
+                        <Icon />
+                      </IconButton>
+                    );
+                  })}
+                </Box>
+              )}
+            </DialogContent>
+          </>
+        )}
+      </Dialog>
 
       <LoginRequiredModal
         isOpen={showLoginModal}

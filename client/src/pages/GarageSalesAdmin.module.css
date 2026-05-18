@@ -35,8 +35,8 @@
 .adminControls {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0px;
-  gap: 0;
+  margin-bottom: 8px;
+  gap: 8px;
 }
 
 .searchContainer {
