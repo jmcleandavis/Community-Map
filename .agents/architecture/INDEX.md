@@ -1,19 +1,15 @@
 # Architecture Index
 
-Search this file for keywords. Add entries as documentation grows.
+Search for keywords to find relevant docs.
 
----
+**Keywords**: date, timezone, UTC, off-by-one, YYYY-MM-DD
+- [Date Handling](./date-handling.md) — date-only strings without timezone rollback
 
-<!-- Example entry format:
-**Keywords**: keyword1, keyword2, keyword3
-- [Document Name](./document.md)
--->
+**Keywords**: map, centring, geolocation, MapView, QR code
+- [Map Centring](./map-centring.md) — community-vs-user centring; My Location pans to user
 
-**Keywords**: date, timezone, UTC, toLocaleDateString, off-by-one, YYYY-MM-DD
-- [Date Handling](./date-handling.md) — store/render date-only strings without timezone rollback
-
-**Keywords**: map, centring, geolocation, MapView, LocationContext, QR code, My Location
-- [Map Centring](./map-centring.md) — community-vs-user centring; only My Location button pans to user
-
-**Keywords**: user, name, fName, firstName, given_name, userInfo, auth, Google OAuth
+**Keywords**: user, name, fName, firstName, auth, Google OAuth
 - [User Display Name](./user-display-name.md) — fallback chain for full name across login flows
+
+**Keywords**: garage sale, images, GarageSales, SingleGarageSales, GarageSalesAdmin
+- [Garage Sale Display Contexts](./garage-sale-display-contexts.md) — field matrix: public card vs detail view vs admin
