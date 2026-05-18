@@ -220,7 +220,7 @@ const ListActiveCommunitySalesEvents = () => {
                           </Typography>
                         </Stack>
 
-                        {Object.keys(sale.socialAndWeb || {}).length > 0 && (
+                        {Object.entries(sale.socialAndWeb || {}).filter(([, url]) => url).length > 0 && (
                           <Stack direction="row" spacing={1}>
                             {Object.entries(sale.socialAndWeb).map(([key, url]) => {
                               if (!url) return null;
