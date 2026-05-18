@@ -10,7 +10,7 @@ Four contexts render garage sale data. Each shows a different subset of fields.
 | Name | ✅ | ✅ (subtitle) | ✅ | ✅ |
 | Description | ✅ truncated | ✅ full | ✅ full | ✅ |
 | Highlighted Items | ✅ truncated | ✅ full | ✅ full | ✅ |
-| Images | ✅ 80×80, with captions | ✅ 150×150, with captions | ✅ 80×80, with captions | ✅ 60×60, no captions |
+| Images | ✅ 80×80, with captions | ✅ 200×200, with captions | ✅ 80×80, with captions | ✅ 60×60, no captions |
 | Payment Types | ✅ | ✅ | ✅ | ✅ |
 | Social/Web Links | ✅ (icon buttons) | ✅ (icon buttons) | ✅ (icon buttons) | ❌ |
 | Edit / Delete buttons | ❌ | ❌ | ❌ | ✅ |
@@ -31,3 +31,7 @@ Viewing details is public. Selecting sales (for route planning) requires login.
 ## Image Display
 
 Images render only when `sale.images?.length > 0`. The section is entirely absent for sales with no images (no empty placeholder). Captions (`img.description`) render below the thumbnail when present.
+
+## Detail Modal Sizing
+
+`maxWidth="lg" fullWidth`, `minHeight: '70vh'` (via `PaperProps`). Typography uses CSS `clamp()` for fluid scaling: address `clamp(1.25rem, 3vw, 2.125rem)`, headers/subtitle `clamp(0.875rem, 1.8vw, 1.25rem)`, body `clamp(0.8rem, 1.5vw, 1rem)`.

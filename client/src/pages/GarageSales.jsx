@@ -1025,18 +1025,19 @@ const GarageSales = () => {
       <Dialog
         open={!!expandedSale}
         onClose={() => setExpandedSale(null)}
-        maxWidth="sm"
+        maxWidth="lg"
         fullWidth
         scroll="paper"
+        PaperProps={{ sx: { minHeight: '70vh' } }}
       >
         {expandedSale && (
           <>
-            <DialogTitle sx={{ pr: 6 }}>
-              <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+            <DialogTitle sx={{ pr: 6, pb: 2 }}>
+              <Typography component="div" sx={{ fontWeight: 600, fontSize: 'clamp(1.25rem, 3vw, 2.125rem)', lineHeight: 1.2 }}>
                 {expandedSale.address}
               </Typography>
               {expandedSale.name && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
                   {expandedSale.name}
                 </Typography>
               )}
@@ -1048,25 +1049,25 @@ const GarageSales = () => {
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
-            <DialogContent dividers>
+            <DialogContent dividers sx={{ p: 3 }}>
               {expandedSale.description && (
-                <Box mb={2}>
-                  <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Box mb={3}>
+                  <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
                     {expandedSale.description}
                   </Typography>
                 </Box>
               )}
               {expandedSale.images?.length > 0 && (
-                <Box mb={2} sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Box mb={3} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {expandedSale.images.map((img, i) => (
-                    <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                    <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                       <img
                         src={img.url}
                         alt={img.description || `Image ${i + 1}`}
-                        style={{ width: 150, height: 150, objectFit: 'cover', borderRadius: 4 }}
+                        style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: 8 }}
                       />
                       {img.description && (
-                        <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 150 }}>
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', maxWidth: 200, fontSize: 'clamp(0.7rem, 1.2vw, 0.875rem)' }}>
                           {img.description}
                         </Typography>
                       )}
@@ -1075,21 +1076,21 @@ const GarageSales = () => {
                 </Box>
               )}
               {expandedSale.highlightedItems && (
-                <Box mb={2}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} gutterBottom>
+                <Box mb={3}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }} gutterBottom>
                     Highlights & Items
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.8rem, 1.5vw, 1rem)' }}>
                     {expandedSale.highlightedItems}
                   </Typography>
                 </Box>
               )}
               {expandedSale.paymentTypes?.length > 0 && (
-                <Box mb={2}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} gutterBottom>
+                <Box mb={3}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }} gutterBottom>
                     Payment Types
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.8rem, 1.5vw, 1rem)' }}>
                     {expandedSale.paymentTypes.join(', ')}
                   </Typography>
                 </Box>
