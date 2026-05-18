@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCommunitySales } from '../context/CommunitySalesContext';
 import { logger } from '../utils/logger';
 import {
   Box,
@@ -53,6 +54,7 @@ const ListActiveCommunitySalesEvents = () => {
   const [sortOrder, setSortOrder] = useState('upcoming');
   const { userInfo } = useAuth();
   const navigate = useNavigate();
+  const { setCommunityName, setCommunityId } = useCommunitySales();
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -247,7 +249,7 @@ const ListActiveCommunitySalesEvents = () => {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={(e) => { e.stopPropagation(); navigate('/admin/community-sales'); }}
+                        onClick={(e) => { e.stopPropagation(); setCommunityName(sale.name); setCommunityId(sale.id); navigate(`/admin/sales?communityId=${sale.id}`); }}
                         sx={{ ml: 2, flexShrink: 0 }}
                       >
                         Manage
