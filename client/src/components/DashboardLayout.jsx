@@ -54,7 +54,7 @@ const DashboardLayout = ({ children }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, userInfo } = useAuth();
   const { setFromLanding } = useNavigation();
   const { currentCommunityId } = useCommunitySales();
 
@@ -281,7 +281,9 @@ const DashboardLayout = ({ children }) => {
             {(open || isMobile) && (
               <ListItemText
                 primary={isAuthenticated ? 'Logout' : 'Login'}
+                secondary={isAuthenticated ? (`${userInfo?.fName || userInfo?.firstName || ''} ${userInfo?.lName || userInfo?.lastName || ''}`.trim() || null) : null}
                 primaryTypographyProps={{ fontSize: '0.9rem' }}
+                secondaryTypographyProps={{ fontSize: '0.75rem' }}
               />
             )}
           </ListItemButton>

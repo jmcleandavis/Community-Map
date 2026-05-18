@@ -142,7 +142,7 @@ const HamburgerMenu = () => {
         {isAuthenticated ? (
           <div className="menu-item" onClick={handleLogout}>
             <span className="menu-icon">🚪</span>
-            <span className="menu-text">Logout ({userEmail})</span>
+            <span className="menu-text">Logout ({`${userInfo?.fName || userInfo?.firstName || ''} ${userInfo?.lName || userInfo?.lastName || ''}`.trim() || userEmail})</span>
           </div>
         ) : (
           <div className="menu-item" onClick={() => {

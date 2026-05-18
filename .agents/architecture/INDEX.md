@@ -9,8 +9,11 @@ Search this file for keywords. Add entries as documentation grows.
 - [Document Name](./document.md)
 -->
 
-**Keywords**: date, dates, timezone, UTC, toLocaleDateString, off-by-one, YYYY-MM-DD
-- [Date Handling](./date-handling.md) — how date-only strings are stored and rendered without timezone rollback
+**Keywords**: date, timezone, UTC, toLocaleDateString, off-by-one, YYYY-MM-DD
+- [Date Handling](./date-handling.md) — store/render date-only strings without timezone rollback
 
-**Keywords**: map, centre, center, centring, centering, geolocation, MapView, LocationContext, QR code, My Location
-- [Map Centring](./map-centring.md) — community-vs-user centring contract; only the My Location button pans to the user
+**Keywords**: map, centring, geolocation, MapView, LocationContext, QR code, My Location
+- [Map Centring](./map-centring.md) — community-vs-user centring; only My Location button pans to user
+
+**Keywords**: user, name, fName, firstName, given_name, userInfo, auth, Google OAuth
+- [User Display Name](./user-display-name.md) — fallback chain for full name across login flows
