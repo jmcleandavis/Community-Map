@@ -123,7 +123,7 @@ const HamburgerMenu = () => {
         </div>
 
         <div className="menu-item" onClick={() => {
-          navigate('/help');
+          navigate('/help', { state: { fromMap: true } });
           setIsOpen(false);
         }}>
           <span className="menu-icon">❓</span>

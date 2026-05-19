@@ -60,6 +60,17 @@ const SalesRoute = () => {
   return <DashboardLayout><GarageSales /></DashboardLayout>;
 };
 
+const HelpRoute = () => {
+  return (
+    <>
+      <HamburgerMenu />
+      <div style={{ paddingTop: '60px', padding: '60px 16px 16px 16px' }}>
+        <Help />
+      </div>
+    </>
+  );
+};
+
 function App() {
   const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
   ReactGA.initialize(GA_MEASUREMENT_ID);
@@ -122,9 +133,7 @@ function App() {
                           <Route path="/info" element={
                             <DashboardRoute><InfoPage /></DashboardRoute>
                           } />
-                          <Route path="/help" element={
-                            <DashboardRoute><Help /></DashboardRoute>
-                          } />
+                          <Route path="/help" element={<HelpRoute />} />
                           <Route path="/list-active-community-sales-events" element={
                             <DashboardRoute><ListActiveCommunitySalesEvents /></DashboardRoute>
                           } />
