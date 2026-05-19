@@ -46,7 +46,7 @@ const DisplayMode = ({ onSelect }) => {
         navigate(`/?communityId=${communityId || ''}`);
       } else {
         // If no sales are selected, navigate to the GarageSales page where users can select sales
-        navigate('/sales');
+        navigate('/sales', { state: { fromMap: true } });
       }
     } else {
       // "Show All Sales" option is clicked
