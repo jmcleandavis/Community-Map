@@ -109,7 +109,7 @@ const HamburgerMenu = () => {
         <DisplayMode onSelect={() => setIsOpen(false)} />
 
         <div className="menu-item" onClick={() => {
-          navigate('/sales');
+          navigate('/sales', { state: { fromMap: true } });
           setIsOpen(false);
         }}>
           <span className="menu-icon">🏷️</span>

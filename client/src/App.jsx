@@ -45,6 +45,21 @@ const ProtectedDashboardRoute = ({ children }) => {
   return <DashboardLayout>{children}</DashboardLayout>;
 };
 
+const SalesRoute = () => {
+  const location = useLocation();
+  if (location.state?.fromMap) {
+    return (
+      <>
+        <HamburgerMenu />
+        <div style={{ paddingTop: '60px', padding: '60px 16px 16px 16px' }}>
+          <GarageSales />
+        </div>
+      </>
+    );
+  }
+  return <DashboardLayout><GarageSales /></DashboardLayout>;
+};
+
 function App() {
   const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
   ReactGA.initialize(GA_MEASUREMENT_ID);
@@ -119,9 +134,7 @@ function App() {
                           <Route path="/reset-password" element={
                             <DashboardRoute><PasswordReset /></DashboardRoute>
                           } />
-                          <Route path="/sales" element={
-                            <DashboardRoute><GarageSales /></DashboardRoute>
-                          } />
+                          <Route path="/sales" element={<SalesRoute />} />
                           <Route path="/single-garage-sales" element={
                             <DashboardRoute><SingleGarageSales /></DashboardRoute>
                           } />
