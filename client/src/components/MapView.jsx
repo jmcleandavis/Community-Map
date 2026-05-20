@@ -747,6 +747,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     borderRadius: '5px'
   };
 
+
   // Log when rendering the map
   logger.log('[MapView] Rendering Google Map component');
 
@@ -767,7 +768,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   }
   else {
     renderContent = (
-      <div className="map-container">
+      <div className={`map-container${!isLoaded && isCompactView ? ' map-type-hidden' : ''}`}>
         {/* Display the community name at the top */}
         <div style={titleStyle}>{COMMUNITY_NAME}</div>
 
@@ -787,18 +788,14 @@ function MapView({ mapContainerStyle, mapOptions }) {
           onLoad={(map) => {
             logger.log('[MapView] Map component loaded');
             mapRef.current = map;
-            
+
             // Explicitly set map type control position based on screen width
             if (map && window.google) {
               logger.log('[MapView] Setting map options with screen width:', width, 'isCompactView:', isCompactView);
-              
+
               if (isCompactView) {
-                // For small screens (<1045px): Stack controls vertically
-                // Full screen on top right, map type controls below it
                 map.setOptions({
-                  // Disable all default UI controls
                   disableDefaultUI: true,
-                  // Then enable only the controls we want
                   mapTypeControl: true,
                   mapTypeControlOptions: {
                     position: window.google.maps.ControlPosition.LEFT_BOTTOM,
@@ -809,16 +806,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
                   fullscreenControlOptions: {
                     position: window.google.maps.ControlPosition.TOP_RIGHT
                   },
-                  // Enable standard Google Maps controls
                   streetViewControl: true,
                   scaleControl: true
                 });
               } else {
-                // For larger screens (>=1045px): Normal horizontal positioning
                 map.setOptions({
-                  // Disable all default UI controls
                   disableDefaultUI: true,
-                  // Then enable only the controls we want
                   mapTypeControl: true,
                   mapTypeControlOptions: {
                     position: window.google.maps.ControlPosition.TOP_RIGHT,
@@ -832,13 +825,12 @@ function MapView({ mapContainerStyle, mapOptions }) {
                   fullscreenControlOptions: {
                     position: window.google.maps.ControlPosition.TOP_RIGHT
                   },
-                  // Enable standard Google Maps controls
                   streetViewControl: true,
                   scaleControl: true
                 });
               }
             }
-            
+
             // Set loaded state after configuring the map
             setIsLoaded(true);
             

@@ -12,6 +12,13 @@
   margin-bottom: 10px !important; /* Use !important to override Google Maps inline styles */
 }
 
+/* Hide the map type control on mobile until onLoad repositions it to LEFT_BOTTOM.
+   This prevents a flash where the control briefly appears at its default top position,
+   overlapping the community title. The class is removed once isLoaded becomes true. */
+.map-type-hidden .gm-style-mtc-bbw {
+  visibility: hidden !important;
+}
+
 /* Map type control styles for small screens */
 @media (max-width: 1044px) {
   /* Target the map type controls positioned at the bottom of the screen */

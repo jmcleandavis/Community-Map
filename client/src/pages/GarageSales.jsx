@@ -1036,14 +1036,32 @@ const GarageSales = () => {
         {expandedSale && (
           <>
             <DialogTitle sx={{ pr: 6, pb: 2 }}>
-              <Typography component="div" sx={{ fontWeight: 600, fontSize: 'clamp(1.25rem, 3vw, 2.125rem)', lineHeight: 1.2 }}>
-                {expandedSale.address}
-              </Typography>
-              {expandedSale.name && (
-                <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
-                  {expandedSale.name}
-                </Typography>
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Checkbox
+                  checked={selectedSales.has(expandedSale.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleSelectionWithAuth(expandedSale.id);
+                    setExpandedSale(null);
+                    setLightboxIndex(null);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  icon={<CheckBoxOutlineBlankIcon />}
+                  checkedIcon={<CheckBoxIcon color="primary" />}
+                  inputProps={{ 'aria-label': 'Select garage sale' }}
+                  sx={{ mt: 0.25, mr: 0.5, p: 0 }}
+                />
+                <Box>
+                  <Typography component="div" sx={{ fontWeight: 600, fontSize: 'clamp(1.25rem, 3vw, 2.125rem)', lineHeight: 1.2 }}>
+                    {expandedSale.address}
+                  </Typography>
+                  {expandedSale.name && (
+                    <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.875rem, 1.8vw, 1.25rem)' }}>
+                      {expandedSale.name}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
               <IconButton
                 onClick={() => { setExpandedSale(null); setLightboxIndex(null); }}
                 sx={{ position: 'absolute', top: 8, right: 8 }}

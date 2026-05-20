@@ -2,15 +2,11 @@
 
 Search this file for keywords. Add entries as documentation grows.
 
----
+**Keywords**: maps API, PATCH, paymentTypes, socialAndWeb, update payload, mapsApi, community sales, merge semantics
+- [Maps Management API](./maps-api.md) — backend sale records API; client connection and update payload shapes
 
-<!-- Example entry format:
-**Keywords**: keyword1, keyword2, keyword3
-- [Document Name](./document.md)
--->
+**Keywords**: images, Cloudinary, upload, unsigned preset, publicId
+- [Cloudinary Integration](./cloudinary.md) — frontend-direct image upload; env vars and unsigned preset setup
 
-**Keywords**: maps API, updateAddress, PATCH, paymentTypes, socialAndWeb, update payload, br-maps-mgt-api, mapsApi axios, community sales, null, clearing fields, merge semantics, communitySales update
-- [Maps Management API](./maps-api.md) — backend that owns sale records; how the client connects and shapes update payloads
-
-**Keywords**: images, upload, Cloudinary, storage, photos, image upload, unsigned preset, publicId
-- [Cloudinary Integration](./cloudinary.md) — frontend-direct image upload pattern; env vars, unsigned preset setup, and cleanup gap
+**Keywords**: Google Maps, gm-style, z-index, stacking context, isCompactView, satellite toggle, onLoad, map-type-hidden, mobile
+- [Google Maps JS API](./google-maps.md) — compact/desktop control layout; z-index stacking context rules; hide-until-loaded pattern
