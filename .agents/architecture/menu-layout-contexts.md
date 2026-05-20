@@ -1,7 +1,5 @@
 # Menu Layout Contexts
 
-Two layout patterns exist.
-
 ## Layouts
 
 | Layout | Component | Renders |

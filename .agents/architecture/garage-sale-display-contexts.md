@@ -10,7 +10,7 @@ Four contexts render garage sale data. Each shows a different subset of fields.
 | Name | ✅ | ✅ (subtitle) | ✅ | ✅ |
 | Description | ✅ truncated | ✅ full | ✅ full | ✅ |
 | Highlighted Items | ✅ truncated | ✅ full | ✅ full | ✅ |
-| Images | ✅ 80×80, with captions | ✅ 200×200, with captions | ✅ 80×80, with captions | ✅ 60×60, no captions |
+| Images | ✅ 80×80, with captions | ✅ 200×200 thumbnails, clickable → lightbox | ✅ 80×80, with captions | ✅ 60×60, no captions |
 | Payment Types | ✅ | ✅ | ✅ | ✅ |
 | Social/Web Links | ✅ (icon buttons) | ✅ (icon buttons) | ✅ (icon buttons) | ❌ |
 | Edit / Delete buttons | ❌ | ❌ | ❌ | ✅ |
@@ -18,19 +18,19 @@ Four contexts render garage sale data. Each shows a different subset of fields.
 
 ## Rule
 
-When adding a new field to the garage sale data model, update **all four contexts** unless there is a deliberate reason to exclude one. The public listing card and modal are the most likely to be missed — verify both explicitly.
+New fields: update **all four contexts** unless deliberately excluded. Public listing card and modal are most likely to be missed — verify both.
 
 ## Interaction Model (Public Listing Page)
 
-On the `/sales` page, the card has two distinct click zones:
-- **Checkbox (top-left corner)**: toggles selection — requires authentication
-- **Card body (everywhere else)**: opens the detail modal — no authentication required
-
-Viewing details is public. Selecting sales (for route planning) requires login.
+Two click zones on `/sales` cards:
+- **Checkbox (top-left)**: toggles selection — requires auth
+- **Card body**: opens detail modal — public, no auth required
 
 ## Image Display
 
-Images render only when `sale.images?.length > 0`. The section is entirely absent for sales with no images (no empty placeholder). Captions (`img.description`) render below the thumbnail when present.
+Images render only when `sale.images?.length > 0` — no empty placeholder. Captions (`img.description`) render below each thumbnail when present.
+
+In the **detail modal**, thumbnails are clickable: clicking opens a lightbox (`Dialog`, `zIndex: modal + 1`) at up to `90vw × 80vh`. Multi-image sales show prev/next arrows with wraparound. Closing (X, Esc, or outside click) leaves the card modal open.
 
 ## Detail Modal Sizing
 

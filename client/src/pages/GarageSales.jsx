@@ -39,7 +39,9 @@ import {
   Check as CheckIcon,
   Close as CloseIcon,
   ArrowBack as ArrowBackIcon,
-  Language as LanguageIcon
+  Language as LanguageIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
 import { getSocialIcon } from '../utils/socialIcons';
 import { useGarageSales } from '../context/GarageSalesContext';
@@ -76,6 +78,7 @@ const GarageSales = () => {
   const [showRouteList, setShowRouteList] = useState(false);
   const [optimizeFullRoute, setOptimizeFullRoute] = useState(false);
   const [expandedSale, setExpandedSale] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // Use custom hook for user address list management
   const { userAddressList, selectionsInitialized, setSelectionsInitialized } = useUserAddressList(
@@ -1024,7 +1027,7 @@ const GarageSales = () => {
 
       <Dialog
         open={!!expandedSale}
-        onClose={() => setExpandedSale(null)}
+        onClose={() => { setExpandedSale(null); setLightboxIndex(null); }}
         maxWidth="lg"
         fullWidth
         scroll="paper"
@@ -1042,7 +1045,7 @@ const GarageSales = () => {
                 </Typography>
               )}
               <IconButton
-                onClick={() => setExpandedSale(null)}
+                onClick={() => { setExpandedSale(null); setLightboxIndex(null); }}
                 sx={{ position: 'absolute', top: 8, right: 8 }}
                 aria-label="Close"
               >
@@ -1064,7 +1067,8 @@ const GarageSales = () => {
                       <img
                         src={img.url}
                         alt={img.description || `Image ${i + 1}`}
-                        style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: 8 }}
+                        style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: 8, cursor: 'pointer' }}
+                        onClick={() => setLightboxIndex(i)}
                       />
                       {img.description && (
                         <Typography color="text.secondary" sx={{ textAlign: 'center', maxWidth: 200, fontSize: 'clamp(0.7rem, 1.2vw, 0.875rem)' }}>
@@ -1121,6 +1125,66 @@ const GarageSales = () => {
           </>
         )}
       </Dialog>
+
+      {expandedSale && lightboxIndex !== null && (
+        <Dialog
+          open={true}
+          onClose={() => setLightboxIndex(null)}
+          maxWidth={false}
+          sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+          PaperProps={{
+            sx: {
+              bgcolor: 'rgba(0,0,0,0.92)',
+              boxShadow: 'none',
+              m: 0,
+              position: 'relative',
+              overflow: 'visible',
+            }
+          }}
+        >
+          <IconButton
+            onClick={() => setLightboxIndex(null)}
+            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', zIndex: 1 }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {expandedSale.images.length > 1 && (
+            <IconButton
+              onClick={() =>
+                setLightboxIndex((lightboxIndex - 1 + expandedSale.images.length) % expandedSale.images.length)
+              }
+              sx={{ position: 'absolute', left: -48, top: '50%', transform: 'translateY(-50%)', color: 'white' }}
+            >
+              <ChevronLeftIcon fontSize="large" />
+            </IconButton>
+          )}
+
+          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+            <img
+              src={expandedSale.images[lightboxIndex].url}
+              alt={expandedSale.images[lightboxIndex].description || `Image ${lightboxIndex + 1}`}
+              style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain' }}
+            />
+            {expandedSale.images[lightboxIndex].description && (
+              <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem', textAlign: 'center' }}>
+                {expandedSale.images[lightboxIndex].description}
+              </Typography>
+            )}
+          </Box>
+
+          {expandedSale.images.length > 1 && (
+            <IconButton
+              onClick={() =>
+                setLightboxIndex((lightboxIndex + 1) % expandedSale.images.length)
+              }
+              sx={{ position: 'absolute', right: -48, top: '50%', transform: 'translateY(-50%)', color: 'white' }}
+            >
+              <ChevronRightIcon fontSize="large" />
+            </IconButton>
+          )}
+        </Dialog>
+      )}
 
       <LoginRequiredModal
         isOpen={showLoginModal}
