@@ -26,6 +26,7 @@ body {
 /* Map control styles */
 .gm-style-mtc {
   display: inline-block !important;
+  z-index: 1001 !important;
 }
 
 .gm-style-mtc div {
