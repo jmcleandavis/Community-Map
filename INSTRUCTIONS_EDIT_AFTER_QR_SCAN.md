@@ -2,7 +2,7 @@
 
 ## Overview
 After scanning the QR code, you'll be directed to the Community Map at:
-`https://www.communitysaleevents.com/?communityId=eef06da4-788b-435b-8f84-9467dd5b89a9`
+`https://www.communitysaleevents.com/?communityId=96cc0f2f-13e2-4090-8e3d-6dbe35856ef4`
 
 This will show you the map view of all garage sales in your community. To edit or manage garage sales, you'll need to access the admin panel.
 
@@ -41,7 +41,7 @@ This will show you the map view of all garage sales in your community. To edit o
 ### Alternative Method: Direct URL Access
 If you know your community ID, you can directly access the garage sales admin page:
 1. Use this URL format: `https://www.communitysaleevents.com/admin/sales?communityId=YOUR_COMMUNITY_ID`
-2. For the example community: `https://www.communitysaleevents.com/admin/sales?communityId=eef06da4-788b-435b-8f84-9467dd5b89a9`
+2. For the example community: `https://www.communitysaleevents.com/admin/sales?communityId=96cc0f2f-13e2-4090-8e3d-6dbe35856ef4`
 
 ## Important Notes
 - You must be logged in to access the admin pages

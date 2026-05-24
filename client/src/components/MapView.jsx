@@ -132,7 +132,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       setCommunityId(urlCommunityId);
     } else if (!communityId && !location.search) {
       // Default to a specific community ID when none is provided
-      const defaultCommunityId = 'eef06da4-788b-435b-8f84-9467dd5b89a9';
+      const defaultCommunityId = '96cc0f2f-13e2-4090-8e3d-6dbe35856ef4'; // 2026 default community
       logger.log('[MapView] No community ID provided, defaulting to:', defaultCommunityId);
       setCommunityId(defaultCommunityId);
       // Update the URL to include the default community ID
