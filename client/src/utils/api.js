@@ -219,7 +219,7 @@ const getSessionId = async () => {
 };
 
 // Custom get method for addresses - defaults to Bay Ridges Community Sales if no ID provided
-const getAddresses = async (communityId = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
+const getAddresses = async (communityId = '96cc0f2f-13e2-4090-8e3d-6dbe35856ef4') => {
   try {
     logger.log('[api] Starting getAddresses call...');
     
@@ -820,7 +820,7 @@ const api = {
   logout,
   
   // Create or update user's saved address list
-  createUpdateUserAddressList: async (userId, addressList, community = 'eef06da4-788b-435b-8f84-9467dd5b89a9') => {
+  createUpdateUserAddressList: async (userId, addressList, community = '96cc0f2f-13e2-4090-8e3d-6dbe35856ef4') => {
     try {
       logger.log('[api] Saving user address list for user:', userId);
       const sessionId = await getSessionId();
