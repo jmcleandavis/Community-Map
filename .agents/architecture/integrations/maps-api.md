@@ -27,3 +27,7 @@ socialAndWeb: { ...(submissionData.fb ? { fb: submissionData.fb } : {}) }
 ```
 
 > **Open (CSE-119)**: Confirm with backend dev whether `{ fb: null }` deletes the key or stores `null` (the latter would require a backend cleanup step too).
+
+## POST /v1/createAddress
+
+Creates a sale in the given community. Duplicate → ERR_MAPS001; check must be community+address scoped. Bug CSE-125: global; Jamie to fix.

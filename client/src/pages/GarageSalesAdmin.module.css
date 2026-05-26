@@ -208,6 +208,24 @@
   cursor: not-allowed;
 }
 
+.importCsvButton {
+  padding: 10px 20px;
+  background-color: #1565c0;
+  color: white;
+  border-color: #1565c0;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.importCsvButton:hover {
+  background-color: #0d47a1;
+  border-color: #0d47a1;
+}
+
 .garageForm {
   background-color: #f9f9f9;
   padding: 20px;

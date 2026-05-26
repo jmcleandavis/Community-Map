@@ -13,6 +13,16 @@ import {
   Divider,
   IconButton,
   TextField as MuiTextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -32,6 +42,40 @@ import api from '../utils/api';
 import styles from './GarageSalesAdmin.module.css';
 import CommunityQRCode from '../components/CommunityQRCode';
 import { logger } from '../utils/logger';
+
+function parseCSVLine(line) {
+  const fields = [];
+  let current = '';
+  let inQuotes = false;
+  let i = 0;
+  while (i < line.length) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        current += '"';
+        i += 2;
+      } else if (ch === '"') {
+        inQuotes = false;
+        i++;
+      } else {
+        current += ch;
+        i++;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+      i++;
+    } else if (ch === ',') {
+      fields.push(current);
+      current = '';
+      i++;
+    } else {
+      current += ch;
+      i++;
+    }
+  }
+  fields.push(current);
+  return fields;
+}
 
 const GarageSalesAdmin = () => {
   const {
@@ -71,6 +115,10 @@ const GarageSalesAdmin = () => {
   });
   const [imageUploading, setImageUploading] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResults, setImportResults] = useState(null);
   
   // --- QR Code Section ---
   // Prefer context values if available, fallback to local state
@@ -702,6 +750,119 @@ const GarageSalesAdmin = () => {
     }
   };
 
+  const handleImportCSV = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+
+    let text;
+    try {
+      text = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsText(importFile);
+      });
+    } catch (err) {
+      setImportResults({ success: [], failed: [{ row: '-', address: '-', error: err.message }] });
+      setImportLoading(false);
+      return;
+    }
+
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    if (lines.length < 2) {
+      setImportResults({ success: [], failed: [{ row: '-', address: '-', error: 'CSV file is empty or has no data rows' }] });
+      setImportLoading(false);
+      return;
+    }
+
+    const headers = parseCSVLine(lines[0]).map(h => h.trim());
+    const addressIdx = headers.findIndex(h => h.toLowerCase() === 'address');
+    if (addressIdx === -1) {
+      setImportResults({ success: [], failed: [{ row: '-', address: '-', error: 'CSV must have an "Address" column' }] });
+      setImportLoading(false);
+      return;
+    }
+
+    const descIdx = headers.findIndex(h => h.toLowerCase() === 'description');
+    const featuredIdx = headers.findIndex(h => h.toLowerCase() === 'featured items');
+    const paymentIdx = headers.findIndex(h => h.toLowerCase() === 'payment types');
+
+    const successList = [];
+    const failedList = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const rowNum = i + 1;
+      const fields = parseCSVLine(lines[i]);
+      const addressStr = (fields[addressIdx] || '').trim();
+
+      if (!addressStr) {
+        failedList.push({ row: rowNum, address: '(empty)', error: 'Address is required' });
+        continue;
+      }
+
+      const parsed = parseAddressString(addressStr);
+      if (!parsed || !parsed.street) {
+        failedList.push({ row: rowNum, address: addressStr, error: 'Could not parse address' });
+        continue;
+      }
+
+      const streetNumInt = parseInt(parsed.streetNumber, 10);
+      if (isNaN(streetNumInt) || streetNumInt <= 0) {
+        failedList.push({ row: rowNum, address: addressStr, error: 'Invalid address: no street number' });
+        continue;
+      }
+
+      const description = descIdx !== -1 ? (fields[descIdx] || '').trim() : '';
+      const featuredItems = featuredIdx !== -1
+        ? (fields[featuredIdx] || '').split(', ').filter(Boolean)
+        : [];
+      const paymentTypes = paymentIdx !== -1
+        ? (fields[paymentIdx] || '').split(', ').filter(Boolean)
+        : [];
+
+      const saleData = {
+        address: {
+          street: parsed.street || '',
+          streetNum: parsed.streetNumber || '',
+          city: parsed.city || '',
+          provState: parsed.state || '',
+          postalZipCode: parsed.postalCode || '',
+          unit: parsed.unit || '',
+          country: 'Canada',
+        },
+        description: description || 'GARAGE SALE',
+        highlightedItems: featuredItems,
+        paymentTypes,
+        name: 'Garage Sale',
+        community: communityId || 'GENPUB',
+        userId: userInfo?.id || userInfo?.userId || 'anonymous',
+        dateTime: {
+          start: new Date().toISOString().replace(/\.\d+Z$/, '').replace('Z', ''),
+          end: new Date(Date.now() + 86400000).toISOString().replace(/\.\d+Z$/, '').replace('Z', ''),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Toronto',
+        },
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        socialAndWeb: {},
+        images: [],
+      };
+
+      try {
+        await api.createGarageSale(saleData);
+        successList.push(addressStr);
+      } catch (err) {
+        const msg = err.response?.data?.message || err.response?.data || err.message || 'Unknown error';
+        failedList.push({ row: rowNum, address: addressStr, error: typeof msg === 'string' ? msg : JSON.stringify(msg) });
+      }
+    }
+
+    setImportResults({ success: successList, failed: failedList });
+    setImportLoading(false);
+  };
+
   // Return to the community sales admin page
   const handleBackToCommunitySales = () => {
     navigate('/admin/community-sales');
@@ -819,6 +980,14 @@ const GarageSalesAdmin = () => {
             disabled={!garageSales || garageSales.length === 0}
           >
             Export CSV
+          </Button>
+
+          <Button
+            variant="outlined"
+            className={styles.importCsvButton}
+            onClick={() => setImportModalOpen(true)}
+          >
+            Import CSV
           </Button>
         </Stack>
       </div>
@@ -1095,6 +1264,114 @@ const GarageSalesAdmin = () => {
         Showing {filteredSales.length} of {garageSales.length} garage sales
         {adminSelectedSales.size > 0 && ` (${adminSelectedSales.size} selected)`}
       </Typography>
+
+      <Dialog
+        open={importModalOpen}
+        onClose={() => { if (!importLoading) { setImportModalOpen(false); setImportResults(null); setImportFile(null); } }}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Import Garage Sales from CSV</DialogTitle>
+        <DialogContent>
+          {!importResults ? (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Upload a CSV file with columns: <strong>Address</strong>, Description, Featured Items, Payment Types
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <label htmlFor="csv-import-input">
+                  <input
+                    id="csv-import-input"
+                    type="file"
+                    accept=".csv,.txt"
+                    style={{ display: 'none' }}
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  />
+                  <Button variant="outlined" component="span" disabled={importLoading}>
+                    Choose File
+                  </Button>
+                </label>
+                {importFile && (
+                  <Typography variant="body2">{importFile.name}</Typography>
+                )}
+              </Stack>
+              {importLoading && (
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2">Importing...</Typography>
+                </Stack>
+              )}
+            </Stack>
+          ) : (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Stack direction="row" spacing={2}>
+                <Chip label={`${importResults.success.length} sales created`} color="success" />
+                {importResults.failed.length > 0 && (
+                  <Chip label={`${importResults.failed.length} failed`} color="error" />
+                )}
+              </Stack>
+              {importResults.failed.length > 0 && (
+                <>
+                  <Typography variant="subtitle2">Failed rows:</Typography>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell><strong>Row</strong></TableCell>
+                          <TableCell><strong>Address</strong></TableCell>
+                          <TableCell><strong>Error</strong></TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {importResults.failed.map((item, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>{item.row}</TableCell>
+                            <TableCell>{item.address}</TableCell>
+                            <TableCell>
+                              <Typography variant="body2" color="error">{item.error}</Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {!importResults ? (
+            <>
+              <Button
+                onClick={() => { setImportModalOpen(false); setImportFile(null); }}
+                disabled={importLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleImportCSV}
+                disabled={!importFile || importLoading}
+              >
+                Import
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setImportModalOpen(false);
+                setImportResults(null);
+                setImportFile(null);
+                fetchGarageSales(communityId, true);
+              }}
+            >
+              Close
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

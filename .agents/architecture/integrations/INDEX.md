@@ -2,8 +2,8 @@
 
 Search this file for keywords. Add entries as documentation grows.
 
-**Keywords**: maps API, PATCH, paymentTypes, socialAndWeb, update payload, mapsApi, community sales, merge semantics
-- [Maps Management API](./maps-api.md) — backend sale records API; client connection and update payload shapes
+**Keywords**: maps API, PATCH, paymentTypes, socialAndWeb, mapsApi, ERR_MAPS001, duplicate, createAddress
+- [Maps Management API](./maps-api.md) — backend sale records API; client connection, update payloads, duplicate-check scoping
 
 **Keywords**: images, Cloudinary, upload, unsigned preset, publicId
 - [Cloudinary Integration](./cloudinary.md) — frontend-direct image upload; env vars and unsigned preset setup
