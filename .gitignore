@@ -50,3 +50,4 @@ client/coverage
 
 # Claude local config
 .claude/
+.mcp.json

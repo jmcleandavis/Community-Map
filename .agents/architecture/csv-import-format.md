@@ -1,32 +1,50 @@
 # CSV Import Format
 
-The GarageSalesAdmin "Import CSV" button expects a CSV exported by the same panel's "Export CSV" feature. Hand-crafted CSVs are supported if they match the column format.
+GarageSalesAdmin "Import CSV" / "Export CSV" feature.
 
 ## Columns
 
 | Column | Required | Notes |
 |--------|----------|-------|
-| Address | ✅ Yes | Must include a numeric street number |
-| Description | No | Defaults to `"GARAGE SALE"` if empty |
-| Featured Items | No | Comma-separated list |
-| Payment Types | No | Comma-separated list (e.g. `Cash, Visa`) |
+| Address | ✅ Yes | Numeric street number required. City/province optional if dialog defaults are set. |
+| Description | No | Defaults to `"GARAGE SALE"` |
+| Featured Items | No | Comma-separated |
+| Payment Types | No | Comma-separated (e.g. `Cash, Visa`) |
 
-> **Planned**: A **City** column will be added to the export to supply geocoding context. Without it, bare street addresses (e.g. `"712 Kingfisher Drive"`) can geocode to wrong countries.
+## Address rules
 
-## Address format rules
+- Street number must be a positive integer — non-numeric prefix (e.g. `"- Lily & Coop's"`) → `Invalid address: no street number`.
+- Leading `=` in any field (Excel formula artifact) is stripped before parsing.
+- Parser is RFC 4180-compliant; quoted fields may span multiple lines.
 
-- Street number must be a positive integer. Rows where the street number is a dash (`"-"`) or any non-numeric value are rejected client-side with `Invalid address: no street number`. This catches vendor/booth entries that appear in some community CSV exports alongside residential sales.
-- The import parser is RFC 4180-compliant (handles quoted fields with embedded commas).
+## Multi-vendor addresses
 
-## Duplicate handling
+Multiple vendors at one address go in a single row. Put vendor names in the Description field, one per line prefixed with `"- "`:
 
-Duplicate detection is **community-scoped**: the same physical address may exist in multiple community events. A row is only rejected as a duplicate if the exact address already exists within the **same community event** being imported into.
+```csv
+"706 Kingfisher Drive","- Sally's Baubles
+- Lily & Coop's Soda Pop Shop","String art","Cash"
+```
 
-> **Note (CSE-125 Bug #1)**: As of May 2026 the backend checks duplicates globally across all communities. Once Jamie's fix is merged, the above community-scoped rule will be enforced.
+One map pin is created; all vendor names appear in its description.
 
-## Error reporting
+## Duplicate address handling (within CSV)
 
-After the run completes, the import dialog shows a per-row results table:
-- Created rows show a success count.
-- Failed rows show row number, address, and error reason.
-- The import does **not** stop on failure — all rows are attempted regardless of individual failures.
+If the same address appears more than once:
+- **Same description** → second row silently skipped.
+- **Different descriptions** → combined as `desc1 / desc2` in the first row's entry.
+
+## Default City / Province
+
+Import dialog has **Default City** and **Default Province** fields — used as geocoding fallback when an address row has no city/province. Required for bare-street-address CSVs — without city context the geocoder may place sales in the wrong country.
+
+Future: auto-populate from the community record.
+
+## Export round-trip (June 2026+)
+
+"Export CSV" writes the full address (streetNum + street + city + provState). Reimporting does not require default city/province.
+
+## Database duplicate handling
+
+Community-scoped: same address may exist in multiple community events; rejected only if address+community already exists.
+

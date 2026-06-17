@@ -219,6 +219,7 @@ const RegisterGarageSale = () => {
     setLoading(true);
     setError(null);
     
+    let innerErrorHandled = false;
     try {
       // Format dates for API - convert YYYY-MM-DD to ISO datetime format
       const formatDateForAPI = (dateString, isEndDate = false) => {
@@ -361,6 +362,7 @@ const RegisterGarageSale = () => {
         }
         
         setError(errorMessage);
+        innerErrorHandled = true;
         throw err;
       }
       setIsEditing(false);
@@ -392,7 +394,9 @@ const RegisterGarageSale = () => {
       }
     } catch (err) {
       logger.error('[RegisterGarageSale] Error saving garage sale:', err);
-      setError(err.response?.data?.message || 'Failed to save your garage sale. Please try again.');
+      if (!innerErrorHandled) {
+        setError(err.response?.data?.message || 'Failed to save your garage sale. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

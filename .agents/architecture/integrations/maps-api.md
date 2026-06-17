@@ -1,33 +1,33 @@
 # Maps Management API
 
-Backend service that owns garage sale and community sale records. Hosted on Cloud Run (`br-maps-mgt-api-dev001` for dev).
+Backend service owning sale records. Cloud Run host: `br-maps-mgt-api-dev001` (dev).
 
-## How the client talks to it
+## Client setup
 
-- Axios instance: `mapsApi` in `client/src/utils/api.js`. Base URL comes from `VITE_MAPS_API_URL`, falling back to `/maps-api` in dev.
-- Dev proxy: `vite.config.js` rewrites `/maps-api/*` to the Cloud Run dev host, so `npm run dev` exercises the real dev backend (no mocks).
-- All requests must carry a `sessionId` header (fetched via `getSessionId()`) plus the `app-key` and `app-name` headers configured on the axios instance.
+Axios instance `mapsApi` in `client/src/utils/api.js`. Base URL: `VITE_MAPS_API_URL`, falling back to `/maps-api`. Dev proxy in `vite.config.js` rewrites `/maps-api/*` to Cloud Run (real backend). All requests need `sessionId` + `app-key` + `app-name` headers.
 
-## Update payloads
+## PATCH /v1/updateAddress/{id}
 
-`PATCH /v1/updateAddress/{id}` accepts the same field names as the create endpoint: `address`, `description`, `highlightedItems`, `paymentTypes`, `socialAndWeb`, `dateTime`, etc. Both partial and full payloads are accepted.
+Accepts same field names as create: `address`, `description`, `highlightedItems`, `paymentTypes`, `socialAndWeb`, `dateTime`. Partial and full payloads accepted. `GarageSalesAdmin.jsx` diffs the form against the loaded sale and only sends changed fields; no-op saves skip the call.
 
-`GarageSalesAdmin.jsx` builds the PATCH body by diffing the form against the loaded sale and only sending fields the user changed. This is preferred — it keeps payloads small and skips the API call entirely on a no-op save — but the backend will accept full payloads too.
+## PATCH /v1/communitySales/update/{id}
 
-## Community Sales update payloads
-
-`PATCH /v1/communitySales/update/{id}` has the same merge semantics: omitted keys keep their previous value. To clear a field, send `null` explicitly — do not omit the key:
+Same merge semantics: omitted keys keep previous value. To clear a field, send `null` — do not omit:
 
 ```js
 // ✅ clears removed URLs
-socialAndWeb: { fb: submissionData.fb || null, instagram: submissionData.instagram || null, website: submissionData.website || null }
-
-// ❌ omitting the key leaves the old value in the DB
-socialAndWeb: { ...(submissionData.fb ? { fb: submissionData.fb } : {}) }
+socialAndWeb: { fb: val || null, instagram: val || null, website: val || null }
+// ❌ omitting keeps old value
 ```
 
-> **Open (CSE-119)**: Confirm with backend dev whether `{ fb: null }` deletes the key or stores `null` (the latter would require a backend cleanup step too).
+> **Open (CSE-119)**: Does `{ fb: null }` delete the key or store `null`?
 
 ## POST /v1/createAddress
 
-Creates a sale in the given community. Duplicate → ERR_MAPS001; check must be community+address scoped. Bug CSE-125: global; Jamie to fix.
+Creates a sale in a community. `community` field values:
+- **UUID** — a neighbourhood event (admin-managed)
+- **`GENPUB`** — standalone individual sale (public `/register-garage-sale`); not part of any event; find user's sale by matching `userId`
+
+**Duplicate detection (community-scoped):** same address in same community → `HTTP 400 { code: "ERR_MAPS001", errorMsg: "Existing Address" }`. `api.js` converts this to `new Error('A garage sale already exists at this address')`, which both forms display. Same address is allowed in different communities.
+
+**Status (CSE-125/CSE-128):** Backend currently accepts duplicates silently. Frontend mitigation (2026-06-17): `GarageSalesAdmin.jsx` pre-checks the loaded sales list before the API call; `RegisterGarageSale.jsx` fixed a nested try-catch that swallowed the specific error. Jamie to add community+address unique constraint returning ERR_MAPS001.

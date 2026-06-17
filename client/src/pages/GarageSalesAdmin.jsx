@@ -43,38 +43,53 @@ import styles from './GarageSalesAdmin.module.css';
 import CommunityQRCode from '../components/CommunityQRCode';
 import { logger } from '../utils/logger';
 
-function parseCSVLine(line) {
-  const fields = [];
-  let current = '';
+// Full RFC 4180 parser — handles quoted fields with embedded newlines and commas.
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
   let inQuotes = false;
   let i = 0;
-  while (i < line.length) {
-    const ch = line[i];
+  while (i < text.length) {
+    const ch = text[i];
     if (inQuotes) {
-      if (ch === '"' && line[i + 1] === '"') {
-        current += '"';
+      if (ch === '"' && text[i + 1] === '"') {
+        field += '"';
         i += 2;
       } else if (ch === '"') {
         inQuotes = false;
         i++;
       } else {
-        current += ch;
+        field += ch;
         i++;
       }
     } else if (ch === '"') {
       inQuotes = true;
       i++;
     } else if (ch === ',') {
-      fields.push(current);
-      current = '';
+      row.push(field);
+      field = '';
+      i++;
+    } else if (ch === '\r' && text[i + 1] === '\n') {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+      i += 2;
+    } else if (ch === '\n') {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
       i++;
     } else {
-      current += ch;
+      field += ch;
       i++;
     }
   }
-  fields.push(current);
-  return fields;
+  row.push(field);
+  if (row.some(f => f.trim())) rows.push(row);
+  return rows;
 }
 
 const GarageSalesAdmin = () => {
@@ -119,6 +134,8 @@ const GarageSalesAdmin = () => {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState(null);
+  const [importDefaultCity, setImportDefaultCity] = useState('');
+  const [importDefaultProvince, setImportDefaultProvince] = useState('');
   
   // --- QR Code Section ---
   // Prefer context values if available, fallback to local state
@@ -399,6 +416,17 @@ const GarageSalesAdmin = () => {
           await api.updateGarageSale(editingSale.id, updateData);
         }
       } else {
+        // Client-side duplicate check against currently loaded sales
+        const normalizedInput = formData.address.trim().toLowerCase().replace(/\s+/g, ' ');
+        const isDuplicate = garageSales.some(
+          sale => (sale.address || '').trim().toLowerCase().replace(/\s+/g, ' ') === normalizedInput
+        );
+        if (isDuplicate) {
+          setSubmitError('A garage sale already exists at this address');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
         // Parse the address from the form using utility
         const addressData = parseAddressString(formData.address);
         
@@ -712,12 +740,20 @@ const GarageSalesAdmin = () => {
     }
 
     const headers = ['Address', 'Description', 'Featured Items', 'Payment Types'];
-    const rows = garageSales.map(sale => [
-      `"${(sale.address || '').replace(/"/g, '""')}"`,
-      `"${(sale.description || '').replace(/"/g, '""')}"`,
-      `"${(sale.featuredItems || []).join(', ').replace(/"/g, '""')}"`,
-      `"${(sale.paymentTypes || []).join(', ').replace(/"/g, '""')}"`
-    ]);
+    const rows = garageSales.map(sale => {
+      const r = sale.rawAddress || {};
+      const fullAddress = [
+        [r.streetNum, r.street].filter(Boolean).join(' '),
+        r.city,
+        r.provState
+      ].filter(Boolean).join(', ') || sale.address || '';
+      return [
+        `"${fullAddress.replace(/"/g, '""')}"`,
+        `"${(sale.description || '').replace(/"/g, '""')}"`,
+        `"${(sale.featuredItems || []).join(', ').replace(/"/g, '""')}"`,
+        `"${(sale.paymentTypes || []).join(', ').replace(/"/g, '""')}"`
+      ];
+    });
 
     const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
     const defaultName = `${communityName || 'garage-sales'}-addresses.csv`;
@@ -768,14 +804,14 @@ const GarageSalesAdmin = () => {
       return;
     }
 
-    const lines = text.split(/\r?\n/).filter(line => line.trim());
-    if (lines.length < 2) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) {
       setImportResults({ success: [], failed: [{ row: '-', address: '-', error: 'CSV file is empty or has no data rows' }] });
       setImportLoading(false);
       return;
     }
 
-    const headers = parseCSVLine(lines[0]).map(h => h.trim());
+    const headers = rows[0].map(h => h.trim());
     const addressIdx = headers.findIndex(h => h.toLowerCase() === 'address');
     if (addressIdx === -1) {
       setImportResults({ success: [], failed: [{ row: '-', address: '-', error: 'CSV must have an "Address" column' }] });
@@ -790,15 +826,39 @@ const GarageSalesAdmin = () => {
     const successList = [];
     const failedList = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const rowNum = i + 1;
-      const fields = parseCSVLine(lines[i]);
-      const addressStr = (fields[addressIdx] || '').trim();
+    // Pre-process: merge within-CSV duplicate addresses.
+    // Same description → silently skip second. Different description → combine into one entry.
+    const addressMap = new Map(); // normalizedAddress → index in dedupedEntries
+    const dedupedEntries = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const fields = rows[i];
+      const addressStr = (fields[addressIdx] || '').replace(/^=/, '').trim();
 
       if (!addressStr) {
-        failedList.push({ row: rowNum, address: '(empty)', error: 'Address is required' });
+        failedList.push({ row: i + 1, address: '(empty)', error: 'Address is required' });
         continue;
       }
+
+      const desc = descIdx !== -1 ? (fields[descIdx] || '').replace(/^=/, '').trim() : '';
+      const normKey = addressStr.toLowerCase().replace(/\s+/g, ' ');
+
+      if (addressMap.has(normKey)) {
+        const prevIdx = addressMap.get(normKey);
+        const prevDesc = dedupedEntries[prevIdx].description;
+        const thisDesc = desc || 'GARAGE SALE';
+        if (prevDesc.toLowerCase() !== thisDesc.toLowerCase()) {
+          dedupedEntries[prevIdx].description = prevDesc + ' / ' + thisDesc;
+        }
+        continue;
+      }
+
+      addressMap.set(normKey, dedupedEntries.length);
+      dedupedEntries.push({ rowNum: i + 1, fields, description: desc });
+    }
+
+    for (const { rowNum, fields, description } of dedupedEntries) {
+      const addressStr = (fields[addressIdx] || '').replace(/^=/, '').trim();
 
       const parsed = parseAddressString(addressStr);
       if (!parsed || !parsed.street) {
@@ -812,7 +872,6 @@ const GarageSalesAdmin = () => {
         continue;
       }
 
-      const description = descIdx !== -1 ? (fields[descIdx] || '').trim() : '';
       const featuredItems = featuredIdx !== -1
         ? (fields[featuredIdx] || '').split(', ').filter(Boolean)
         : [];
@@ -824,8 +883,8 @@ const GarageSalesAdmin = () => {
         address: {
           street: parsed.street || '',
           streetNum: parsed.streetNumber || '',
-          city: parsed.city || '',
-          provState: parsed.state || '',
+          city: parsed.city || importDefaultCity.trim() || '',
+          provState: parsed.state || importDefaultProvince.trim() || '',
           postalZipCode: parsed.postalCode || '',
           unit: parsed.unit || '',
           country: 'Canada',
@@ -1267,7 +1326,7 @@ const GarageSalesAdmin = () => {
 
       <Dialog
         open={importModalOpen}
-        onClose={() => { if (!importLoading) { setImportModalOpen(false); setImportResults(null); setImportFile(null); } }}
+        onClose={() => { if (!importLoading) { setImportModalOpen(false); setImportResults(null); setImportFile(null); setImportDefaultCity(''); setImportDefaultProvince(''); } }}
         maxWidth="md"
         fullWidth
       >
@@ -1278,6 +1337,28 @@ const GarageSalesAdmin = () => {
               <Typography variant="body2" color="text.secondary">
                 Upload a CSV file with columns: <strong>Address</strong>, Description, Featured Items, Payment Types
               </Typography>
+              <Stack direction="row" spacing={2}>
+                <MuiTextField
+                  label="Default City"
+                  size="small"
+                  value={importDefaultCity}
+                  onChange={(e) => setImportDefaultCity(e.target.value)}
+                  placeholder="e.g. Barrie"
+                  disabled={importLoading}
+                  helperText="Used when address has no city"
+                  sx={{ flex: 1 }}
+                />
+                <MuiTextField
+                  label="Default Province"
+                  size="small"
+                  value={importDefaultProvince}
+                  onChange={(e) => setImportDefaultProvince(e.target.value)}
+                  placeholder="e.g. ON"
+                  disabled={importLoading}
+                  helperText="Used when address has no province"
+                  sx={{ flex: 1 }}
+                />
+              </Stack>
               <Stack direction="row" alignItems="center" spacing={2}>
                 <label htmlFor="csv-import-input">
                   <input
@@ -1344,7 +1425,7 @@ const GarageSalesAdmin = () => {
           {!importResults ? (
             <>
               <Button
-                onClick={() => { setImportModalOpen(false); setImportFile(null); }}
+                onClick={() => { setImportModalOpen(false); setImportFile(null); setImportDefaultCity(''); setImportDefaultProvince(''); }}
                 disabled={importLoading}
               >
                 Cancel
@@ -1364,6 +1445,8 @@ const GarageSalesAdmin = () => {
                 setImportModalOpen(false);
                 setImportResults(null);
                 setImportFile(null);
+                setImportDefaultCity('');
+                setImportDefaultProvince('');
                 fetchGarageSales(communityId, true);
               }}
             >
