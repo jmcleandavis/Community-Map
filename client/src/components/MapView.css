@@ -43,6 +43,29 @@
   /* No additional styling needed by default */
 }
 
+/* Select checkbox injected as a DOM sibling to the native close button.
+   Positioned just to the left of the ~30px native X button. */
+.info-window-portal-select {
+  position: absolute;
+  top: 16px;
+  left: 10;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  z-index: 1;
+}
+
+.info-window-portal-select input[type="checkbox"] {
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
 /* Styles for the My Location button */
 .my-location-button {
   background-color: white;
