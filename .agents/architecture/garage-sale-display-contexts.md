@@ -1,30 +1,37 @@
 # Garage Sale Display Contexts
 
-Four contexts render garage sale data. Each shows a different subset of fields.
+Five contexts render garage sale data. Each shows a different subset of fields.
 
 ## Field Matrix
 
-| Field | Public Listing Card (`GarageSales.jsx`) | Detail Modal (`GarageSales.jsx` Dialog) | Detail View (`SingleGarageSales.jsx`) | Admin Card (`GarageSalesAdmin.jsx`) |
-|---|---|---|---|---|
-| Address | ✅ truncated | ✅ full | ✅ full | ✅ |
-| Name | ✅ | ✅ (subtitle) | ✅ | ✅ |
-| Description | ✅ truncated | ✅ full | ✅ full | ✅ |
-| Highlighted Items | ✅ truncated | ✅ full | ✅ full | ✅ |
-| Images | ✅ 80×80, with captions | ✅ 200×200 thumbnails, clickable → lightbox | ✅ 80×80, with captions | ✅ 60×60, no captions |
-| Payment Types | ✅ | ✅ | ✅ | ✅ |
-| Social/Web Links | ✅ (icon buttons) | ✅ (icon buttons) | ✅ (icon buttons) | ❌ |
-| Edit / Delete buttons | ❌ | ❌ | ❌ | ✅ |
-| Start/End Times | ❌ | ❌ | ✅ | ❌ |
+| Field | Card | Detail Modal | Detail View | Admin | Map InfoWindow |
+|---|---|---|---|---|---|
+| Address | ✅ truncated | ✅ full | ✅ full | ✅ | ✅ full |
+| Name | ✅ | ✅ subtitle | ✅ | ✅ | ❌ |
+| Description | ✅ truncated | ✅ full | ✅ full | ✅ | ✅ full |
+| Highlighted Items | ✅ truncated | ✅ full | ✅ full | ✅ | ❌ |
+| Images | ✅ 80×80 | ✅ 200×200 lightbox | ✅ 80×80 | ✅ 60×60 | ❌ |
+| Payment Types | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Social/Web Links | ✅ icons | ✅ icons | ✅ icons | ❌ | ❌ |
+| Edit / Delete | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Start/End Times | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Select (auth-gated) | ✅ | ✅ | ✅ | ❌ | ✅ closes window |
 
 ## Rule
 
-New fields: update **all four contexts** unless deliberately excluded. Public listing card and modal are most likely to be missed — verify both.
+New fields: update **all five contexts** unless deliberate. Map InfoWindow is minimal (address, description, selection). Most likely to miss: card and modal.
 
 ## Interaction Model (Public Listing Page)
 
-Two click zones on `/sales` cards:
-- **Checkbox (top-left)**: toggles selection — requires auth
-- **Card body**: opens detail modal — public, no auth required
+- **Checkbox (top-left)**: toggles selection — auth required
+- **Card body**: opens detail modal — public
+
+## Interaction Model (Map InfoWindow)
+
+- **Pin click**: opens InfoWindow
+- **Select**: toggles and closes window ("done, next pin")
+- **Navigate here**: opens directions in new tab; window stays open
+- Unauthenticated: checkbox hidden, no modal
 
 ## Image Display
 

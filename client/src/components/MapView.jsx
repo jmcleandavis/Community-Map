@@ -68,13 +68,14 @@ function MapView({ mapContainerStyle, mapOptions }) {
   // We assume it's loaded when this component mounts
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+  const markerElementsRef = useRef(new Map());
   const userMarkerRef = useRef(null);
   const initialLoadRef = useRef(false);
   const userSelectionsLoadedRef = useRef(false);
   const { fetchGarageSales, garageSales, loading, error } = useGarageSales();
   const { showOnlySelected } = useDisplay();
   const { isAuthenticated, userInfo } = useAuth();
-  const { handleCheckboxChange, handleDeselectAll } = useSelection();
+  const { selectedSales, handleCheckboxChange, handleDeselectAll } = useSelection();
   const { userLocation, shouldCenterOnUser, clearCenterOnUser, centerOnUserLocation } = useLocation();
   const { communityName, setCommunityName, communityId, setCommunityId } = useCommunitySales();
 
@@ -142,11 +143,21 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // Community name fetching handled by useCommunityName hook
 
-  // Get selected sale IDs from localStorage
+  // selectedSaleIds is used by createMarkers for initial pin colors; intentionally not reactive
+  // to prevent marker recreation (which closes any open InfoWindow) on selection toggle.
+  // Reactive color updates are handled by the useEffect below.
   const selectedSaleIds = useMemo(() => {
-    const selectedSalesStr = localStorage.getItem('selectedSaleIds');
-    return selectedSalesStr ? JSON.parse(selectedSalesStr) : [];
+    const stored = localStorage.getItem('selectedSaleIds');
+    return stored ? JSON.parse(stored) : [];
   }, []);
+
+  // When selection changes, update only the affected marker's pin color directly — avoids
+  // full marker recreation which would close any open InfoWindow.
+  useEffect(() => {
+    markerElementsRef.current.forEach((el, id) => {
+      el.style.backgroundColor = selectedSales.has(id) ? '#4CAF50' : '#FF0000';
+    });
+  }, [selectedSales]);
 
   // Record that the user started on the map page
   useEffect(() => {
@@ -250,6 +261,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
       logger.log('[MapView] Cleaning up existing markers before creating new ones');
       cleanupMarkers();
     }
+    markerElementsRef.current.clear();
 
     // Filter sales based on display mode
     const salesToShow = showOnlySelected 
@@ -426,6 +438,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
         });
 
         markersRef.current.push(marker);
+        markerElementsRef.current.set(sale.id, pinElement);
         markersCreated++;
       } catch (error) {
         logger.error('[MapView] Error creating marker:', error, sale);
@@ -636,6 +649,42 @@ function MapView({ mapContainerStyle, mapOptions }) {
     logger.log('[MapView] All requirements met, creating', garageSales.length, 'markers');
     createMarkers();
   }, [isLoaded, garageSales, createMarkers]);
+
+  // Inject the Select checkbox directly into the InfoWindow container so it sits on
+  // the same line as the native Google Maps close button (they become DOM siblings).
+  useEffect(() => {
+    if (!selectedSale || !isAuthenticated) return;
+
+    let selectEl = null;
+    const timer = setTimeout(() => {
+      const container = document.querySelector('.gm-style-iw-c');
+      if (!container) return;
+
+      // Remove Google's default top padding so content doesn't push Select down
+      container.style.paddingTop = '0';
+
+      selectEl = document.createElement('label');
+      selectEl.className = 'info-window-portal-select';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      checkbox.checked = selectedSales.has(selectedSale.id);
+      checkbox.addEventListener('change', () => {
+        handleCheckboxChange(selectedSale.id);
+        setSelectedSale(null);
+      });
+
+      selectEl.appendChild(checkbox);
+      selectEl.appendChild(document.createTextNode(' Select'));
+      container.appendChild(selectEl);
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      if (selectEl?.parentNode) selectEl.parentNode.removeChild(selectEl);
+    };
+  }, [selectedSale, isAuthenticated]); // intentionally omit selectedSales/handleCheckboxChange — see comment above
 
   // Function to display the optimized route on the map
   const displayOptimizedRoute = useCallback((routeData) => {
@@ -900,10 +949,10 @@ function MapView({ mapContainerStyle, mapOptions }) {
               }}
               onCloseClick={() => setSelectedSale(null)}
             >
-              <div className="info-window-content">
-                <h3>{selectedSale.address}</h3>
-                <p>{selectedSale.description || 'No description available'}</p>
-                <button 
+              <div className="info-window-content" style={isAuthenticated ? { paddingTop: '30px' } : undefined}>
+                <h3 style={{ margin: '0 0 4px 0' }}>{selectedSale.address}</h3>
+                <p style={{ margin: '0 0 4px 0' }}>{selectedSale.description || 'No description available'}</p>
+                <button
                   onClick={() => {
                     // Create Google Maps URL with directions from current location to this address
                     const destination = encodeURIComponent(selectedSale.address);

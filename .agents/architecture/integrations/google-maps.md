@@ -25,6 +25,8 @@ Use `map.setOptions(...)` in `onLoad` to reposition controls — **not** the `<G
 
 Raising z-index on map controls has no effect when an app overlay has any positive z-index. Fix: reposition the overlay, or hide controls until they've moved out of the overlap zone.
 
+See [InfoWindow](./infowindow.md) for auth-gating, × alignment CSS, and the `markerElementsRef` pattern.
+
 ## Mobile toggle: intentional hide-until-loaded
 
 `map-type-hidden` class on `.map-container` hides `.gm-style-mtc-bbw` until `isLoaded = true`:

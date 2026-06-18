@@ -6,7 +6,7 @@ Community Map is a web application that lets neighborhoods organize and browse c
 
 - **Shoppers** - Browse a map to find nearby garage sale listings and get directions
 - **Sellers** - Register their garage sale location, hours, and accepted payment methods
-- **Admins** - Manage listings, export addresses to CSV, and oversee community sales events
+- **Admins** - Manage listings, import or export addresses via CSV, and oversee community sales events
 
 ## Core Capabilities
 
@@ -15,9 +15,9 @@ Community Map is a web application that lets neighborhoods organize and browse c
 | Interactive Map | Browse garage sale pins on a Google Maps-powered map |
 | Listing Registration | Sellers submit their address, description, and payment info |
 | Community Sales Events | Group multiple garage sales under a single community event |
-| Admin Dashboard | Review, approve, and export garage sale listings |
+| Admin Dashboard | Review, approve, and bulk-manage garage sale listings via CSV import/export |
 | Payment Method Tracking | Each listing indicates accepted payment types (cash, card, etc.) |
-| External Links | Sellers and community admins can add social media and website links (`socialAndWeb`) to their listings. Supported platforms: Facebook, Instagram, Twitter/X, YouTube, LinkedIn, Pinterest. Unknown keys display a generic web icon. Both garage sales and community sales support this field. |
+| External Links | Sellers and admins can add social media/website links via `socialAndWeb`. Supported: Facebook, Instagram, Twitter/X, YouTube, LinkedIn, Pinterest. Unknown keys fall back to a globe icon. Available on both garage sales and community sales. |
 
 ## Key Terminology
 
