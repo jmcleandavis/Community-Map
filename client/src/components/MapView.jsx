@@ -671,7 +671,21 @@ function MapView({ mapContainerStyle, mapOptions }) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       checkbox.checked = selectedSales.has(selectedSale.id);
       checkbox.addEventListener('change', () => {
-        handleCheckboxChange(selectedSale.id);
+        const saleId = selectedSale.id;
+        const newSelected = new Set(selectedSales);
+        if (newSelected.has(saleId)) {
+          newSelected.delete(saleId);
+        } else {
+          newSelected.add(saleId);
+        }
+        handleCheckboxChange(saleId);
+        if (userInfo?.userId) {
+          api.createUpdateUserAddressList(
+            userInfo.userId,
+            Array.from(newSelected),
+            communityId
+          );
+        }
         setSelectedSale(null);
       });
 

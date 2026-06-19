@@ -30,4 +30,4 @@ Creates a sale in a community. `community` field values:
 
 **Duplicate detection (community-scoped):** same address in same community → `HTTP 400 { code: "ERR_MAPS001", errorMsg: "Existing Address" }`. `api.js` converts this to `new Error('A garage sale already exists at this address')`, which both forms display. Same address is allowed in different communities.
 
-**Status (CSE-125/CSE-128):** Backend currently accepts duplicates silently. Frontend mitigation (2026-06-17): `GarageSalesAdmin.jsx` pre-checks the loaded sales list before the API call; `RegisterGarageSale.jsx` fixed a nested try-catch that swallowed the specific error. Jamie to add community+address unique constraint returning ERR_MAPS001.
+**Status (CSE-125/CSE-128):** Backend currently accepts duplicates silently. Frontend mitigation: `GarageSalesAdmin.jsx` pre-checks the loaded sales list before the API call; `RegisterGarageSale.jsx` fixed a nested try-catch that swallowed the specific error. Jamie to add community+address unique constraint.

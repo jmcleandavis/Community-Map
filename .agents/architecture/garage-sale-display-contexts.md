@@ -29,13 +29,13 @@ New fields: update **all five contexts** unless deliberate. Map InfoWindow is mi
 ## Interaction Model (Map InfoWindow)
 
 - **Pin click**: opens InfoWindow
-- **Select**: toggles and closes window ("done, next pin")
+- **Select**: toggles and closes window
 - **Navigate here**: opens directions in new tab; window stays open
 - Unauthenticated: checkbox hidden, no modal
 
 ## Image Display
 
-Images render only when `sale.images?.length > 0` — no empty placeholder. Captions (`img.description`) render below each thumbnail when present.
+Images render only when present — no empty placeholder. Captions (`img.description`) render below each thumbnail if set.
 
 In the **detail modal**, thumbnails are clickable: clicking opens a lightbox (`Dialog`, `zIndex: modal + 1`) at up to `90vw × 80vh`. Multi-image sales show prev/next arrows with wraparound. Closing (X, Esc, or outside click) leaves the card modal open.
 
