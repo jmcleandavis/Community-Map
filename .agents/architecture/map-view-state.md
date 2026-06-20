@@ -29,5 +29,5 @@ Three overlapping selection-related variables control marker appearance in `MapV
 
 After mount, if the user deselects a sale, `selectedSaleIds` doesn't update (frozen), so `createMarkers` won't re-run. The color/visibility `useEffect` compensates: it sets `el.style.display = 'none'` on deselected markers immediately, and restores all markers when the filter is toggled off.
 
-See [InfoWindow](./integrations/infowindow.md) for the full markerElementsRef pattern.
-See [MapView Auth Selections](./map-view-auth.md) for the markersVersion pattern and auth lifecycle.
+See [InfoWindow](./integrations/infowindow.md) — markerElementsRef pattern.
+See [MapView Auth Selections](./map-view-auth.md) — markersVersion and auth lifecycle.
