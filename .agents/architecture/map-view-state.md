@@ -9,25 +9,24 @@ Three overlapping selection-related variables control marker appearance in `MapV
 | `selectedSaleIds` | `string[]` | `localStorage` via `useMemo(fn, [])` | No — frozen at mount |
 | `selectedSales` | `Set<string>` | `SelectionContext` | Yes — updates on every toggle |
 | `showOnlySelected` | `boolean` | `DisplayContext` | Yes — updates on filter toggle |
-| `markersVersion` | `number` | `useState(0)` | Yes — incremented after every `createMarkers` run |
+| `markersVersion` | `number` | `useState(0)` | Yes — incremented after `createMarkers` |
 
 ## Why selectedSaleIds is frozen
 
-`selectedSaleIds` intentionally has an empty `useMemo` dep array so it never changes after mount. If it were reactive, `createMarkers` (which depends on it) would re-run on every selection toggle — recreating all markers and closing any open InfoWindow.
+Empty `useMemo` dep array prevents `createMarkers` from re-running on every selection toggle, which would close any open InfoWindow.
 
 ## Which effect handles what
 
 | Concern | Mechanism | Deps |
 |---------|-----------|------|
-| Marker creation and initial colors | `createMarkers` callback | `[garageSales, selectedSaleIds, showOnlySelected, ...]` |
-| Live color updates (green/red) | `useEffect` on `markerElementsRef` | `[selectedSales, showOnlySelected, markersVersion]` |
-| Marker visibility in filtered mode | Same `useEffect` as above | `[selectedSales, showOnlySelected, markersVersion]` |
+| Marker creation + initial colors | `createMarkers` | `[garageSales, selectedSaleIds, cleanupMarkers, showOptimizedRoute, optimizedRouteData, setMarkersVersion]` |
+| Live color + visibility updates | visibility `useEffect` | `[selectedSales, showOnlySelected, markersVersion]` |
 
 ## showOnlySelected filter
 
-`createMarkers` filters `salesToShow` by `selectedSaleIds` when `showOnlySelected` is true — this covers initial render and data-load.
+`createMarkers` always creates markers for ALL garage sales — it does NOT filter by `showOnlySelected`. Visibility in filtered mode is handled entirely by the visibility `useEffect`, which sets `el.style.display = 'none'` on non-selected markers.
 
-After mount, if the user deselects a sale, `selectedSaleIds` doesn't update (frozen), so `createMarkers` won't re-run. The color/visibility `useEffect` compensates: it sets `el.style.display = 'none'` on deselected markers immediately, and restores all markers when the filter is toggled off.
+This separation prevents CSE-134: when `createMarkers` ran on `showOnlySelected` changes, the frozen `selectedSaleIds` returned 0 matches and wiped all markers from the DOM.
 
 See [InfoWindow](./integrations/infowindow.md) — markerElementsRef pattern.
 See [MapView Auth Selections](./map-view-auth.md) — markersVersion and auth lifecycle.

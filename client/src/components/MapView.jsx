@@ -278,10 +278,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
     }
     markerElementsRef.current.clear();
 
-    // Filter sales based on display mode
-    const salesToShow = showOnlySelected 
-      ? garageSales.filter(sale => selectedSaleIds.includes(sale.id))
-      : garageSales;
+    const salesToShow = garageSales;
 
     const { AdvancedMarkerElement } = window.google.maps.marker;
     if (!AdvancedMarkerElement) {
@@ -466,7 +463,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
     logger.log('[MapView] Successfully created', markersCreated, 'markers');
     setMarkersVersion(v => v + 1);
-  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers, showOptimizedRoute, optimizedRouteData, setMarkersVersion]);
+  }, [garageSales, selectedSaleIds, cleanupMarkers, showOptimizedRoute, optimizedRouteData, setMarkersVersion]);
 
   // Watch for when both map and data are ready and create markers
   useEffect(() => {
