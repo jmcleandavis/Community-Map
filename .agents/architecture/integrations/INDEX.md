@@ -9,5 +9,5 @@
 **Keywords**: Google Maps, gm-style, z-index, isCompactView, onLoad, mobile
 - [Google Maps JS API](./google-maps.md) — control layout; z-index rules; hide-until-loaded pattern
 
-**Keywords**: InfoWindow, markerElementsRef, select
-- [InfoWindow](./infowindow.md) — auth-gating, × CSS alignment, markerElementsRef pattern
+**Keywords**: InfoWindow, markerElementsRef, select, showOnlySelected, visibility
+- [InfoWindow](./infowindow.md) — auth-gating, × CSS alignment, markerElementsRef pattern, showOnlySelected visibility

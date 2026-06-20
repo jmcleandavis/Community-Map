@@ -153,11 +153,18 @@ function MapView({ mapContainerStyle, mapOptions }) {
 
   // When selection changes, update only the affected marker's pin color directly — avoids
   // full marker recreation which would close any open InfoWindow.
+  // Also controls visibility when showOnlySelected is active so deselected markers
+  // disappear immediately without recreating the full marker set.
   useEffect(() => {
     markerElementsRef.current.forEach((el, id) => {
       el.style.backgroundColor = selectedSales.has(id) ? '#4CAF50' : '#FF0000';
+      if (showOnlySelected) {
+        el.style.display = selectedSales.has(id) ? '' : 'none';
+      } else {
+        el.style.display = '';
+      }
     });
-  }, [selectedSales]);
+  }, [selectedSales, showOnlySelected]);
 
   // Record that the user started on the map page
   useEffect(() => {
