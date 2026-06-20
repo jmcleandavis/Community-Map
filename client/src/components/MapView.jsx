@@ -430,12 +430,16 @@ function MapView({ mapContainerStyle, mapOptions }) {
       
       // Only add numbers if we're showing the optimized route and this address is in the route
       if (showOptimizedRoute && orderNumber) {
-        // Create the number element
         const numberElement = document.createElement('span');
         numberElement.textContent = orderNumber.toString();
+        numberElement.style.position = 'absolute';
+        numberElement.style.top = '50%';
+        numberElement.style.left = '50%';
+        numberElement.style.transform = 'translate(-50%, -50%)';
         numberElement.style.color = 'white';
         numberElement.style.fontSize = '12px';
         numberElement.style.fontWeight = 'bold';
+        numberElement.style.lineHeight = '1';
         numberElement.style.userSelect = 'none';
         pinElement.appendChild(numberElement);
       }
