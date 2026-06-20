@@ -11,11 +11,11 @@
 | ≥ 1045px | `TOP_RIGHT` (default) | Full UI |
 | < 1045px | `LEFT_BOTTOM` (set in `onLoad`) | `disableDefaultUI: true` + map type re-enabled |
 
-Use `map.setOptions(...)` in `onLoad` to reposition controls — **not** the `<GoogleMap options>` prop. Google Maps ignores `mapTypeControlOptions.position` when set via the constructor with `disableDefaultUI: true`.
+Use `map.setOptions(...)` in `onLoad`, not `<GoogleMap options>` — constructor ignores `mapTypeControlOptions.position` with `disableDefaultUI: true`.
 
 ## Z-index: you cannot fix it from inside `.gm-style`
 
-`.gm-style` creates its own CSS stacking context. Any app element outside `.gm-style` with `z-index ≥ 1` paints above everything inside `.gm-style`, regardless of child z-indexes.
+`.gm-style` creates its own stacking context. Any app element with `z-index ≥ 1` paints above everything inside it, regardless of child z-indexes.
 
 | Element | z-index | File |
 |---|---|---|
@@ -23,9 +23,11 @@ Use `map.setOptions(...)` in `onLoad` to reposition controls — **not** the `<G
 | Community title | 1 (inline) | `MapView.jsx` `titleStyle` |
 | `.gm-style-mtc`, children | 1001 `!important` | `App.css` — harmless, does not escape `.gm-style` context |
 
-Raising z-index on map controls has no effect when an app overlay has any positive z-index. Fix: reposition the overlay, or hide controls until they've moved out of the overlap zone.
+Raising z-index on map controls has no effect when an app overlay has any positive z-index. Fix: reposition the overlay or hide controls until clear.
 
-See [InfoWindow](./infowindow.md) for auth-gating, × alignment CSS, and the `markerElementsRef` pattern.
+## AdvancedMarkerElement: `display` override
+
+Forces `display: block` on its `content` element at mount — inline `display: flex` is overridden, flex centering breaks. Center children with `position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%)` (parent needs `position: relative`).
 
 ## Mobile toggle: intentional hide-until-loaded
 
@@ -35,4 +37,4 @@ See [InfoWindow](./infowindow.md) for auth-gating, × alignment CSS, and the `ma
 .map-type-hidden .gm-style-mtc-bbw { visibility: hidden !important; }
 ```
 
-Before `onLoad`, the toggle appears at its default top-left position, overlapping the title. Once `onLoad` repositions it to `LEFT_BOTTOM` and sets `isLoaded(true)`, the class is removed. The brief invisible period is **intentional**.
+Without it, the toggle flashes at top-left before `onLoad` repositions it. The brief invisible period is **intentional**.
