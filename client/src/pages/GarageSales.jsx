@@ -145,7 +145,7 @@ const GarageSales = () => {
         logger.log('[GarageSales] Updating server with empty selection list for user:', userInfo.userId);
 
         // Call API with empty array for addressList
-        const response = await api.createUpdateUserAddressList(userInfo.userId, []);
+        const response = await api.createUpdateUserAddressList(userInfo.userId, [], communityId);
         logger.log('[GarageSales] Successfully updated server with empty selection list:', response);
       } catch (error) {
         logger.error('[GarageSales] Error updating server with empty selection list:', error);

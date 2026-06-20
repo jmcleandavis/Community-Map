@@ -10,7 +10,7 @@
 - [User Display Name](./user-display-name.md) — fallback chain for name
 
 **Keywords**: garage sale, InfoWindow
-- [Garage Sale Display Contexts](./garage-sale-display-contexts.md) — card/modal/admin/InfoWindow; interaction models
+- [Garage Sale Display Contexts](./garage-sale-display-contexts.md) — card/modal/admin/InfoWindow
 
 **Keywords**: hamburger, fromMap
 - [Menu Layout Contexts](./menu-layout-contexts.md) — hamburger vs sidebar; fromMap

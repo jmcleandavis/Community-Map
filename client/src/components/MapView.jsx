@@ -54,6 +54,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
   const [directions, setDirections] = useState(null);
   const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
   const [optimizedRouteData, setOptimizedRouteData] = useState(null);
+  const [markersVersion, setMarkersVersion] = useState(0);
   // Default center (will be updated when garage sales are loaded)
   const [center, setCenter] = useState({
     lat: 43.8384,
@@ -164,7 +165,7 @@ function MapView({ mapContainerStyle, mapOptions }) {
         el.style.display = '';
       }
     });
-  }, [selectedSales, showOnlySelected]);
+  }, [selectedSales, showOnlySelected, markersVersion]);
 
   // Record that the user started on the map page
   useEffect(() => {
@@ -220,6 +221,13 @@ function MapView({ mapContainerStyle, mapOptions }) {
     
     fetchUserSelections();
   }, [isAuthenticated, userInfo, handleCheckboxChange, handleDeselectAll]);
+
+  // Reset the selections-loaded guard when the user logs out so re-login triggers a fresh fetch
+  useEffect(() => {
+    if (!isAuthenticated || !userInfo?.userId) {
+      userSelectionsLoadedRef.current = false;
+    }
+  }, [isAuthenticated, userInfo]);
 
   // Cleanup function for markers
   const cleanupMarkers = useCallback(() => {
@@ -453,7 +461,8 @@ function MapView({ mapContainerStyle, mapOptions }) {
     });
 
     logger.log('[MapView] Successfully created', markersCreated, 'markers');
-  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers, showOptimizedRoute, optimizedRouteData]);
+    setMarkersVersion(v => v + 1);
+  }, [garageSales, selectedSaleIds, showOnlySelected, cleanupMarkers, showOptimizedRoute, optimizedRouteData, setMarkersVersion]);
 
   // Watch for when both map and data are ready and create markers
   useEffect(() => {
