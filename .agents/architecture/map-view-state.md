@@ -9,6 +9,7 @@ Three overlapping selection-related variables control marker appearance in `MapV
 | `selectedSaleIds` | `string[]` | `localStorage` via `useMemo(fn, [])` | No — frozen at mount |
 | `selectedSales` | `Set<string>` | `SelectionContext` | Yes — updates on every toggle |
 | `showOnlySelected` | `boolean` | `DisplayContext` | Yes — updates on filter toggle |
+| `markersVersion` | `number` | `useState(0)` | Yes — incremented after every `createMarkers` run |
 
 ## Why selectedSaleIds is frozen
 
@@ -19,8 +20,8 @@ Three overlapping selection-related variables control marker appearance in `MapV
 | Concern | Mechanism | Deps |
 |---------|-----------|------|
 | Marker creation and initial colors | `createMarkers` callback | `[garageSales, selectedSaleIds, showOnlySelected, ...]` |
-| Live color updates (green/red) | `useEffect` on `markerElementsRef` | `[selectedSales, showOnlySelected]` |
-| Marker visibility in filtered mode | Same `useEffect` as above | `[selectedSales, showOnlySelected]` |
+| Live color updates (green/red) | `useEffect` on `markerElementsRef` | `[selectedSales, showOnlySelected, markersVersion]` |
+| Marker visibility in filtered mode | Same `useEffect` as above | `[selectedSales, showOnlySelected, markersVersion]` |
 
 ## showOnlySelected filter
 
@@ -29,3 +30,4 @@ Three overlapping selection-related variables control marker appearance in `MapV
 After mount, if the user deselects a sale, `selectedSaleIds` doesn't update (frozen), so `createMarkers` won't re-run. The color/visibility `useEffect` compensates: it sets `el.style.display = 'none'` on deselected markers immediately, and restores all markers when the filter is toggled off.
 
 See [InfoWindow](./integrations/infowindow.md) for the full markerElementsRef pattern.
+See [MapView Auth Selections](./map-view-auth.md) for the markersVersion pattern and auth lifecycle.
